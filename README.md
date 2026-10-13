@@ -15,6 +15,6 @@ Double-click `start-server.bat` (or run `npm install` once, then `npm start`). I
 
 The host page uses the Claude Code CLI on this computer, so it needs to be signed in once (run `claude` in a terminal and type `/login`). Set `CLAUDE_BIN` if it lives somewhere unusual, `PORT` to change the port, and `HOST_KEY` to keep the same host link between restarts.
 
-Players on other computers in the same Wi-Fi can use `http://<this-computer's-IP>:8080/`. Players elsewhere need a tunnel (for example `cloudflared tunnel --url http://localhost:8080`).
+Players on other computers in the same Wi-Fi can use `http://<this-computer's-IP>:8080/`. Players elsewhere can join through a public link: double-click `start-with-tunnel.bat` (needs `winget install Cloudflare.cloudflared` once) and share the https://…trycloudflare.com address it prints. The link changes each time and stops when you close the window.
 
 The GitHub Pages copy still works as a single-player game; multiplayer and live reload only switch on when the game is served by this server.
