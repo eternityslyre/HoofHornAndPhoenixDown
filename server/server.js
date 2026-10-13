@@ -12,7 +12,25 @@ const { WebSocketServer } = require('ws');
 
 const ROOT = path.resolve(__dirname, '..');
 const PORT = Number(process.env.PORT) || 8080;
-const HOST_KEY = process.env.HOST_KEY || crypto.randomBytes(6).toString('hex');
+// The host password unlocks the change-the-game chat. It comes from HOST_PASSWORD or server/password.txt
+// (kept out of git); without either, a random one is made up and printed at startup.
+function readPassword() {
+  if (process.env.HOST_PASSWORD) return process.env.HOST_PASSWORD;
+  try { const p = fs.readFileSync(path.join(__dirname, 'password.txt'), 'utf8').trim(); if (p) return p; } catch (e) {}
+  return crypto.randomBytes(4).toString('hex');
+}
+const PASSWORD = readPassword();
+// Slow down guessing: each address gets 8 wrong tries per 10 minutes.
+const fails = new Map();
+function checkPassword(given, req) {
+  const who = req.headers['cf-connecting-ip'] || req.socket.remoteAddress, now = Date.now();
+  const f = fails.get(who) || { n: 0, since: now };
+  if (now - f.since > 10 * 60e3) { f.n = 0; f.since = now; }
+  if (f.n >= 8) return 'locked';
+  const a = Buffer.from(String(given || '')), b = Buffer.from(PASSWORD);
+  if (a.length === b.length && crypto.timingSafeEqual(a, b)) { fails.delete(who); return 'ok'; }
+  f.n++; fails.set(who, f); return 'wrong';
+}
 
 const TYPES = { '.html': 'text/html; charset=utf-8', '.js': 'text/javascript', '.css': 'text/css', '.png': 'image/png',
   '.jpg': 'image/jpeg', '.svg': 'image/svg+xml', '.json': 'application/json', '.mp3': 'audio/mpeg', '.wav': 'audio/wav' };
@@ -34,8 +52,11 @@ const chatJs = fs.readFileSync(path.join(__dirname, 'chat.js'), 'utf8');
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
+  if (url.pathname === '/hostcheck') {
+    const r = checkPassword(url.searchParams.get('pw'), req);
+    res.writeHead(r === 'ok' ? 204 : r === 'locked' ? 429 : 403, { 'Cache-Control': 'no-store' }); return res.end();
+  }
   if (url.pathname === '/host') {
-    if (url.searchParams.get('key') !== HOST_KEY) { res.writeHead(403); return res.end('Host key required.'); }
     res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' });
     return res.end(hostPage);
   }
@@ -69,7 +90,7 @@ const host = new WebSocketServer({ noServer: true });
 server.on('upgrade', (req, sock, head) => {
   const url = new URL(req.url, 'http://x');
   const wss = url.pathname === '/live' ? live : url.pathname === '/play' ? play
-    : url.pathname === '/hostws' && url.searchParams.get('key') === HOST_KEY ? host : null;
+    : url.pathname === '/hostws' && checkPassword(url.searchParams.get('pw'), req) === 'ok' ? host : null;
   if (!wss) return sock.destroy();
   wss.handleUpgrade(req, sock, head, ws => wss.emit('connection', ws, req));
 });
@@ -206,7 +227,8 @@ setInterval(hostStatus, 5000);
 server.listen(PORT, () => {
   console.log(`\nLia's Phoenix Jewels is running.`);
   console.log(`  Play:  http://localhost:${PORT}/`);
-  console.log(`  Host:  http://localhost:${PORT}/?key=${HOST_KEY}   (the game with a change-the-game chat; keep this link private)`);
-  console.log(`         http://localhost:${PORT}/host?key=${HOST_KEY}   (the same chat as its own page)`);
+  console.log(`  Chat:  tap the sparkle button in the game, or open http://localhost:${PORT}/host`);
+  if (!process.env.HOST_PASSWORD && !fs.existsSync(path.join(__dirname, 'password.txt')))
+    console.log(`  Chat password (made up for this run; put one in server/password.txt to keep it): ${PASSWORD}`);
   console.log(`  Claude Code: ${CLAUDE}\n`);
 });

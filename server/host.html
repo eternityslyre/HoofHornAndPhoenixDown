@@ -40,11 +40,23 @@
   <div id="log"></div>
 </main>
 <script>
-const key = new URLSearchParams(location.search).get('key');
+// Same password as the in-game chat, remembered in this browser.
+let key = null;
+try { key = localStorage.getItem('hhpd-host-pw'); } catch (e) {}
+async function unlock(note) {
+  for (;;) {
+    const p = (prompt((note ? note + '\n\n' : '') + 'Password to change the game:') || '').trim();
+    if (!p) continue;
+    const r = await fetch('/hostcheck?pw=' + encodeURIComponent(p), { cache: 'no-store' });
+    if (r.status === 204) { key = p; try { localStorage.setItem('hhpd-host-pw', p); } catch (e) {} return; }
+    note = r.status === 429 ? 'Too many tries. Wait a few minutes.' : 'That password did not work.';
+  }
+}
 const log = document.getElementById('log'), st = document.getElementById('st'), t = document.getElementById('t');
 let ws;
-function connect() {
-  ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/hostws?key=' + encodeURIComponent(key));
+async function connect() {
+  if (!key || (await fetch('/hostcheck?pw=' + encodeURIComponent(key), { cache: 'no-store' }).then(r => r.status !== 204, () => false))) await unlock();
+  ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/hostws?pw=' + encodeURIComponent(key));
   ws.onmessage = e => {
     const m = JSON.parse(e.data);
     if (m.t === 'log') {
