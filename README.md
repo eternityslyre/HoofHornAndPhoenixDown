@@ -11,7 +11,7 @@ The whole game is the single `index.html` file. No build step and no install. Pr
 Double-click `start-server.bat` (or run `npm install` once, then `npm start`). It prints two links:
 
 - **Play** (`http://localhost:8080/`): open it in any browser. Everyone who opens it and picks the same land sees each other's unicorn and phoenix, with the unicorn's name above them. Gems and progress stay separate for each player.
-- **Host** (`http://localhost:8080/host?key=…`): keep this one private. Type a change ("make the gems bigger", "add a rainbow in the lake") and Claude Code edits `index.html`. When it finishes, every open game reloads by itself.
+- **Host** (`http://localhost:8080/?key=…`): keep this one private. It opens the game with a ✨ button in the corner that opens a chat. Type a change ("make the gems bigger", "add a rainbow in the lake") and Claude Code edits `index.html`. When it finishes, every open game reloads by itself. The key is remembered in that browser, so later you can just open the normal game link. `/host?key=…` shows the same chat as its own page.
 
 The host page uses the Claude Code CLI on this computer, so it needs to be signed in once (run `claude` in a terminal and type `/login`). Set `CLAUDE_BIN` if it lives somewhere unusual, `PORT` to change the port, and `HOST_KEY` to keep the same host link between restarts.
 

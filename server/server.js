@@ -27,9 +27,10 @@ const INJECT = `<script>window.__LIVE__ = true;
     ws.onclose = function () { setTimeout(connect, 1500); };
   }
   connect();
-})();</script>`;
+})();</script><script src="/__chat.js" defer></script>`;
 
 const hostPage = fs.readFileSync(path.join(__dirname, 'host.html'), 'utf8');
+const chatJs = fs.readFileSync(path.join(__dirname, 'chat.js'), 'utf8');
 
 const server = http.createServer((req, res) => {
   const url = new URL(req.url, 'http://x');
@@ -37,6 +38,10 @@ const server = http.createServer((req, res) => {
     if (url.searchParams.get('key') !== HOST_KEY) { res.writeHead(403); return res.end('Host key required.'); }
     res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' });
     return res.end(hostPage);
+  }
+  if (url.pathname === '/__chat.js') {
+    res.writeHead(200, { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' });
+    return res.end(chatJs);
   }
   let rel = decodeURIComponent(url.pathname);
   if (rel.endsWith('/')) rel += 'index.html';
@@ -201,6 +206,7 @@ setInterval(hostStatus, 5000);
 server.listen(PORT, () => {
   console.log(`\nLia's Phoenix Jewels is running.`);
   console.log(`  Play:  http://localhost:${PORT}/`);
-  console.log(`  Host:  http://localhost:${PORT}/host?key=${HOST_KEY}   (keep this link private)`);
+  console.log(`  Host:  http://localhost:${PORT}/?key=${HOST_KEY}   (the game with a change-the-game chat; keep this link private)`);
+  console.log(`         http://localhost:${PORT}/host?key=${HOST_KEY}   (the same chat as its own page)`);
   console.log(`  Claude Code: ${CLAUDE}\n`);
 });
