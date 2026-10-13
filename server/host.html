@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Game Host</title>
+<style>
+  :root { --bg: #fdf6ff; --panel: #fff; --ink: #2b1a3a; --muted: #7a6a8a; --line: #ead9f5; --accent: #c2409a; --ok: #2e8a5a; --err: #b8322e; }
+  @media (prefers-color-scheme: dark) { :root { --bg: #1a1424; --panel: #251d33; --ink: #f3eaff; --muted: #a898bb; --line: #3a2e4c; --accent: #ff7cc8; --ok: #6fd39f; --err: #ff8a85; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink); font: 16px/1.45 system-ui, sans-serif; }
+  main { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
+  h1 { font-size: 22px; margin: 0 0 4px; }
+  .sub { color: var(--muted); margin: 0 0 18px; font-size: 14px; }
+  form { display: flex; gap: 8px; }
+  textarea { flex: 1; min-height: 70px; resize: vertical; padding: 10px; font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
+  button { padding: 0 18px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 10px; cursor: pointer; }
+  .status { margin: 14px 0 8px; font-size: 14px; color: var(--muted); }
+  .status b { color: var(--ink); }
+  #log { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 8px 12px; min-height: 200px; max-height: 60vh; overflow-y: auto; font-size: 14px; }
+  .l { padding: 5px 0; border-bottom: 1px dashed var(--line); white-space: pre-wrap; word-break: break-word; }
+  .l:last-child { border-bottom: 0; }
+  .request { font-weight: 600; color: var(--accent); }
+  .request::before { content: "Request: "; }
+  .tool { color: var(--muted); font-family: ui-monospace, monospace; font-size: 12px; }
+  .done { color: var(--ok); font-weight: 600; }
+  .error { color: var(--err); }
+  .info { color: var(--muted); font-style: italic; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Game Host</h1>
+  <p class="sub">Type a change for the game. Claude Code edits it, then every player's screen reloads by itself. <a href="/" target="_blank">Open the game</a></p>
+  <form id="f">
+    <textarea id="t" placeholder="e.g. Add a purple butterfly that flutters around the sky gems"></textarea>
+    <button>Send</button>
+  </form>
+  <div class="status" id="st">Connecting…</div>
+  <div id="log"></div>
+</main>
+<script>
+const key = new URLSearchParams(location.search).get('key');
+const log = document.getElementById('log'), st = document.getElementById('st'), t = document.getElementById('t');
+let ws;
+function connect() {
+  ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/hostws?key=' + encodeURIComponent(key));
+  ws.onmessage = e => {
+    const m = JSON.parse(e.data);
+    if (m.t === 'log') {
+      const d = document.createElement('div'); d.className = 'l ' + m.kind; d.textContent = m.text;
+      const stick = log.scrollTop + log.clientHeight >= log.scrollHeight - 30;
+      log.append(d); if (stick) log.scrollTop = log.scrollHeight;
+    } else if (m.t === 'status') {
+      const who = `<b>${m.players}</b> player${m.players === 1 ? '' : 's'} connected.`;
+      st.innerHTML = who + ' ' + (m.busy ? 'Claude is working on a change' + (m.queued.length ? `, ${m.queued.length} more waiting.` : '.') : 'Ready for a request.');
+    }
+  };
+  ws.onclose = () => { st.textContent = 'Disconnected from the server. Retrying…'; setTimeout(connect, 1500); };
+}
+connect();
+document.getElementById('f').addEventListener('submit', e => {
+  e.preventDefault();
+  if (!t.value.trim() || ws.readyState !== 1) return;
+  ws.send(JSON.stringify({ t: 'request', text: t.value })); t.value = '';
+});
+t.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) document.getElementById('f').requestSubmit(); });
+</script>
+</body>
+</html>

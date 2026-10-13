@@ -1035,6 +1035,7 @@ function drawGame() {
     c.fillStyle = halo; c.beginPath(); c.arc(x, y, 40 * S, 0, TAU); c.fill();
     drawGem(c, x, y, Math.max(15, 22 * S) * a, o.type, g.t); c.restore();
   }
+  drawOthers(c, frameDt);
   drawUnicorn(c, g.ux, GY, S, g.uface, { t: g.t, phase: g.uphase, moving: g.umoving, rider: g.form === 'ride' });
   if (g.form !== 'ride') drawPhoenix(c, g.px, g.py, S * 1.25, g.pface, g.t);
   drawParts(c);
@@ -1184,10 +1185,56 @@ function buildBox() {
   say(`You have ${save.jewels.length} magic ${save.jewels.length === 1 ? 'treasure' : 'treasures'}!`);
 }
 
+/* ---------- Multiplayer (only when played through the local server) ---------- */
+const others = new Map(); // id -> { s: latest state, x, y, ux, phase, t }
+let mpSock = null, mpSendT = 0;
+function mpConnect() {
+  if (!window.__LIVE__) return;
+  try { mpSock = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/play'); } catch (e) { return; }
+  mpSock.onmessage = e => {
+    let m; try { m = JSON.parse(e.data); } catch (er) { return; }
+    if (m.t === 'state') { const o = others.get(m.id) || { phase: 0, t: Math.random() * 9 }; o.s = m.s; others.set(m.id, o); }
+    else if (m.t === 'gone') others.delete(m.id);
+  };
+  mpSock.onclose = () => { others.clear(); setTimeout(mpConnect, 2000); };
+}
+function mpTick(dt) {
+  if (!mpSock || mpSock.readyState !== 1) return;
+  mpSendT -= dt; if (mpSendT > 0) return; mpSendT = .1;
+  const g = screen === 's-play' && game ? game : null;
+  const st = g ? { land: g.land.id, ux: g.ux / W, uface: g.uface, mv: g.umoving, form: g.form, px: g.px / W, py: g.py / H, pface: g.pface, look: save.look }
+               : { land: null, look: save.look };
+  mpSock.send(JSON.stringify({ t: 'state', s: st }));
+}
+function drawOthers(c, dt) {
+  const g = game, mine = save.look;
+  for (const o of others.values()) {
+    const s = o.s; if (!s || s.land !== g.land.id) continue;
+    const k = Math.min(1, dt * 10); // glide toward the latest reported spot
+    o.ux = o.ux === undefined ? s.ux * W : o.ux + (s.ux * W - o.ux) * k;
+    o.x = o.x === undefined ? s.px * W : o.x + (s.px * W - o.x) * k;
+    o.y = o.y === undefined ? s.py * H : o.y + (s.py * H - o.y) * k;
+    o.t += dt; if (s.mv) o.phase += dt * 13;
+    save.look = Object.assign({}, DEF.look, s.look); // draw them in their own colors
+    c.save(); c.globalAlpha = .9;
+    drawUnicorn(c, o.ux, GY, S, s.uface || 1, { t: o.t, phase: o.phase, moving: s.mv, rider: s.form === 'ride' });
+    if (s.form !== 'ride') drawPhoenix(c, o.x, o.y, S * 1.25, s.pface || 1, o.t);
+    c.restore();
+    save.look = mine;
+    const nx = s.form === 'ride' ? o.ux : o.x, ny = s.form === 'ride' ? GY - 200 * S : o.y - 50 * S;
+    const name = String((s.look && s.look.uname) || 'Friend').slice(0, 16);
+    c.save(); c.font = `bold ${Math.round(15 * S + 4)}px system-ui, sans-serif`; c.textAlign = 'center';
+    c.lineWidth = 4; c.strokeStyle = 'rgba(43,26,58,.7)'; c.strokeText(name, nx, ny); c.fillStyle = '#fff'; c.fillText(name, nx, ny);
+    c.restore();
+  }
+}
+mpConnect();
+
 /* ---------- Main loop ---------- */
-let last = performance.now();
+let last = performance.now(), frameDt = 0;
 function frame(now) {
-  const dt = Math.min(.05, (now - last) / 1000); last = now; T += dt;
+  const dt = Math.min(.05, (now - last) / 1000); last = now; T += dt; frameDt = dt;
+  mpTick(dt);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   stepParts(dt);
   if (screen === 's-play' && game) { updateGame(dt); drawGame(); } else drawAmbient();

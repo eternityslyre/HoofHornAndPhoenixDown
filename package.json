@@ -1,0 +1,11 @@
+{
+  "name": "hoof-horn-and-phoenix-down",
+  "private": true,
+  "description": "Local play server for Lia's Phoenix Jewels: multiplayer, live reload, and host change requests.",
+  "scripts": {
+    "start": "node server/server.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
