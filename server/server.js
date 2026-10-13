@@ -111,18 +111,22 @@ fs.watch(ROOT, { recursive: true }, (ev, name) => {
 function findClaude() {
   if (process.env.CLAUDE_BIN) return process.env.CLAUDE_BIN;
   try { return execSync(process.platform === 'win32' ? 'where claude' : 'command -v claude', { stdio: ['ignore', 'pipe', 'ignore'] }).toString().split(/\r?\n/)[0].trim(); } catch (e) {}
-  // The Claude desktop app keeps its own copy of Claude Code here on Windows.
-  const base = path.join(process.env.APPDATA || '', 'Claude', 'claude-code');
-  try {
-    const found = [];
-    for (const v of fs.readdirSync(base)) for (const h of fs.readdirSync(path.join(base, v))) {
-      const exe = path.join(base, v, h, 'claude.exe');
-      if (fs.existsSync(exe)) found.push({ exe, t: fs.statSync(exe).mtimeMs });
-    }
-    found.sort((a, b) => b.t - a.t);
-    if (found[0]) return found[0].exe;
-  } catch (e) {}
-  return 'claude';
+  // The Claude desktop app keeps its own copy of Claude Code on Windows. The Store/MSIX install
+  // keeps it inside its package folder, which only looks like %APPDATA% from inside the app.
+  const bases = [path.join(process.env.APPDATA || '', 'Claude', 'claude-code')];
+  const pkgs = path.join(process.env.LOCALAPPDATA || '', 'Packages');
+  try { for (const p of fs.readdirSync(pkgs)) if (/^Claude_/i.test(p)) bases.push(path.join(pkgs, p, 'LocalCache', 'Roaming', 'Claude', 'claude-code')); } catch (e) {}
+  const found = [];
+  for (const base of bases) {
+    try {
+      for (const v of fs.readdirSync(base)) for (const h of fs.readdirSync(path.join(base, v))) {
+        const exe = path.join(base, v, h, 'claude.exe');
+        if (fs.existsSync(exe)) found.push({ exe, t: fs.statSync(exe).mtimeMs });
+      }
+    } catch (e) {}
+  }
+  found.sort((a, b) => b.t - a.t);
+  return found[0] ? found[0].exe : 'claude';
 }
 const CLAUDE = findClaude();
 
