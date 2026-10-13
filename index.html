@@ -325,6 +325,7 @@ const SFX = {
   win: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .5, 'triangle', .14, i * .12)),
   magic: () => [784, 988, 1175, 1568, 1319, 1568, 2093].forEach((f, i) => tone(f, .35, 'sine', .1, i * .1)),
   nope: () => { tone(330, .15, 'sine', .08); tone(262, .25, 'sine', .08, .12); },
+  bird: f => [1, 1.19, 1, 1.33, 1.5].forEach((m, i) => tone(f * m, .13, 'sine', .04, i * .13, 1.12)),
 };
 
 /* ---------- Read-aloud ---------- */
@@ -590,6 +591,9 @@ function genDeco(id) {
   for (let i = 0; i < 70; i++) d.stars.push({ fx: r(), fy: r() * .72, r: .6 + r() * 1.6, p: r() * TAU });
   for (let i = 0; i < 5; i++) d.clouds.push({ fx: r(), fy: .08 + r() * .35, s: .6 + r() * .8, sp: .3 + r() * .5 });
   for (let i = 0; i < 14; i++) d.flies.push({ fx: r(), fy: .3 + r() * .55, p: r() * TAU });
+  d.birds = [];
+  const bc = ['#b9a8ff', '#8fd3ff', '#ffb3d9'], bn = [1568, 1760, 2093];
+  for (let i = 0; i < 3; i++) d.birds.push({ fx: r(), fy: .14 + r() * .3, sp: .02 + r() * .015, dir: i % 2 ? -1 : 1, p: r(), c: bc[i], note: bn[i], was: false });
   return d;
 }
 const DECO = {}; LANDS.forEach(l => DECO[l.id] = genDeco(l.id)); DECO.twilight = genDeco('twilight');
@@ -607,6 +611,45 @@ function groundFill(c, w, h, gy, cols) { const g = c.createLinearGradient(0, gy,
 function drawStars(c, w, gy, d, t, a = 1) {
   for (const s of d.stars) { const tw = .45 + .55 * Math.abs(Math.sin(t * 1.3 + s.p)); c.globalAlpha = tw * a; c.fillStyle = '#fff'; c.beginPath(); c.arc(s.fx * w, s.fy * gy, s.r, 0, TAU); c.fill(); }
   c.globalAlpha = 1;
+}
+/* Night birds: little glowing songbirds that drift across night skies and sing now and then */
+function birdSinging(b, t) { const k = (t * .11 + b.p) % 1; return k < .1 ? k / .1 : -1; }
+function drawNightBirds(c, w, gy, d, t, sc) {
+  for (const b of d.birds) {
+    const m = (((b.fx + t * b.sp * b.dir) % 1) + 1) % 1, x = -60 * sc + m * (w + 120 * sc), y = b.fy * gy + Math.sin(t * 1.6 + b.p * TAU) * 8 * sc;
+    const face = b.dir, q = birdSinging(b, t), fl = Math.sin(t * 9 + b.p * TAU);
+    const halo = c.createRadialGradient(x, y, 2, x, y, 30 * sc); halo.addColorStop(0, 'rgba(255,255,255,.35)'); halo.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = halo; c.beginPath(); c.arc(x, y, 30 * sc, 0, TAU); c.fill();
+    c.save(); c.translate(x, y); c.scale(face * sc, sc);
+    c.fillStyle = b.c;
+    c.beginPath(); c.moveTo(-10, 0); c.lineTo(-23, -7); c.lineTo(-21, 5); c.closePath(); c.fill();
+    c.beginPath(); c.ellipse(0, 0, 13, 9, 0, 0, TAU); c.fill();
+    c.beginPath(); c.arc(11, -6, 7, 0, TAU); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(3, 3, 8, 4.5, 0, 0, TAU); c.fill();
+    const open = q >= 0 ? 2.5 * Math.abs(Math.sin(q * Math.PI * 6)) : 0;
+    c.fillStyle = '#ffd23f'; c.beginPath(); c.moveTo(16, -8); c.lineTo(23, -6 - open); c.lineTo(16, -5); c.closePath(); c.fill();
+    if (open) { c.beginPath(); c.moveTo(16, -5); c.lineTo(22, -4 + open); c.lineTo(16, -3.5); c.closePath(); c.fill(); }
+    c.fillStyle = '#241a4a'; c.beginPath(); c.arc(13, -7.5, 1.7, 0, TAU); c.fill();
+    c.fillStyle = '#ff9ac8'; c.globalAlpha = .6; c.beginPath(); c.arc(11, -3.5, 2, 0, TAU); c.fill(); c.globalAlpha = 1;
+    c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.moveTo(-7, -2); c.quadraticCurveTo(0, -2 - 20 * fl, 7, -2); c.closePath(); c.fill();
+    c.restore();
+    if (q >= 0) {
+      c.save(); c.font = `${Math.round(16 * sc)}px sans-serif`; c.textAlign = 'center';
+      for (let j = 0; j < 2; j++) {
+        const qq = Math.min(1, q * 1.3 + j * .2);
+        c.globalAlpha = Math.max(0, 1 - qq); c.fillStyle = j ? '#fff6a8' : '#ffffff';
+        c.fillText(j ? '♫' : '♪', x + face * (22 + qq * 22 + j * 8) * sc, y - (12 + qq * 34 + j * 6) * sc);
+      }
+      c.restore();
+    }
+  }
+}
+function singBirds(d, t) {
+  for (const b of d.birds) {
+    const sing = birdSinging(b, t) >= 0;
+    if (sing && !b.was && AC && AC.state === 'running' && !document.hidden) SFX.bird(b.note);
+    b.was = sing;
+  }
 }
 function drawLand(c, land, w, h, t, sc) {
   const gy = h * .8, d = DECO[land.id] || DECO.twilight;
@@ -634,6 +677,7 @@ function drawLand(c, land, w, h, t, sc) {
     c.fillStyle = '#fff6d8'; c.beginPath(); c.arc(mx, my, mr, 0, TAU); c.fill();
     c.fillStyle = 'rgba(220,205,170,.5)'; c.beginPath(); c.arc(mx - mr * .3, my - mr * .2, mr * .2, 0, TAU); c.arc(mx + mr * .3, my + mr * .3, mr * .14, 0, TAU); c.fill();
     hills(c, w, h, gy, h * .22, 1, 2, '#3a2c80'); hills(c, w, h, gy, h * .1, 1.7, 0, '#2d4f7a');
+    drawNightBirds(c, w, gy, d, t, sc);
     groundFill(c, w, h, gy, land.ground);
     const lx = w * .5, ly = gy + (h - gy) * .55, lw = w * .4, lh = (h - gy) * .3;
     const lg = c.createLinearGradient(0, ly - lh, 0, ly + lh); lg.addColorStop(0, '#4a8ed0'); lg.addColorStop(1, '#2a4f8a');
@@ -675,6 +719,7 @@ function drawLand(c, land, w, h, t, sc) {
   } else {
     drawStars(c, w, gy, d, t);
     hills(c, w, h, gy, h * .24, 1, 1.5, '#4a2f86'); hills(c, w, h, gy, h * .12, 1.9, 4, '#5d3f9a');
+    drawNightBirds(c, w, gy, d, t, sc);
     groundFill(c, w, h, gy, land.ground);
     for (const f of d.flowers) { const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc; c.fillStyle = f.c; c.globalAlpha = .7; c.beginPath(); c.arc(fx, fy, 3 * s, 0, TAU); c.fill(); }
     c.globalAlpha = 1;
@@ -1023,6 +1068,7 @@ function drawRock(c, x, y, s, type, t, a) {
 function drawGame() {
   const g = game, c = ctx;
   drawLand(c, g.land, W, H, g.t, S);
+  if (g.land.id === 'lake') singBirds(DECO.lake, g.t);
   for (const r of g.rocks) {
     const a = r.broken ? Math.max(0, 1 - (g.t - r.bt) / .8) : Math.min(1, (g.t - r.born) * 2);
     const near = !r.broken && Math.abs(r.fx * W - g.ux) < 120 * S ? Math.sin(g.t * 30) * 1.5 : 0;
@@ -1051,7 +1097,7 @@ function drawGame() {
 let amb = { x: 0, y: 0 };
 function drawAmbient() {
   const c = ctx;
-  drawLand(c, TWILIGHT, W, H, T, S);
+  drawLand(c, TWILIGHT, W, H, T, S); singBirds(DECO.twilight, T);
   const ux = screen === 's-title' ? W * .74 : W * .86;
   if (screen === 's-title' || W > 700) drawUnicorn(c, ux, GY + 6, S * 1.05, -1, { t: T });
   const px = W * .5 + Math.cos(T * .55) * W * .32, py = H * .32 + Math.sin(T * 1.1) * H * .1, face = -Math.sin(T * .55) >= 0 ? 1 : -1;
@@ -1186,35 +1232,56 @@ function buildBox() {
 }
 
 /* ---------- Multiplayer (only when played through the local server) ---------- */
-const others = new Map(); // id -> { s: latest state, x, y, ux, phase, t }
-let mpSock = null, mpSendT = 0;
+// Each player sends where they are and where they're heading. Movement in this game is
+// "glide toward the tapped spot at a fixed speed", so other screens can play that same glide
+// forward from the last update instead of waiting for the next one, which hides network lag.
+const others = new Map(); // id -> { s: latest state, recv: when it arrived, ux, x, y, phase, t }
+let mpSock = null, mpGap = 0, mpLast = '';
 function mpConnect() {
   if (!window.__LIVE__) return;
   try { mpSock = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/play'); } catch (e) { return; }
   mpSock.onmessage = e => {
     let m; try { m = JSON.parse(e.data); } catch (er) { return; }
-    if (m.t === 'state') { const o = others.get(m.id) || { phase: 0, t: Math.random() * 9 }; o.s = m.s; others.set(m.id, o); }
+    if (m.t === 'state') { const o = others.get(m.id) || { phase: 0, t: Math.random() * 9 }; o.s = m.s; o.recv = performance.now(); others.set(m.id, o); }
     else if (m.t === 'gone') others.delete(m.id);
   };
   mpSock.onclose = () => { others.clear(); setTimeout(mpConnect, 2000); };
 }
+const r3 = v => Math.round(v * 1000) / 1000;
 function mpTick(dt) {
   if (!mpSock || mpSock.readyState !== 1) return;
-  mpSendT -= dt; if (mpSendT > 0) return; mpSendT = .1;
   const g = screen === 's-play' && game ? game : null;
-  const st = g ? { land: g.land.id, ux: g.ux / W, uface: g.uface, mv: g.umoving, form: g.form, px: g.px / W, py: g.py / H, pface: g.pface, look: save.look }
+  // What the player intends (land, form, tap target) goes out at once; positions ride along 15 times a second.
+  const intent = g ? [g.land.id, g.form, r3(g.tx / W), r3(g.ty / H)].join() : 'menu';
+  mpGap += dt;
+  if (mpGap < (intent === mpLast ? 1 / 15 : 1 / 30)) return;
+  mpGap = 0; mpLast = intent;
+  const st = g ? { land: g.land.id, ux: r3(g.ux / W), uface: g.uface, mv: g.umoving, form: g.form, px: r3(g.px / W), py: r3(g.py / H), pface: g.pface,
+                   tx: r3(g.tx / W), ty: r3(g.ty / H), fast: hasPower('bracelet'), look: save.look }
                : { land: null, look: save.look };
   mpSock.send(JSON.stringify({ t: 'state', s: st }));
 }
+function glide(x, y, tx, ty, dist) { // move (x,y) toward (tx,ty) by up to dist
+  const dx = tx - x, dy = ty - y, d = Math.hypot(dx, dy);
+  return d <= dist || d < 1e-6 ? [tx, ty] : [x + dx / d * dist, y + dy / d * dist];
+}
 function drawOthers(c, dt) {
-  const g = game, mine = save.look;
+  const g = game, mine = save.look, now = performance.now();
   for (const o of others.values()) {
     const s = o.s; if (!s || s.land !== g.land.id) continue;
-    const k = Math.min(1, dt * 10); // glide toward the latest reported spot
-    o.ux = o.ux === undefined ? s.ux * W : o.ux + (s.ux * W - o.ux) * k;
-    o.x = o.x === undefined ? s.px * W : o.x + (s.px * W - o.x) * k;
-    o.y = o.y === undefined ? s.py * H : o.y + (s.py * H - o.y) * k;
-    o.t += dt; if (s.mv) o.phase += dt * 13;
+    // Where they most likely are right now: last report, played forward for the time since it was sent.
+    const age = Math.min(.5, (now - o.recv) / 1000 + .04);
+    const uSpeed = 300 * S * (s.fast ? 1.7 : 1);
+    const ux = s.form === 'ride' ? glide(s.ux * W, 0, clamp(s.tx * W, 60 * S, W - 60 * S), 0, uSpeed * age)[0] : s.ux * W;
+    let px = s.px * W, py = s.py * H;
+    if (s.form === 'phoenix') [px, py] = glide(px, py, clamp(s.tx * W, 30 * S, W - 30 * S), clamp(s.ty * H, 50 * S, GY - 70 * S), 420 * S * age);
+    else if (s.form === 'landing') [px, py] = glide(px, py, ux + (s.uface || 1) * -6 * S, GY - 120 * S, 520 * S * age);
+    const k = Math.min(1, dt * 14), snap = o.ux === undefined || o.form !== s.form && s.form !== 'landing';
+    o.ux = snap ? ux : o.ux + (ux - o.ux) * k;
+    o.x = snap ? px : o.x + (px - o.x) * k;
+    o.y = snap ? py : o.y + (py - o.y) * k;
+    o.form = s.form;
+    o.t += dt; if (s.mv) o.phase += dt * (s.fast ? 18 : 13);
     save.look = Object.assign({}, DEF.look, s.look); // draw them in their own colors
     c.save(); c.globalAlpha = .9;
     drawUnicorn(c, o.ux, GY, S, s.uface || 1, { t: o.t, phase: o.phase, moving: s.mv, rider: s.form === 'ride' });
