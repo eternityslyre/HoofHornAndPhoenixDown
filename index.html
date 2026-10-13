@@ -1,0 +1,1203 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Lia's Phoenix Jewels</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@600;800&display=swap">
+<style>
+/* Layout: one full-screen painted world (canvas) with chunky storybook panels floating over it */
+:root{
+  --ink:#3a1d5c; --ink-soft:#6b4f8f;
+  --flame:#ff6a3d; --flame-deep:#c93d16;
+  --gold:#ffc83d; --gold-deep:#c98d00;
+  --lilac:#a77cff; --lilac-deep:#6c43c9;
+  --mint:#3fc28c; --mint-deep:#23885f;
+  --panel:rgba(255,248,255,.93); --panel-line:#ffd98a;
+  --night:#241a4a; --white:#ffffff;
+  --display:'Grandstander','Trebuchet MS','Comic Sans MS',system-ui,sans-serif;
+  --body:'Andika','Trebuchet MS',system-ui,sans-serif;
+  color-scheme:light;
+}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--ink);font-family:var(--body);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+[hidden]{display:none!important}
+#app{position:relative;height:100%;overflow:hidden}
+#world{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.screen{position:absolute;inset:0;overflow-y:auto;display:flex;flex-direction:column;align-items:center;gap:16px;padding-inline:16px;padding-block:64px 24px;box-sizing:border-box;touch-action:pan-y}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;line-height:1.05}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
+.btn{font-family:var(--display);font-weight:800;font-size:clamp(1.3rem,4vw,1.8rem);padding:.45em 1.3em .5em;border:0;border-radius:999px;background:var(--flame);color:var(--white);box-shadow:0 6px 0 var(--flame-deep),0 10px 24px rgba(30,10,60,.3);letter-spacing:.02em;transition:transform .08s,box-shadow .08s}
+.btn:active{transform:translateY(4px);box-shadow:0 2px 0 var(--flame-deep)}
+.btn.gold{background:var(--gold);color:var(--ink);box-shadow:0 6px 0 var(--gold-deep),0 10px 24px rgba(30,10,60,.3)}
+.btn.gold:active{box-shadow:0 2px 0 var(--gold-deep)}
+.btn.lilac{background:var(--lilac);box-shadow:0 6px 0 var(--lilac-deep),0 10px 24px rgba(30,10,60,.3)}
+.btn.lilac:active{box-shadow:0 2px 0 var(--lilac-deep)}
+.btn.mint{background:var(--mint);box-shadow:0 6px 0 var(--mint-deep),0 10px 24px rgba(30,10,60,.3)}
+.btn.mint:active{box-shadow:0 2px 0 var(--mint-deep)}
+.btn[disabled]{filter:grayscale(.8);opacity:.55}
+.panel{background:var(--panel);border:4px solid var(--panel-line);border-radius:28px;box-shadow:0 12px 40px rgba(20,8,50,.35);padding:16px;box-sizing:border-box}
+.icon-btn{flex-shrink:0;width:52px;height:52px;border-radius:50%;border:3px solid var(--white);background:rgba(58,29,92,.55);color:var(--white);display:grid;place-items:center;padding:0}
+.icon-btn svg{width:28px;height:28px}
+.icon-btn.off{opacity:.55}
+#corner{position:absolute;top:10px;right:10px;display:flex;gap:8px;z-index:20}
+#caption{position:absolute;left:50%;bottom:20px;transform:translateX(-50%);z-index:19;max-width:min(88vw,620px);font-family:var(--display);font-weight:600;font-size:clamp(1.05rem,3.4vw,1.45rem);text-align:center;background:rgba(58,29,92,.82);color:var(--white);padding:.5em 1em;border-radius:20px;pointer-events:none;opacity:0;transition:opacity .3s}
+#caption.on{opacity:1}
+#app[data-s="s-play"] #caption{bottom:auto;top:96px}
+
+/* Title */
+#s-title{justify-content:center;text-align:center}
+.logo{font-size:clamp(2.6rem,10vw,5.6rem);font-weight:800;color:var(--gold);-webkit-text-stroke:2px var(--flame-deep);text-shadow:0 5px 0 var(--flame-deep),0 0 30px rgba(255,180,60,.7);transform:rotate(-2deg)}
+.logo small{display:block;font-size:.45em;color:var(--white);-webkit-text-stroke:0;text-shadow:0 3px 0 var(--lilac-deep);margin-top:.2em;transform:rotate(1deg)}
+#playBtn{font-size:clamp(1.8rem,6vw,2.6rem);margin-top:24px}
+
+/* Make your hero */
+.make{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:16px;width:min(900px,100%);align-items:center}
+.make canvas{width:100%;height:auto;aspect-ratio:4/3;max-width:100%;border-radius:22px;background:linear-gradient(#ffd6ec,#fff3d6)}
+.opt{display:flex;flex-direction:column;gap:6px}
+.opt h3{font-size:1.15rem;color:var(--ink-soft)}
+.sw-row{display:flex;flex-wrap:wrap;gap:8px}
+.sw{width:46px;height:46px;border-radius:50%;border:4px solid var(--white);box-shadow:0 2px 6px rgba(0,0,0,.25);padding:0}
+.sw.sel{border-color:var(--flame);transform:scale(1.12)}
+.name{font-family:var(--display);font-weight:600;font-size:1.1rem;padding:.35em .8em;border-radius:999px;border:3px solid var(--lilac);background:var(--white)}
+.name.sel{background:var(--lilac);color:var(--white)}
+@media (max-width:640px){.make{grid-template-columns:minmax(0,1fr)}}
+
+/* Map */
+.title-big{font-size:clamp(1.8rem,6vw,2.8rem);color:var(--white);text-shadow:0 4px 0 var(--lilac-deep);text-align:center}
+.lands{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;width:min(860px,100%)}
+.land{display:flex;flex-direction:column;align-items:stretch;gap:6px;padding:8px;border-radius:24px;border:4px solid var(--white);background:var(--panel);box-shadow:0 8px 0 rgba(58,29,92,.35);text-align:left}
+.land:active{transform:translateY(3px)}
+.land canvas{width:100%;height:auto;aspect-ratio:16/9;border-radius:16px;display:block}
+.land .row{display:flex;align-items:center;justify-content:space-between;gap:8px;padding-inline:4px;flex-wrap:wrap}
+.land b{font-family:var(--display);font-size:clamp(1.05rem,3.4vw,1.4rem)}
+.land .gems img{width:26px;height:26px}
+.stars{color:var(--gold-deep);font-size:1.1rem;letter-spacing:2px;font-family:var(--display)}
+.dock{display:flex;flex-wrap:wrap;justify-content:center;gap:16px}
+.bagline{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 12px;font-family:var(--display);font-weight:800;font-size:1.2rem;color:var(--ink);padding:8px 16px;border-radius:999px;background:var(--panel)}
+.bagline span{display:inline-flex;align-items:center;gap:2px;font-variant-numeric:tabular-nums}
+.bagline img{width:30px;height:30px}
+
+/* Play HUD */
+.play{pointer-events:none;padding:0}
+.play > *{pointer-events:auto}
+.hud-top{position:absolute;top:10px;left:10px;right:130px;display:flex;align-items:center;gap:10px}
+.sockets{display:flex;flex-wrap:wrap;gap:4px;background:rgba(58,29,92,.45);padding:6px 10px;border-radius:999px;border:3px solid rgba(255,255,255,.7)}
+.sock{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.22);display:grid;place-items:center}
+.sock img{width:30px;height:30px;animation:pop .4s ease-out}
+@keyframes pop{0%{transform:scale(.2)}70%{transform:scale(1.35)}100%{transform:scale(1)}}
+.fire{position:absolute;right:18px;bottom:18px;width:104px;height:104px;border-radius:50%;border:0;padding:0;
+  background:conic-gradient(var(--gold) calc(var(--e,1)*360deg),rgba(255,255,255,.25) 0);display:grid;place-items:center;box-shadow:0 8px 24px rgba(0,0,0,.35)}
+.fire span{width:84px;height:84px;border-radius:50%;background:radial-gradient(circle at 40% 35%,#ffb15c,var(--flame) 60%,var(--flame-deep));display:grid;place-items:center}
+.fire svg{width:52px;height:52px;color:#fff3b0}
+.fire.bird span{background:radial-gradient(circle at 40% 35%,#fff,#e6dcff 60%,var(--lilac))}
+.fire.bird svg{color:var(--lilac-deep)}
+.fire.tired{filter:saturate(.3) brightness(.9)}
+.powers{position:absolute;left:12px;bottom:16px;display:flex;gap:8px}
+.powers button{width:58px;height:58px;border-radius:50%;border:3px solid var(--gold);background:rgba(255,248,255,.85);padding:0;display:grid;place-items:center}
+.powers img{width:46px;height:46px}
+.win{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 32px));text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
+.win h2{font-size:clamp(2.2rem,8vw,3.2rem);color:var(--flame)}
+.win .haul{display:flex;flex-wrap:wrap;justify-content:center;gap:2px}
+.win .haul img{width:38px;height:38px}
+
+/* Workshop */
+.bar{width:min(900px,100%);display:flex;align-items:center;gap:12px}
+.bar h2{flex:1;font-size:clamp(1.5rem,5vw,2.3rem);color:var(--white);text-shadow:0 3px 0 var(--lilac-deep)}
+.back{background:var(--panel);color:var(--ink);border:0}
+.types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(900px,100%)}
+.type{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:20px;border:4px solid var(--white);background:var(--panel)}
+.type.sel{border-color:var(--flame);background:#fff1e6}
+.type canvas{width:100%;max-width:110px;height:auto;aspect-ratio:1}
+.type b{font-family:var(--display);font-size:clamp(.95rem,3vw,1.2rem)}
+.type .need{display:flex;gap:1px}
+.type .need i{width:9px;height:9px;border-radius:50%;background:var(--lilac);display:block}
+.bench{width:min(900px,100%);display:flex;flex-direction:column;align-items:center;gap:10px}
+#bench{width:min(460px,100%);height:auto;aspect-ratio:460/250;border-radius:24px;background:radial-gradient(ellipse at 50% 60%,#fff6e0,#f3dcff)}
+.bag{display:flex;flex-wrap:wrap;justify-content:center;gap:10px;width:min(900px,100%)}
+.gembtn{position:relative;width:72px;height:72px;border-radius:20px;border:3px solid var(--white);background:var(--panel);padding:0;display:grid;place-items:center}
+.gembtn img{width:56px;height:56px}
+.gembtn em{position:absolute;right:-6px;top:-8px;min-width:26px;height:26px;border-radius:13px;background:var(--flame);color:var(--white);font-style:normal;font-family:var(--display);font-weight:800;font-size:1rem;display:grid;place-items:center;font-variant-numeric:tabular-nums}
+.gembtn[disabled]{opacity:.35}
+.result{position:absolute;inset:0;background:rgba(36,26,74,.6);display:grid;place-items:center;padding:16px;z-index:5}
+.result .panel{width:min(480px,100%);text-align:center;display:flex;flex-direction:column;gap:10px;align-items:center}
+.result canvas{width:min(300px,80%);height:auto;aspect-ratio:300/200}
+.result h2{font-size:clamp(1.7rem,6vw,2.4rem);color:var(--flame)}
+.result p{font-size:1.25rem;margin:0}
+
+/* Treasure box */
+.box{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:12px;width:min(900px,100%)}
+.jcard{display:flex;flex-direction:column;align-items:center;gap:4px;padding:10px;border-radius:22px;border:4px solid var(--panel-line);background:var(--panel)}
+.jcard canvas{width:100%;height:auto;aspect-ratio:3/2}
+.jcard b{font-family:var(--display);font-size:1.1rem;text-align:center}
+.jcard small{font-size:.95rem;color:var(--ink-soft);text-align:center}
+.empty{color:var(--white);font-family:var(--display);font-size:1.3rem;text-align:center;max-width:30ch}
+@media (max-width:560px){.sock{width:20px;height:20px}.sock img{width:24px;height:24px}.sockets{gap:3px;padding:5px 8px}#app[data-s="s-play"] #caption{top:112px}}
+@media (prefers-reduced-motion:reduce){.sock img{animation:none}.btn{transition:none}}
+</style>
+</head>
+<body>
+
+<div id="app">
+  <canvas id="world" aria-label="Game world"></canvas>
+
+  <div id="corner">
+    <button class="icon-btn" id="sndBtn" aria-label="Sound on or off">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 9h4l5-4v14l-5-4H4z" fill="currentColor"/><path class="wave" d="M16.5 8.5a5 5 0 0 1 0 7M19 6a8.5 8.5 0 0 1 0 12"/></svg>
+    </button>
+    <button class="icon-btn" id="voiceBtn" aria-label="Read aloud on or off">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5h16v11H10l-5 4v-4H4z"/><path d="M8 10.5h.01M12 10.5h.01M16 10.5h.01" stroke-width="3"/></svg>
+    </button>
+  </div>
+  <div id="caption" role="status" aria-live="polite"></div>
+
+  <!-- Title -->
+  <section class="screen" id="s-title">
+    <h1 class="logo">Lia's Phoenix Jewels<small>a unicorn &amp; phoenix adventure</small></h1>
+    <button class="btn" id="playBtn">Play!</button>
+  </section>
+
+  <!-- Make your hero -->
+  <section class="screen" id="s-make" hidden>
+    <h2 class="title-big">Who is going on the adventure?</h2>
+    <div class="make panel">
+      <canvas id="preview" width="480" height="360"></canvas>
+      <div class="opt" id="opts"></div>
+    </div>
+    <button class="btn mint" id="readyBtn">Let's go!</button>
+  </section>
+
+  <!-- Map -->
+  <section class="screen" id="s-map" hidden>
+    <h2 class="title-big">Where shall we fly today?</h2>
+    <div class="bagline" id="mapBag"></div>
+    <div class="lands" id="lands"></div>
+    <div class="dock">
+      <button class="btn gold" id="toShop">Jewelry Workshop</button>
+      <button class="btn lilac" id="toBox">Treasure Box</button>
+      <button class="btn mint" id="toMake">Change look</button>
+    </div>
+  </section>
+
+  <!-- Play -->
+  <section class="screen play" id="s-play" hidden>
+    <div class="hud-top">
+      <button class="icon-btn" id="homeBtn" aria-label="Back to the map"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 11.5 12 3.5l9 8V21h-6.5v-6h-5v6H3z"/></svg></button>
+      <div class="sockets" id="sockets" aria-label="Gems found"></div>
+    </div>
+    <div class="powers" id="powers"></div>
+    <button class="fire" id="fireBtn" aria-label="Turn into a phoenix"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 1.5c.8 4.2 6 6 6 11.5a6.5 6.5 0 0 1-13 0c0-2.8 1.4-4.6 2.8-5.8-.1 2.4 1 3.8 2.4 4.1-.6-3.8.3-6.8 1.8-9.8z"/></svg></span></button>
+    <div class="panel win" id="win" hidden>
+      <h2>Hooray!</h2>
+      <p style="font-size:1.3rem;margin:0">You found 12 magic gems!</p>
+      <div class="haul" id="haul"></div>
+      <div class="dock">
+        <button class="btn gold" id="winShop">Make jewelry</button>
+        <button class="btn lilac" id="winMap">Map</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Workshop -->
+  <section class="screen" id="s-shop" hidden>
+    <div class="bar">
+      <button class="icon-btn back" data-go="s-map" aria-label="Back to the map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h2>Jewelry Workshop</h2>
+    </div>
+    <div class="types" id="types"></div>
+    <div class="bench">
+      <canvas id="bench" width="920" height="500"></canvas>
+      <div class="bag" id="bag"></div>
+      <button class="btn gold" id="enchantBtn" disabled>Enchant!</button>
+    </div>
+    <div class="result" id="result" hidden>
+      <div class="panel">
+        <canvas id="resultCv" width="600" height="400"></canvas>
+        <h2 id="resultName"></h2>
+        <p id="resultPower"></p>
+        <button class="btn mint" id="resultOk">Yay!</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Treasure box -->
+  <section class="screen" id="s-box" hidden>
+    <div class="bar">
+      <button class="icon-btn back" data-go="s-map" aria-label="Back to the map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <h2>Treasure Box</h2>
+    </div>
+    <div class="box" id="box"></div>
+  </section>
+</div>
+
+<script>
+(() => {
+'use strict';
+const $ = s => document.querySelector(s);
+const TAU = Math.PI * 2;
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const rnd = (a, b) => a + Math.random() * (b - a);
+
+/* ---------- Save data (this browser only) ---------- */
+const KEY = 'lia-phoenix-jewels-v1';
+const DEF = { look: { hair: '#2a1a12', skin: '#f1c7a5', dress: '#ff6f91', mane: 'rainbow', uname: 'Stardust' },
+  bag: { ruby: 0, sapphire: 0, emerald: 0, topaz: 0, amethyst: 0, rainbow: 0 },
+  jewels: [], trips: {}, made: false, snd: true, voice: true };
+function load() {
+  const base = JSON.parse(JSON.stringify(DEF));
+  try {
+    const s = JSON.parse(localStorage.getItem(KEY));
+    if (s && s.bag) return Object.assign(base, s, { look: Object.assign(base.look, s.look), bag: Object.assign(base.bag, s.bag) });
+  } catch (e) {}
+  return base;
+}
+let save = load();
+function persist() { try { localStorage.setItem(KEY, JSON.stringify(save)); } catch (e) {} }
+
+/* ---------- Data ---------- */
+const GEMS = {
+  ruby:     { name: 'Ruby',     c1: '#ff9cb0', c2: '#d0163f', shape: 'round',   word: 'Fire',      note: 659 },
+  topaz:    { name: 'Topaz',    c1: '#fff3a6', c2: '#f29b00', shape: 'heart',   word: 'Sunshine',  note: 880 },
+  emerald:  { name: 'Emerald',  c1: '#a2f7c6', c2: '#0e9a57', shape: 'square',  word: 'Forest',    note: 587 },
+  sapphire: { name: 'Sapphire', c1: '#a8d8ff', c2: '#1f4fd8', shape: 'drop',    word: 'Ocean',     note: 784 },
+  amethyst: { name: 'Amethyst', c1: '#efc8ff', c2: '#7d2ed6', shape: 'diamond', word: 'Moonlight', note: 698 },
+  rainbow:  { name: 'Rainbow Star', c1: '#ffffff', c2: '#ff7ad9', shape: 'star', word: 'Rainbow',  note: 1047 },
+};
+const GEM_ORDER = ['ruby', 'topaz', 'emerald', 'sapphire', 'amethyst', 'rainbow'];
+const JEWELS = {
+  ring:     { name: 'Ring',     slots: 2, power: 'Gem Magnet',     desc: 'Sky gems fly right to your phoenix!' },
+  bracelet: { name: 'Bracelet', slots: 3, power: 'Swift Hooves',   desc: 'Your unicorn runs super fast!' },
+  necklace: { name: 'Necklace', slots: 4, power: 'Forever Flame',  desc: 'Your phoenix can fly twice as long!' },
+  crown:    { name: 'Crown',    slots: 5, power: 'Rainbow Wishes', desc: 'Rainbow star gems appear on your adventures!' },
+};
+const LANDS = [
+  { id: 'meadow',  name: 'Flower Meadow',  sky: ['#7fcfff', '#e2f5ff'], ground: ['#74cc5e', '#4b9f45'], gems: { emerald: 4, ruby: 3, topaz: 2 } },
+  { id: 'lake',    name: 'Moonlight Lake', sky: ['#1d1550', '#5b3d9e'], ground: ['#2f6c78', '#1d4553'], gems: { sapphire: 4, amethyst: 4, emerald: 1 } },
+  { id: 'clouds',  name: 'Cloud Castle',   sky: ['#ffb8df', '#fff0f8'], ground: ['#ffffff', '#eadcff'], gems: { topaz: 3, amethyst: 3, sapphire: 2 } },
+  { id: 'volcano', name: 'Sunset Volcano', sky: ['#ff7a59', '#ffd486'], ground: ['#a45a3f', '#6e3528'], gems: { ruby: 4, topaz: 4 } },
+];
+const MANES = {
+  rainbow: ['#ff8fb1', '#ffcf6e', '#8fe3b0', '#8ec5ff', '#c9a2ff'],
+  pink:    ['#ff9ccf', '#ff6fb5', '#ffc2e2', '#ff86c0', '#ffd6ec'],
+  sky:     ['#9fd8ff', '#5fa8ff', '#c7e9ff', '#7cc0ff', '#b5e0ff'],
+  violet:  ['#d7a6ff', '#a46bff', '#efd6ff', '#b98aff', '#e3c4ff'],
+  gold:    ['#ffe28a', '#ffc94a', '#fff1bf', '#ffd56b', '#ffeaa8'],
+};
+const LOOKS = {
+  hair:  ['#2a1a12', '#5a3420', '#a8692f', '#e8c06a', '#c7462e'],
+  skin:  ['#ffe0c8', '#f1c7a5', '#d9a27a', '#a8714a', '#74462b'],
+  dress: ['#ff6f91', '#a77cff', '#4fa8ff', '#ffb13d', '#3fc28c'],
+};
+const UNAMES = ['Stardust', 'Moonbeam', 'Buttercup', 'Sparkle'];
+const hasPower = t => save.jewels.some(j => j.type === t);
+
+/* ---------- Sound ---------- */
+let AC = null;
+function ac() {
+  if (!AC) { try { AC = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { AC = null; } }
+  if (AC && AC.state === 'suspended') AC.resume();
+  return AC;
+}
+function tone(f, d = .2, type = 'sine', v = .15, when = 0, slide = 0) {
+  const a = ac(); if (!a || !save.snd) return;
+  const t0 = a.currentTime + when, o = a.createOscillator(), g = a.createGain();
+  o.type = type; o.frequency.setValueAtTime(f, t0);
+  if (slide) o.frequency.exponentialRampToValueAtTime(f * slide, t0 + d);
+  g.gain.setValueAtTime(.0001, t0); g.gain.exponentialRampToValueAtTime(v, t0 + .015); g.gain.exponentialRampToValueAtTime(.0001, t0 + d);
+  o.connect(g).connect(a.destination); o.start(t0); o.stop(t0 + d + .05);
+}
+function noise(d = .2, v = .12) {
+  const a = ac(); if (!a || !save.snd) return;
+  const b = a.createBuffer(1, a.sampleRate * d, a.sampleRate), ch = b.getChannelData(0);
+  for (let i = 0; i < ch.length; i++) ch[i] = (Math.random() * 2 - 1) * Math.pow(1 - i / ch.length, 3);
+  const s = a.createBufferSource(), g = a.createGain(), f = a.createBiquadFilter();
+  f.type = 'highpass'; f.frequency.value = 1200; g.gain.value = v;
+  s.buffer = b; s.connect(f).connect(g).connect(a.destination); s.start();
+}
+const SFX = {
+  tap: () => tone(620, .08, 'sine', .07),
+  gem: n => { tone(n, .25, 'triangle', .16); tone(n * 1.5, .4, 'sine', .09, .08); },
+  crack: () => { noise(.25, .18); tone(1200, .25, 'triangle', .06, .05); },
+  poof: () => { tone(260, .5, 'sawtooth', .05, 0, 3); tone(520, .6, 'triangle', .08, .05, 2.2); noise(.3, .05); },
+  land: () => { tone(700, .3, 'triangle', .08, 0, .5); },
+  win: () => [523, 659, 784, 1047, 1319].forEach((f, i) => tone(f, .5, 'triangle', .14, i * .12)),
+  magic: () => [784, 988, 1175, 1568, 1319, 1568, 2093].forEach((f, i) => tone(f, .35, 'sine', .1, i * .1)),
+  nope: () => { tone(330, .15, 'sine', .08); tone(262, .25, 'sine', .08, .12); },
+};
+
+/* ---------- Read-aloud ---------- */
+let voice = null, capTimer = 0;
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices().filter(v => /^en/i.test(v.lang));
+    voice = vs.find(v => /samantha|karen|moira|tessa|google us english|zira|aria|jenny|libby|sonia|female/i.test(v.name)) || vs[0] || null;
+  } catch (e) {}
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+function say(text, quick) {
+  const cap = $('#caption');
+  if (!quick) { cap.textContent = text; cap.classList.add('on'); clearTimeout(capTimer); capTimer = setTimeout(() => cap.classList.remove('on'), 1800 + text.length * 55); }
+  if (!save.voice || !('speechSynthesis' in window)) return;
+  try {
+    speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.rate = .95; u.pitch = 1.15; if (voice) u.voice = voice;
+    speechSynthesis.speak(u);
+  } catch (e) {}
+}
+
+/* ---------- Canvas ---------- */
+const cv = $('#world'), ctx = cv.getContext('2d');
+let W = 0, H = 0, DPR = 1, S = 1, GY = 0, T = 0;
+function resize() {
+  const r = cv.getBoundingClientRect();
+  W = r.width; H = r.height; DPR = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
+  S = clamp(Math.min(W / 900, H / 620) * 1.1, .64, 1.4);
+  GY = H * .8;
+  if (game) { game.ux = clamp(game.ux, 60 * S, W - 60 * S); game.px = clamp(game.px, 30, W - 30); game.py = clamp(game.py, 40, GY - 60 * S); }
+}
+window.addEventListener('resize', resize);
+
+/* ---------- Drawing: gems ---------- */
+function gemPath(c, shape) {
+  c.beginPath();
+  switch (shape) {
+    case 'round': for (let i = 0; i < 8; i++) { const a = Math.PI / 8 + i * Math.PI / 4; c.lineTo(Math.cos(a), Math.sin(a)); } break;
+    case 'drop': c.moveTo(0, -1.25); c.quadraticCurveTo(.95, -.25, .8, .3); c.arc(0, .3, .8, 0, Math.PI); c.quadraticCurveTo(-.95, -.25, 0, -1.25); break;
+    case 'square': { const a = .82, b = 1, k = .3; c.moveTo(-a + k, -b); c.lineTo(a - k, -b); c.lineTo(a, -b + k); c.lineTo(a, b - k); c.lineTo(a - k, b); c.lineTo(-a + k, b); c.lineTo(-a, b - k); c.lineTo(-a, -b + k); break; }
+    case 'heart': c.moveTo(0, 1.05); c.bezierCurveTo(-1.45, .05, -1, -1.2, 0, -.5); c.bezierCurveTo(1, -1.2, 1.45, .05, 0, 1.05); break;
+    case 'diamond': c.moveTo(0, -1.2); c.lineTo(.9, -.2); c.lineTo(0, 1.2); c.lineTo(-.9, -.2); break;
+    case 'star': for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? .52 : 1.2; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } break;
+  }
+  c.closePath();
+}
+function sparkle(c, x, y, r, a = 1) {
+  if (r <= 0) return;
+  c.save(); c.globalAlpha *= a; c.fillStyle = '#fff'; c.beginPath();
+  c.moveTo(x, y - r); c.quadraticCurveTo(x, y, x + r, y); c.quadraticCurveTo(x, y, x, y + r); c.quadraticCurveTo(x, y, x - r, y); c.quadraticCurveTo(x, y, x, y - r);
+  c.fill(); c.restore();
+}
+function drawGem(c, x, y, r, type, t = 0, glow = true) {
+  const g = GEMS[type]; if (!g || r <= 0) return;
+  c.save(); c.translate(x, y); c.scale(r, r);
+  let fill;
+  if (type === 'rainbow') {
+    fill = c.createLinearGradient(-1, -1, 1, 1); const h = (t * 70) % 360;
+    for (let i = 0; i <= 5; i++) fill.addColorStop(i / 5, `hsl(${(h + i * 60) % 360},95%,68%)`);
+  } else {
+    fill = c.createLinearGradient(-.9, -1.1, .9, 1.1); fill.addColorStop(0, g.c1); fill.addColorStop(.6, g.c2); fill.addColorStop(1, g.c2);
+  }
+  if (glow) { c.shadowColor = type === 'rainbow' ? '#ffffff' : g.c1; c.shadowBlur = Math.max(6, r * .8); }
+  gemPath(c, g.shape); c.fillStyle = fill; c.fill(); c.shadowBlur = 0;
+  c.save(); gemPath(c, g.shape); c.clip();
+  c.fillStyle = 'rgba(0,0,0,.16)'; c.beginPath(); c.moveTo(1.5, -1.5); c.lineTo(1.5, 1.5); c.lineTo(-1.5, 1.5); c.closePath(); c.fill();
+  c.save(); c.scale(.5, .5); gemPath(c, g.shape); c.restore();
+  c.fillStyle = 'rgba(255,255,255,.28)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = .06; c.stroke();
+  c.restore();
+  gemPath(c, g.shape); c.strokeStyle = type === 'rainbow' ? '#fff' : g.c2; c.lineWidth = .09; c.stroke();
+  c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.ellipse(-.33, -.45, .24, .12, -.6, 0, TAU); c.fill();
+  sparkle(c, .55, -.7, .38 * (.4 + .6 * Math.abs(Math.sin(t * 3 + x * .01))));
+  c.restore();
+}
+
+/* ---------- Drawing: characters ---------- */
+function drawGirl(c, t) {
+  const L = save.look, sw = Math.sin(t * 6) * .15;
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.fillStyle = L.hair;
+  c.save(); c.translate(-12, -52); c.rotate(-.55 + sw); c.beginPath(); c.ellipse(-6, 6, 8, 15, 0, 0, TAU); c.fill(); c.restore();
+  c.beginPath(); c.arc(0, -46, 16, 0, TAU); c.fill();
+  c.strokeStyle = L.skin; c.lineWidth = 6; c.beginPath(); c.moveTo(3, -4); c.lineTo(8, 20); c.stroke();
+  c.fillStyle = '#ff5c8a'; c.beginPath(); c.ellipse(11, 22, 6.5, 3.8, 0, 0, TAU); c.fill();
+  c.fillStyle = L.dress; c.beginPath(); c.moveTo(-9, -33); c.lineTo(9, -33); c.lineTo(18, 4); c.quadraticCurveTo(0, 11, -18, 4); c.closePath(); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.55)'; for (let i = -2; i <= 2; i++) { c.beginPath(); c.arc(i * 6.5, 5.5 - Math.abs(i) * .6, 1.6, 0, TAU); c.fill(); }
+  c.strokeStyle = L.skin; c.lineWidth = 5; c.beginPath(); c.moveTo(5, -28); c.lineTo(21, -16); c.stroke();
+  c.fillStyle = L.skin; c.beginPath(); c.arc(3, -46, 14, 0, TAU); c.fill();
+  c.fillStyle = L.hair; c.beginPath(); c.arc(1, -48, 15.5, Math.PI * 1.02, Math.PI * 1.98);
+  c.quadraticCurveTo(11, -55, 6, -50); c.quadraticCurveTo(-3, -57, -14.5, -47); c.closePath(); c.fill();
+  c.fillStyle = '#ffd23f'; c.strokeStyle = '#d99a00'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(-6, -60); c.lineTo(-4, -67); c.lineTo(-.5, -62); c.lineTo(3, -70); c.lineTo(6.5, -62); c.lineTo(10, -67); c.lineTo(11, -59); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#ff4d6d'; c.beginPath(); c.arc(3, -63.5, 1.8, 0, TAU); c.fill();
+  const blink = (t % 3.7) < .12;
+  c.fillStyle = '#2b1a3a';
+  for (const ex of [5, 12]) {
+    if (blink) { c.strokeStyle = '#2b1a3a'; c.lineWidth = 1.4; c.beginPath(); c.moveTo(ex - 2, -46); c.lineTo(ex + 2, -46); c.stroke(); }
+    else { c.beginPath(); c.ellipse(ex, -46, 1.9, 2.6, 0, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + .6, -47, .7, 0, TAU); c.fill(); c.fillStyle = '#2b1a3a'; }
+  }
+  c.strokeStyle = '#9b3d5a'; c.lineWidth = 1.5; c.beginPath(); c.arc(10, -41, 3, .15 * Math.PI, .85 * Math.PI); c.stroke();
+  c.fillStyle = 'rgba(255,140,170,.55)'; c.beginPath(); c.arc(14.5, -41.5, 2.6, 0, TAU); c.fill();
+}
+function drawUnicorn(c, x, y, s, face, o) {
+  const t = o.t, ph = o.phase || 0, mv = o.moving ? 1 : 0, mane = MANES[save.look.mane] || MANES.rainbow;
+  c.save(); c.translate(x, y); c.scale(s * face, s);
+  const bob = mv ? -Math.abs(Math.sin(ph)) * 6 : Math.sin(t * 2) * 1.2;
+  const body = '#fffafd', line = '#cbb3ee', far = '#ece0fa';
+  c.fillStyle = 'rgba(40,20,70,.18)'; c.beginPath(); c.ellipse(0, 2, 54, 8, 0, 0, TAU); c.fill();
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  const A = k => Math.sin(ph + k) * .6 * mv;
+  const leg = (hx, a, isFar) => {
+    const top = -44 + bob, ex = hx + Math.sin(a) * 40, ey = top + Math.cos(a) * (40 - bob) + bob * 0;
+    c.strokeStyle = line; c.lineWidth = 12; c.beginPath(); c.moveTo(hx, top); c.lineTo(ex, ey); c.stroke();
+    c.strokeStyle = isFar ? far : body; c.lineWidth = 8; c.beginPath(); c.moveTo(hx, top); c.lineTo(ex, ey); c.stroke();
+    c.fillStyle = '#b28be0'; c.beginPath(); c.ellipse(ex, ey + 1, 6, 4, 0, 0, TAU); c.fill();
+  };
+  leg(-26, A(Math.PI + .5), true); leg(24, A(.6), true);
+  c.save(); c.translate(0, bob);
+  for (let i = 0; i < 3; i++) {
+    const w = Math.sin(t * 4 + i) * 5 + (mv ? Math.sin(ph * 2) * 6 : 0);
+    c.strokeStyle = mane[i]; c.lineWidth = 9; c.beginPath(); c.moveTo(-42, -62);
+    c.bezierCurveTo(-68, -74 + i * 4, -76 + w, -40 + i * 6, -62 + w, -14 + i * 4); c.stroke();
+  }
+  const shape = () => {
+    c.beginPath(); c.ellipse(0, -56, 46, 25, 0, 0, TAU);
+    c.moveTo(18, -74); c.quadraticCurveTo(34, -98, 42, -116); c.lineTo(64, -106); c.quadraticCurveTo(52, -82, 44, -50); c.closePath();
+    c.moveTo(73, -112); c.ellipse(55, -112, 18, 14, .3, 0, TAU);
+    c.moveTo(83, -104); c.ellipse(70, -104, 13, 10, .2, 0, TAU);
+    c.moveTo(45, -120); c.lineTo(49, -139); c.lineTo(57, -123); c.closePath();
+  };
+  shape(); c.strokeStyle = line; c.lineWidth = 5; c.stroke(); c.fillStyle = body; c.fill();
+  c.fillStyle = '#ffc6dd'; c.beginPath(); c.moveTo(48, -123); c.lineTo(50, -133); c.lineTo(54, -124); c.closePath(); c.fill();
+  // mane
+  for (let i = 0; i < 7; i++) {
+    const k = i / 6, mx = 44 - k * 30 - 6 + Math.sin(t * 3 + i) * 1.2, my = -124 + k * 52;
+    c.fillStyle = mane[i % mane.length]; c.beginPath(); c.arc(mx, my, 10 - k * 2.5, 0, TAU); c.fill();
+  }
+  c.fillStyle = mane[0]; c.beginPath(); c.arc(60, -125, 7, 0, TAU); c.fill();
+  c.fillStyle = mane[1]; c.beginPath(); c.arc(53, -127, 6, 0, TAU); c.fill();
+  // horn
+  const hg = c.createLinearGradient(58, -124, 72, -158); hg.addColorStop(0, '#ffcf3d'); hg.addColorStop(1, '#fff6c4');
+  c.fillStyle = hg; c.strokeStyle = '#d99a00'; c.lineWidth = 1.5;
+  c.beginPath(); c.moveTo(57, -124); c.lineTo(66, -122); c.lineTo(74, -158); c.closePath(); c.fill(); c.stroke();
+  c.strokeStyle = 'rgba(217,154,0,.8)'; c.lineWidth = 1.5;
+  for (const k of [.25, .5, .72]) { c.beginPath(); c.moveTo(57 + 17 * k - 4 * (1 - k), -124 - 34 * k + 2); c.lineTo(66 + 8 * k - 1, -122 - 36 * k - 2); c.stroke(); }
+  sparkle(c, 76, -160, 5 * Math.abs(Math.sin(t * 2.5)));
+  // face
+  if ((t % 4.3) < .12) { c.strokeStyle = '#3a2350'; c.lineWidth = 2; c.beginPath(); c.arc(61, -114, 4, .1 * Math.PI, .9 * Math.PI); c.stroke(); }
+  else {
+    c.fillStyle = '#3a2350'; c.beginPath(); c.ellipse(61, -113, 3.8, 4.8, 0, 0, TAU); c.fill();
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(62.3, -115, 1.4, 0, TAU); c.fill();
+    c.strokeStyle = '#3a2350'; c.lineWidth = 1.6; c.beginPath(); c.moveTo(64, -117); c.lineTo(67, -120); c.stroke();
+  }
+  c.fillStyle = '#d6a3c9'; c.beginPath(); c.ellipse(78, -106, 1.8, 1.3, 0, 0, TAU); c.fill();
+  c.strokeStyle = '#c48bb5'; c.lineWidth = 1.6; c.beginPath(); c.arc(73, -101, 4, .2 * Math.PI, .85 * Math.PI); c.stroke();
+  c.fillStyle = 'rgba(255,170,205,.7)'; c.beginPath(); c.arc(66, -104, 4, 0, TAU); c.fill();
+  if (o.rider) { c.save(); c.translate(-6, -76); drawGirl(c, t); c.restore(); }
+  c.restore();
+  leg(-20, A(Math.PI), false); leg(30, A(0), false);
+  c.restore();
+}
+function drawPhoenix(c, x, y, s, face, t) {
+  c.save(); c.translate(x, y); c.scale(s * face, s);
+  const flap = Math.sin(t * 9);
+  c.lineCap = 'round';
+  for (let i = 0; i < 3; i++) {
+    const w = Math.sin(t * 5 + i * 1.3) * 8;
+    const g = c.createLinearGradient(-10, 0, -86, 0); g.addColorStop(0, '#ffd23f'); g.addColorStop(.6, '#ff7a2e'); g.addColorStop(1, 'rgba(255,60,40,0)');
+    c.strokeStyle = g; c.lineWidth = 7 - i * 1.5; c.beginPath(); c.moveTo(-14, 4);
+    c.bezierCurveTo(-35, 8 + i * 6 + w, -55, -4 + i * 10 - w, -86 + i * 8, 10 + i * 12 + w); c.stroke();
+  }
+  const wing = isFar => {
+    c.save(); c.translate(-2, -6); c.rotate(flap * .65 + (isFar ? -.3 : 0));
+    const cols = ['#e8322a', '#ff5a2e', '#ff8a2e', '#ffc23f', '#fff2a8'];
+    for (let k = 0; k < 5; k++) {
+      const a = -2.25 + k * .2, L = 52 - k * 6;
+      c.globalAlpha = isFar ? .65 : 1; c.fillStyle = cols[k]; c.beginPath();
+      c.ellipse(Math.cos(a) * L / 2, Math.sin(a) * L / 2, L / 2, 7, a, 0, TAU); c.fill();
+    }
+    c.restore();
+  };
+  wing(true);
+  c.shadowColor = '#ffb347'; c.shadowBlur = 22;
+  const bg = c.createLinearGradient(0, -14, 0, 14); bg.addColorStop(0, '#ff9a2e'); bg.addColorStop(1, '#ff4e2e');
+  c.fillStyle = bg; c.beginPath(); c.ellipse(0, 0, 23, 13, -.15, 0, TAU); c.fill();
+  c.shadowBlur = 0;
+  c.fillStyle = '#ffd98a'; c.beginPath(); c.ellipse(6, 5, 13, 6, -.1, 0, TAU); c.fill();
+  for (let j = 0; j < 3; j++) {
+    const a = -2.0 + j * .4, fl = 1 + Math.sin(t * 12 + j) * .15;
+    c.save(); c.translate(16 + Math.cos(a) * 6, -16 + Math.sin(a) * 6); c.rotate(a + Math.PI / 2); c.scale(fl, fl);
+    c.fillStyle = j === 1 ? '#ffd23f' : '#ff8a2e'; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(6, -8, 0, -18); c.quadraticCurveTo(-6, -8, 0, 0); c.fill();
+    c.restore();
+  }
+  c.fillStyle = '#ffb02e'; c.beginPath(); c.arc(20, -10, 10.5, 0, TAU); c.fill();
+  c.fillStyle = '#ffd23f'; c.strokeStyle = '#d99a00'; c.lineWidth = 1;
+  c.beginPath(); c.moveTo(13, -18); c.lineTo(14, -24); c.lineTo(17, -20); c.lineTo(20, -26); c.lineTo(23, -20); c.lineTo(26, -23); c.lineTo(26, -17); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#ff4d6d'; c.beginPath(); c.arc(20, -21.5, 1.6, 0, TAU); c.fill();
+  c.fillStyle = '#ffe08a'; c.strokeStyle = '#d99a00'; c.beginPath(); c.moveTo(29, -13); c.lineTo(38, -8); c.lineTo(29, -5); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = '#2b1a3a'; c.beginPath(); c.ellipse(24, -12, 2.4, 3, 0, 0, TAU); c.fill();
+  c.fillStyle = '#fff'; c.beginPath(); c.arc(24.8, -13, .9, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(255,120,150,.6)'; c.beginPath(); c.arc(26, -6, 2.6, 0, TAU); c.fill();
+  wing(false);
+  c.restore();
+}
+
+/* ---------- Drawing: jewelry ---------- */
+function goldFill(c, y0, y1) { const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#fff1a8'); g.addColorStop(.5, '#ffc83d'); g.addColorStop(1, '#c98d00'); return g; }
+function slotsOf(type) {
+  if (type === 'ring') return [[-.15, -.27, .15], [.15, -.27, .15]];
+  if (type === 'bracelet') return [[-.36, .23, .13], [0, .28, .15], [.36, .23, .13]];
+  if (type === 'necklace') {
+    const P = t => [(1 - t) * (1 - t) * -.6 + t * t * .6, (1 - t) * (1 - t) * -.5 + 2 * (1 - t) * t * .7 + t * t * -.5];
+    return [.24, .41, .59, .76].map((t, i) => { const p = P(t); return [p[0], p[1] + .04, i === 1 || i === 2 ? .14 : .12]; });
+  }
+  return [[-.4, .2, .1], [-.2, .2, .11], [0, .2, .13], [.2, .2, .11], [.4, .2, .1]];
+}
+function drawJewel(c, cx, cy, sz, type, gems, t, nextIdx = -1) {
+  c.save(); c.translate(cx, cy); c.scale(sz, sz);
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  if (type === 'ring') {
+    c.strokeStyle = '#c98d00'; c.lineWidth = .13; c.beginPath(); c.ellipse(0, .15, .42, .36, 0, 0, TAU); c.stroke();
+    c.strokeStyle = goldFill(c, -.2, .5); c.lineWidth = .09; c.stroke();
+    c.fillStyle = goldFill(c, -.4, -.1); c.beginPath(); c.ellipse(0, -.24, .36, .13, 0, 0, TAU); c.fill();
+  } else if (type === 'bracelet') {
+    c.strokeStyle = '#b07a00'; c.lineWidth = .08; c.beginPath(); c.ellipse(0, 0, .62, .28, 0, Math.PI, TAU); c.stroke();
+    c.strokeStyle = '#c98d00'; c.lineWidth = .14; c.beginPath(); c.ellipse(0, 0, .62, .28, 0, 0, Math.PI); c.stroke();
+    c.strokeStyle = goldFill(c, 0, .4); c.lineWidth = .1; c.stroke();
+  } else if (type === 'necklace') {
+    c.strokeStyle = '#c98d00'; c.lineWidth = .05; c.setLineDash([.04, .05]);
+    c.beginPath(); c.moveTo(-.6, -.5); c.quadraticCurveTo(0, .7, .6, -.5); c.stroke(); c.setLineDash([]);
+    c.strokeStyle = '#ffd23f'; c.lineWidth = .02; c.beginPath(); c.moveTo(-.6, -.5); c.quadraticCurveTo(0, .7, .6, -.5); c.stroke();
+  } else {
+    c.fillStyle = goldFill(c, -.55, .35); c.strokeStyle = '#b07a00'; c.lineWidth = .03;
+    c.beginPath(); c.moveTo(-.55, .35); c.lineTo(-.62, -.42); c.lineTo(-.4, -.05); c.lineTo(-.28, -.34); c.lineTo(-.14, -.05); c.lineTo(0, -.56);
+    c.lineTo(.14, -.05); c.lineTo(.28, -.34); c.lineTo(.4, -.05); c.lineTo(.62, -.42); c.lineTo(.55, .35); c.closePath(); c.fill(); c.stroke();
+    c.fillStyle = '#c98d00'; c.fillRect(-.55, .3, 1.1, .06);
+    c.fillStyle = '#fff6d0'; for (const [bx, by] of [[-.62, -.42], [-.28, -.34], [0, -.56], [.28, -.34], [.62, -.42]]) { c.beginPath(); c.arc(bx, by, .045, 0, TAU); c.fill(); }
+  }
+  const sl = slotsOf(type);
+  sl.forEach(([x, y, r], i) => {
+    if (gems[i]) {
+      c.fillStyle = '#c98d00'; c.beginPath(); c.arc(x, y, r * 1.15, 0, TAU); c.fill();
+      c.restore(); c.save(); drawGem(c, cx + x * sz, cy + y * sz, r * sz * .9, gems[i], t); c.restore(); c.save(); c.translate(cx, cy); c.scale(sz, sz);
+    } else {
+      c.fillStyle = 'rgba(70,35,110,.22)'; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+      c.strokeStyle = i === nextIdx ? `rgba(255,106,61,${.6 + .4 * Math.sin(t * 6)})` : 'rgba(255,255,255,.9)';
+      c.lineWidth = i === nextIdx ? .025 : .015; c.setLineDash([.03, .025]); c.stroke(); c.setLineDash([]);
+    }
+  });
+  c.restore();
+}
+
+/* ---------- Drawing: lands ---------- */
+function rng(seed) { return () => { seed |= 0; seed = seed + 0x6D2B79F5 | 0; let t = Math.imul(seed ^ seed >>> 15, 1 | seed); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+function genDeco(id) {
+  const r = rng(id.split('').reduce((a, ch) => a * 31 + ch.charCodeAt(0), 7));
+  const d = { flowers: [], stars: [], clouds: [], flies: [] };
+  const fc = ['#ff7aa8', '#ffd23f', '#ffffff', '#b48cff', '#ff9a5c'];
+  for (let i = 0; i < 22; i++) d.flowers.push({ fx: r(), fy: r(), c: fc[i % fc.length], s: .7 + r() * .6 });
+  for (let i = 0; i < 70; i++) d.stars.push({ fx: r(), fy: r() * .72, r: .6 + r() * 1.6, p: r() * TAU });
+  for (let i = 0; i < 5; i++) d.clouds.push({ fx: r(), fy: .08 + r() * .35, s: .6 + r() * .8, sp: .3 + r() * .5 });
+  for (let i = 0; i < 14; i++) d.flies.push({ fx: r(), fy: .3 + r() * .55, p: r() * TAU });
+  return d;
+}
+const DECO = {}; LANDS.forEach(l => DECO[l.id] = genDeco(l.id)); DECO.twilight = genDeco('twilight');
+function hills(c, w, h, gy, amp, f, ph, col) {
+  c.fillStyle = col; c.beginPath(); c.moveTo(0, h);
+  for (let x = 0; x <= w + 12; x += 12) c.lineTo(x, gy - amp * (.55 + .45 * Math.sin(x / w * f * TAU + ph)));
+  c.lineTo(w, h); c.closePath(); c.fill();
+}
+function puff(c, x, y, s, col) {
+  c.fillStyle = col; c.beginPath();
+  c.arc(x, y, 22 * s, 0, TAU); c.arc(x + 24 * s, y - 10 * s, 26 * s, 0, TAU); c.arc(x + 52 * s, y, 20 * s, 0, TAU); c.arc(x + 26 * s, y + 8 * s, 22 * s, 0, TAU);
+  c.fill();
+}
+function groundFill(c, w, h, gy, cols) { const g = c.createLinearGradient(0, gy, 0, h); g.addColorStop(0, cols[0]); g.addColorStop(1, cols[1]); c.fillStyle = g; c.fillRect(0, gy, w, h - gy); }
+function drawStars(c, w, gy, d, t, a = 1) {
+  for (const s of d.stars) { const tw = .45 + .55 * Math.abs(Math.sin(t * 1.3 + s.p)); c.globalAlpha = tw * a; c.fillStyle = '#fff'; c.beginPath(); c.arc(s.fx * w, s.fy * gy, s.r, 0, TAU); c.fill(); }
+  c.globalAlpha = 1;
+}
+function drawLand(c, land, w, h, t, sc) {
+  const gy = h * .8, d = DECO[land.id] || DECO.twilight;
+  const sky = c.createLinearGradient(0, 0, 0, gy); sky.addColorStop(0, land.sky[0]); sky.addColorStop(1, land.sky[1]);
+  c.fillStyle = sky; c.fillRect(0, 0, w, gy + 2);
+  if (land.id === 'meadow') {
+    const sx = w * .86, sy = h * .16, sr = 34 * sc;
+    c.save(); c.translate(sx, sy); c.rotate(t * .2); c.fillStyle = 'rgba(255,230,120,.45)';
+    for (let i = 0; i < 12; i++) { c.rotate(TAU / 12); c.beginPath(); c.moveTo(sr * 1.2, -5 * sc); c.lineTo(sr * 1.9, 0); c.lineTo(sr * 1.2, 5 * sc); c.fill(); }
+    c.restore(); c.fillStyle = '#ffe36e'; c.beginPath(); c.arc(sx, sy, sr, 0, TAU); c.fill();
+    for (const k of d.clouds) puff(c, ((k.fx * w + t * k.sp * 14 * sc) % (w + 160 * sc)) - 80 * sc, k.fy * gy, k.s * sc, 'rgba(255,255,255,.9)');
+    hills(c, w, h, gy, h * .2, 1.3, 1, '#a6e494'); hills(c, w, h, gy, h * .1, 2.1, 3, '#86d473');
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers) {
+      const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc;
+      c.strokeStyle = '#3f8a3a'; c.lineWidth = 2 * s; c.beginPath(); c.moveTo(fx, fy + 10 * s); c.lineTo(fx, fy); c.stroke();
+      c.fillStyle = f.c; for (let i = 0; i < 5; i++) { const a = i / 5 * TAU + t * .3; c.beginPath(); c.arc(fx + Math.cos(a) * 5 * s, fy + Math.sin(a) * 5 * s, 4 * s, 0, TAU); c.fill(); }
+      c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(fx, fy, 3 * s, 0, TAU); c.fill();
+    }
+  } else if (land.id === 'lake') {
+    drawStars(c, w, gy, d, t);
+    const mx = w * .17, my = h * .17, mr = 32 * sc;
+    const mg = c.createRadialGradient(mx, my, mr * .5, mx, my, mr * 3); mg.addColorStop(0, 'rgba(255,240,200,.45)'); mg.addColorStop(1, 'rgba(255,240,200,0)');
+    c.fillStyle = mg; c.fillRect(mx - mr * 3, my - mr * 3, mr * 6, mr * 6);
+    c.fillStyle = '#fff6d8'; c.beginPath(); c.arc(mx, my, mr, 0, TAU); c.fill();
+    c.fillStyle = 'rgba(220,205,170,.5)'; c.beginPath(); c.arc(mx - mr * .3, my - mr * .2, mr * .2, 0, TAU); c.arc(mx + mr * .3, my + mr * .3, mr * .14, 0, TAU); c.fill();
+    hills(c, w, h, gy, h * .22, 1, 2, '#3a2c80'); hills(c, w, h, gy, h * .1, 1.7, 0, '#2d4f7a');
+    groundFill(c, w, h, gy, land.ground);
+    const lx = w * .5, ly = gy + (h - gy) * .55, lw = w * .4, lh = (h - gy) * .3;
+    const lg = c.createLinearGradient(0, ly - lh, 0, ly + lh); lg.addColorStop(0, '#4a8ed0'); lg.addColorStop(1, '#2a4f8a');
+    c.fillStyle = lg; c.beginPath(); c.ellipse(lx, ly, lw, lh, 0, 0, TAU); c.fill();
+    c.strokeStyle = 'rgba(255,246,216,.7)'; c.lineWidth = 2 * sc;
+    for (let i = 0; i < 4; i++) { const yy = ly - lh * .5 + i * lh * .3, ww = lw * (.3 - i * .05) * (1 + .15 * Math.sin(t * 2 + i)); c.beginPath(); c.moveTo(lx - ww, yy); c.lineTo(lx + ww, yy); c.stroke(); }
+    for (const f of d.flies) {
+      const fx = f.fx * w + Math.sin(t * .7 + f.p) * 30 * sc, fy = f.fy * gy + Math.cos(t * .9 + f.p) * 20 * sc, a = .5 + .5 * Math.sin(t * 3 + f.p);
+      c.fillStyle = `rgba(255,240,140,${a * .35})`; c.beginPath(); c.arc(fx, fy, 7 * sc, 0, TAU); c.fill();
+      c.fillStyle = `rgba(255,250,200,${a})`; c.beginPath(); c.arc(fx, fy, 2.4 * sc, 0, TAU); c.fill();
+    }
+  } else if (land.id === 'clouds') {
+    c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.arc(w * .2, h * .2, 40 * sc, 0, TAU); c.fill();
+    const cx = w * .7, cb = gy - 10 * sc, cs = sc * 1.1;
+    c.fillStyle = '#e9cdfb';
+    const tower = (x, tw, th) => { c.fillRect(x - tw / 2, cb - th, tw, th); c.beginPath(); c.moveTo(x - tw * .7, cb - th); c.lineTo(x, cb - th - tw * 1.3); c.lineTo(x + tw * .7, cb - th); c.closePath(); c.fill(); };
+    tower(cx - 70 * cs, 30 * cs, 110 * cs); tower(cx + 70 * cs, 30 * cs, 110 * cs); tower(cx, 44 * cs, 170 * cs);
+    c.fillRect(cx - 70 * cs, cb - 80 * cs, 140 * cs, 80 * cs);
+    c.fillStyle = '#ff8fc8'; for (const [fx, fh] of [[cx - 70 * cs, 110], [cx, 170], [cx + 70 * cs, 110]]) { const top = cb - fh * cs - (fx === cx ? 44 : 30) * cs * 1.3; c.beginPath(); c.moveTo(fx, top); c.lineTo(fx + 16 * cs + Math.sin(t * 4) * 2, top + 5 * cs); c.lineTo(fx, top + 10 * cs); c.fill(); }
+    c.fillStyle = '#ffd6ef'; c.beginPath(); c.arc(cx, cb - 20 * cs, 14 * cs, Math.PI, TAU); c.fillRect(cx - 14 * cs, cb - 20 * cs, 28 * cs, 20 * cs); c.fill();
+    for (const k of d.clouds) puff(c, ((k.fx * w + t * k.sp * 18 * sc) % (w + 160 * sc)) - 80 * sc, k.fy * gy, k.s * sc * 1.2, 'rgba(255,255,255,.95)');
+    c.fillStyle = '#ffffff'; c.beginPath();
+    for (let x = -20; x < w + 40; x += 46 * sc) c.arc(x, gy + 4 * sc + Math.sin(x * .05) * 4 * sc, 30 * sc, 0, TAU);
+    c.fill(); c.fillRect(0, gy + 4 * sc, w, h - gy);
+    const cg = c.createLinearGradient(0, gy, 0, h); cg.addColorStop(0, 'rgba(234,220,255,0)'); cg.addColorStop(1, 'rgba(220,200,255,.9)'); c.fillStyle = cg; c.fillRect(0, gy, w, h - gy);
+  } else if (land.id === 'volcano') {
+    const sx = w * .28, sy = gy - h * .05, sr = h * .13;
+    c.fillStyle = 'rgba(255,240,180,.5)'; c.beginPath(); c.arc(sx, sy, sr * 1.4, 0, TAU); c.fill();
+    c.fillStyle = '#ffe9a0'; c.beginPath(); c.arc(sx, sy, sr, 0, TAU); c.fill();
+    hills(c, w, h, gy, h * .12, 1.2, 4, '#d7765a');
+    const vx = w * .68, vt = gy - h * .42;
+    c.fillStyle = '#7a3b4f'; c.beginPath(); c.moveTo(vx - w * .26, gy); c.lineTo(vx - w * .05, vt); c.lineTo(vx + w * .05, vt); c.lineTo(vx + w * .26, gy); c.closePath(); c.fill();
+    const lg = c.createRadialGradient(vx, vt, 2, vx, vt, w * .08); lg.addColorStop(0, 'rgba(255,220,100,.95)'); lg.addColorStop(1, 'rgba(255,120,60,0)');
+    c.fillStyle = lg; c.beginPath(); c.arc(vx, vt, w * .08, 0, TAU); c.fill();
+    c.fillStyle = '#ff9a3c'; c.beginPath(); c.moveTo(vx - w * .05, vt); c.lineTo(vx + w * .05, vt); c.lineTo(vx + w * .03, vt + h * .04); c.lineTo(vx, vt + h * .02); c.lineTo(vx - w * .02, vt + h * .07); c.closePath(); c.fill();
+    for (let i = 0; i < 4; i++) { const k = ((t * .12 + i / 4) % 1); puff(c, vx - 26 * sc + Math.sin(k * 6 + i) * 10 * sc, vt - k * h * .3, (.4 + k * .6) * sc, `rgba(255,230,220,${.6 * (1 - k)})`); }
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers.slice(0, 12)) { const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc; c.fillStyle = 'rgba(255,170,90,.8)'; c.beginPath(); c.moveTo(fx - 4 * s, fy + 6 * s); c.lineTo(fx, fy - 8 * s); c.lineTo(fx + 4 * s, fy + 6 * s); c.fill(); }
+  } else {
+    drawStars(c, w, gy, d, t);
+    hills(c, w, h, gy, h * .24, 1, 1.5, '#4a2f86'); hills(c, w, h, gy, h * .12, 1.9, 4, '#5d3f9a');
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers) { const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc; c.fillStyle = f.c; c.globalAlpha = .7; c.beginPath(); c.arc(fx, fy, 3 * s, 0, TAU); c.fill(); }
+    c.globalAlpha = 1;
+  }
+}
+const TWILIGHT = { id: 'twilight', sky: ['#22175a', '#ff9fb2'], ground: ['#2e6a5e', '#1f4a45'] };
+
+/* ---------- Particles ---------- */
+let parts = [];
+function emit(x, y, n, o = {}) {
+  for (let i = 0; i < n; i++) {
+    const a = o.angle != null ? o.angle + rnd(-o.spread, o.spread) : rnd(0, TAU), sp = rnd(o.min || 40, o.max || 200) * S;
+    parts.push({ x, y, vx: Math.cos(a) * sp, vy: Math.sin(a) * sp, life: 0, max: rnd(.5, o.life || 1), col: o.cols ? o.cols[i % o.cols.length] : '#fff', r: rnd(2, o.size || 5) * S, kind: o.kind || 'dot', g: o.g ?? 120 });
+  }
+}
+function stepParts(dt) {
+  for (const p of parts) { p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += p.g * S * dt; p.vx *= .98; }
+  parts = parts.filter(p => p.life < p.max);
+  if (parts.length > 600) parts.splice(0, parts.length - 600);
+}
+function drawParts(c) {
+  for (const p of parts) {
+    const k = 1 - p.life / p.max;
+    if (p.kind === 'star') sparkle(c, p.x, p.y, p.r * 2 * k, 1);
+    else { c.globalAlpha = k; c.fillStyle = p.col; c.beginPath(); c.arc(p.x, p.y, Math.max(.1, p.r * k), 0, TAU); c.fill(); c.globalAlpha = 1; }
+  }
+}
+const FIRE = ['#fff2a8', '#ffd23f', '#ff9a2e', '#ff5a2e'];
+const MAGIC = ['#ffffff', '#ffd6f5', '#d7b8ff', '#bfe6ff', '#fff2a8'];
+
+/* ---------- Screens ---------- */
+let screen = 's-title';
+function show(id) {
+  document.querySelectorAll('.screen').forEach(s => s.hidden = s.id !== id);
+  screen = id; $('#app').dataset.s = id;
+  if (id !== 's-play') game = null;
+  if (id === 's-map') buildMap();
+  if (id === 's-make') buildMake();
+  if (id === 's-shop') enterShop();
+  if (id === 's-box') buildBox();
+}
+document.querySelectorAll('[data-go]').forEach(b => b.addEventListener('click', () => { SFX.tap(); show(b.dataset.go); }));
+
+/* Gem icon images for menus */
+const gemIcon = {};
+GEM_ORDER.forEach(k => { const c = document.createElement('canvas'); c.width = c.height = 96; drawGem(c.getContext('2d'), 48, 50, 30, k, 1.3); gemIcon[k] = c.toDataURL(); });
+const jewelIcon = {};
+Object.keys(JEWELS).forEach(k => { const c = document.createElement('canvas'); c.width = c.height = 120; drawJewel(c.getContext('2d'), 60, 62, 95, k, [], 0); jewelIcon[k] = c.toDataURL(); });
+const img = (src, alt = '') => { const i = new Image(); i.src = src; i.alt = alt; i.draggable = false; return i; };
+
+/* Corner toggles */
+function syncToggles() { $('#sndBtn').classList.toggle('off', !save.snd); $('#voiceBtn').classList.toggle('off', !save.voice); $('#sndBtn .wave').style.display = save.snd ? '' : 'none'; }
+$('#sndBtn').addEventListener('click', () => { save.snd = !save.snd; persist(); syncToggles(); SFX.tap(); });
+$('#voiceBtn').addEventListener('click', () => { save.voice = !save.voice; persist(); syncToggles(); if (save.voice) say('I will read to you!'); else { try { speechSynthesis.cancel(); } catch (e) {} } });
+syncToggles();
+
+/* Title */
+$('#playBtn').addEventListener('click', () => {
+  ac(); SFX.magic();
+  if (!save.made) { say('Hi Lia! Make your hero and pick a unicorn friend!'); show('s-make'); }
+  else { say('Welcome back, Lia! Where shall we fly today?'); show('s-map'); }
+});
+
+/* Make your hero */
+function buildMake() {
+  const o = $('#opts'); o.innerHTML = '';
+  const row = (label, key, list, isMane) => {
+    const wrap = document.createElement('div'); wrap.className = 'opt';
+    const h = document.createElement('h3'); h.textContent = label; wrap.append(h);
+    const r = document.createElement('div'); r.className = 'sw-row';
+    list.forEach(v => {
+      const b = document.createElement('button'); b.className = 'sw'; b.setAttribute('aria-label', label + ' ' + v);
+      b.style.background = isMane ? `linear-gradient(135deg,${MANES[v].slice(0, 4).join(',')})` : v;
+      if (save.look[key] === v) b.classList.add('sel');
+      b.addEventListener('click', () => { save.look[key] = v; persist(); r.querySelectorAll('.sw').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); SFX.gem(700 + Math.random() * 300); });
+      r.append(b);
+    });
+    wrap.append(r); o.append(wrap);
+  };
+  row('Hair', 'hair', LOOKS.hair); row('Skin', 'skin', LOOKS.skin); row('Dress', 'dress', LOOKS.dress); row("Unicorn's mane", 'mane', Object.keys(MANES), true);
+  const wrap = document.createElement('div'); wrap.className = 'opt';
+  const h = document.createElement('h3'); h.textContent = "Unicorn's name"; wrap.append(h);
+  const r = document.createElement('div'); r.className = 'sw-row';
+  UNAMES.forEach(n => {
+    const b = document.createElement('button'); b.className = 'name' + (save.look.uname === n ? ' sel' : ''); b.textContent = n;
+    b.addEventListener('click', () => { save.look.uname = n; persist(); r.querySelectorAll('.name').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); say(n + '!'); SFX.tap(); });
+    r.append(b);
+  });
+  wrap.append(r); o.append(wrap);
+}
+$('#readyBtn').addEventListener('click', () => { save.made = true; persist(); SFX.magic(); say(`Lia and ${save.look.uname} are ready! Where shall we fly?`); show('s-map'); });
+$('#toMake').addEventListener('click', () => { SFX.tap(); show('s-make'); });
+function drawPreview() {
+  const c = $('#preview').getContext('2d'), w = 480, h = 360;
+  c.clearRect(0, 0, w, h);
+  c.fillStyle = 'rgba(255,255,255,.5)'; c.beginPath(); c.ellipse(w / 2, h * .86, 170, 22, 0, 0, TAU); c.fill();
+  drawUnicorn(c, w / 2 - 10, h * .86, 1.65, 1, { t: T, rider: true });
+  sparkle(c, 70, 70, 10 * Math.abs(Math.sin(T * 2))); sparkle(c, 410, 110, 8 * Math.abs(Math.sin(T * 2 + 1)));
+}
+
+/* Map */
+function bagLine(el) {
+  el.innerHTML = '';
+  const total = GEM_ORDER.reduce((a, k) => a + save.bag[k], 0);
+  if (!total) { el.textContent = 'Your gem bag is empty. Go find some gems!'; return; }
+  GEM_ORDER.forEach(k => { if (!save.bag[k]) return; const s = document.createElement('span'); s.append(img(gemIcon[k], GEMS[k].name), document.createTextNode(save.bag[k])); el.append(s); });
+}
+function buildMap() {
+  bagLine($('#mapBag'));
+  const box = $('#lands'); box.innerHTML = '';
+  LANDS.forEach(land => {
+    const b = document.createElement('button'); b.className = 'land';
+    const c = document.createElement('canvas'); c.width = 480; c.height = 270;
+    const x = c.getContext('2d'); drawLand(x, land, 480, 270, 2, .6);
+    const row = document.createElement('div'); row.className = 'row';
+    const name = document.createElement('b'); name.textContent = land.name;
+    const gems = document.createElement('span'); gems.className = 'gems';
+    Object.keys(land.gems).forEach(k => gems.append(img(gemIcon[k], GEMS[k].name)));
+    row.append(name, gems);
+    const trips = save.trips[land.id] || 0;
+    const st = document.createElement('div'); st.className = 'stars'; st.style.paddingInline = '4px';
+    st.textContent = trips ? '★'.repeat(Math.min(trips, 5)) + (trips > 5 ? ' ×' + trips : '') : 'New!';
+    b.append(c, row, st);
+    b.setAttribute('aria-label', land.name);
+    b.addEventListener('click', () => { SFX.tap(); startGame(land); });
+    box.append(b);
+  });
+}
+$('#toShop').addEventListener('click', () => { SFX.tap(); show('s-shop'); });
+$('#toBox').addEventListener('click', () => { SFX.tap(); show('s-box'); });
+
+/* ---------- The adventure ---------- */
+let game = null;
+const GOAL = 12;
+function pickGemType(land) {
+  if (hasPower('crown') && Math.random() < .2) return 'rainbow';
+  const e = Object.entries(land.gems), tot = e.reduce((a, [, v]) => a + v, 0);
+  let r = Math.random() * tot; for (const [k, v] of e) { r -= v; if (r <= 0) return k; } return e[0][0];
+}
+function spawnGem() {
+  const g = game; const maxFy = Math.max(.22, (GY - 190 * S) / H);
+  let fx = .5, tries = 0;
+  do { fx = rnd(.08, .92); tries++; } while (tries < 20 && g.gems.some(o => o.alive && Math.abs(o.fx - fx) < .1));
+  g.gems.push({ fx, fy: rnd(.12, maxFy), type: pickGemType(g.land), ph: rnd(0, TAU), alive: true, born: g.t });
+}
+function spawnRock() {
+  const g = game; let fx = .5, tries = 0;
+  do { fx = rnd(.08, .92); tries++; } while (tries < 30 && (g.rocks.some(o => !o.broken && Math.abs(o.fx - fx) < .14) || Math.abs(fx * W - g.ux) < 110 * S));
+  g.rocks.push({ fx, type: pickGemType(g.land), broken: false, bt: 0, born: g.t });
+}
+function startGame(land) {
+  show('s-play');
+  game = { land, t: 0, got: 0, haul: [], gems: [], rocks: [], fly: [], form: 'ride', ux: W * .25, uface: 1, uphase: 0, umoving: false,
+    px: 0, py: 0, pface: 1, energy: 1, tx: W * .25, ty: H * .4, done: false, spawnT: 0, idle: 0, hintN: 0, flash: 0, tiredT: -9, fw: 0 };
+  parts = [];
+  for (let i = 0; i < 3; i++) spawnGem();
+  for (let i = 0; i < 2; i++) spawnRock();
+  const s = $('#sockets'); s.innerHTML = ''; for (let i = 0; i < GOAL; i++) { const d = document.createElement('div'); d.className = 'sock'; s.append(d); }
+  const pw = $('#powers'); pw.innerHTML = '';
+  Object.keys(JEWELS).forEach(k => {
+    if (!hasPower(k)) return;
+    const b = document.createElement('button'); b.append(img(jewelIcon[k], JEWELS[k].name)); b.setAttribute('aria-label', JEWELS[k].power);
+    b.addEventListener('click', e => { e.stopPropagation(); say(`${JEWELS[k].power}! ${JEWELS[k].desc}`); });
+    pw.append(b);
+  });
+  $('#win').hidden = true; setFireBtn();
+  const first = !save.trips[land.id];
+  say(first ? `Welcome to ${land.name}! Tap the sky to fly as a phoenix and catch gems. Ride ${save.look.uname} to crack the crystal rocks!`
+            : `${land.name}! Let's find ${GOAL} magic gems!`);
+}
+function setFireBtn() {
+  const b = $('#fireBtn'); if (!game) return;
+  const bird = game.form !== 'ride';
+  b.classList.toggle('bird', bird);
+  b.setAttribute('aria-label', bird ? 'Fly back to your unicorn' : 'Turn into a phoenix');
+}
+function seat() { return { x: game.ux + game.uface * -6 * S * 1, y: GY - 120 * S }; }
+function toPhoenix() {
+  const g = game; if (!g || g.done || g.form !== 'ride') return false;
+  if (g.energy < .2) { if (g.t - g.tiredT > 4) { say(`Your fire needs a rest. Ride ${save.look.uname} to charge it up!`); g.tiredT = g.t; } SFX.nope(); return false; }
+  const s = seat(); g.form = 'phoenix'; g.px = s.x; g.py = s.y; g.pface = g.uface; g.flash = 1;
+  if (g.ty > GY - 150 * S) { g.tx = g.px; g.ty = GY - 260 * S; }
+  emit(g.px, g.py, 40, { cols: FIRE, max: 320, size: 7, g: -40 }); emit(g.px, g.py, 12, { kind: 'star', max: 260, g: 0 });
+  SFX.poof(); setFireBtn(); g.idle = 0;
+  if (!g.saidFly) { say('Whoosh! You are a phoenix!'); g.saidFly = true; }
+  return true;
+}
+function toRider() { const g = game; if (!g || g.form !== 'phoenix') return; g.form = 'landing'; setFireBtn(); }
+$('#fireBtn').addEventListener('click', e => { e.stopPropagation(); ac(); if (!game) return; if (game.form === 'ride') toPhoenix(); else toRider(); });
+$('#homeBtn').addEventListener('click', () => { SFX.tap(); show('s-map'); });
+$('#winShop').addEventListener('click', () => { SFX.tap(); show('s-shop'); });
+$('#winMap').addEventListener('click', () => { SFX.tap(); show('s-map'); });
+
+let pDown = false;
+function pointAt(e) {
+  const g = game; if (!g || g.done) return;
+  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  if (g.form === 'ride') {
+    if (y < GY - 170 * S && e.type === 'pointerdown') { if (toPhoenix()) { g.tx = x; g.ty = y; return; } }
+    g.tx = x;
+  } else if (g.form === 'phoenix') {
+    if (e.type === 'pointerdown' && Math.abs(x - g.ux) < 70 * S && y > GY - 150 * S) { toRider(); return; }
+    g.tx = x; g.ty = y;
+  }
+}
+cv.addEventListener('pointerdown', e => {
+  if (!game) return; ac(); pDown = true; pointAt(e);
+  try { cv.setPointerCapture(e.pointerId); } catch (_) {}
+  emit(e.clientX - cv.getBoundingClientRect().left, e.clientY - cv.getBoundingClientRect().top, 6, { kind: 'star', min: 20, max: 80, g: 0, life: .5 });
+});
+cv.addEventListener('pointermove', e => { if (pDown && game) pointAt(e); });
+['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => pDown = false));
+const keys = new Set();
+window.addEventListener('keydown', e => {
+  if (!game) return;
+  const k = e.key;
+  if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'].includes(k)) { keys.add(k); e.preventDefault(); ac(); if ((k === 'ArrowUp' || k === 'w') && game.form === 'ride') toPhoenix(); }
+  if ((k === ' ' || k === 'Enter') && document.activeElement === document.body) { e.preventDefault(); ac(); if (game.form === 'ride') toPhoenix(); else toRider(); }
+});
+const MOVE_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'];
+function stopIfNoKeys() {
+  // Letting go of the keys stops the hero right where they are
+  if (!game || MOVE_KEYS.some(k => keys.has(k))) return;
+  if (game.form === 'ride') game.tx = game.ux;
+  else if (game.form === 'phoenix') { game.tx = game.px; game.ty = game.py; }
+}
+window.addEventListener('keyup', e => { if (keys.delete(e.key)) stopIfNoKeys(); });
+window.addEventListener('blur', () => { keys.clear(); stopIfNoKeys(); });
+
+function collect(type, x, y) {
+  const g = game; if (g.done) return;
+  const i = g.got; g.got++; g.haul.push(type); g.idle = 0;
+  save.bag[type]++; persist();
+  g.fly.push({ type, x0: x, y0: y, t: 0, i });
+  SFX.gem(GEMS[type].note);
+  emit(x, y, 16, { cols: MAGIC, max: 220, size: 5, g: 60 }); emit(x, y, 6, { kind: 'star', max: 160, g: 0 });
+  if (g.got === GOAL / 2) say('Half way there!');
+  else say(GEMS[type].name + '!', true);
+  if (g.got >= GOAL) { g.done = true; g.form = g.form === 'ride' ? 'ride' : 'landing'; setTimeout(win, 900); }
+}
+function win() {
+  const g = game; if (!g) return;
+  save.trips[g.land.id] = (save.trips[g.land.id] || 0) + 1; persist();
+  const h = $('#haul'); h.innerHTML = ''; g.haul.forEach(k => h.append(img(gemIcon[k], GEMS[k].name)));
+  $('#win').hidden = false; g.fw = 3.5;
+  SFX.win(); say(`Hooray! You found ${GOAL} magic gems! Let's make some jewelry!`);
+}
+function socketPos(i) {
+  const el = $('#sockets').children[i]; if (!el) return { x: 40, y: 30 };
+  const r = el.getBoundingClientRect(), c = cv.getBoundingClientRect();
+  return { x: r.left - c.left + r.width / 2, y: r.top - c.top + r.height / 2 };
+}
+function updateGame(dt) {
+  const g = game; g.t += dt;
+  const dirx = (keys.has('ArrowRight') || keys.has('d') ? 1 : 0) - (keys.has('ArrowLeft') || keys.has('a') ? 1 : 0);
+  const diry = (keys.has('ArrowDown') || keys.has('s') ? 1 : 0) - (keys.has('ArrowUp') || keys.has('w') ? 1 : 0);
+  if (g.form === 'ride') {
+    if (dirx) g.tx = g.ux + dirx * 200 * S;
+    if (diry < 0 && !g.done && g.ux === g.ux) { keys.delete('ArrowUp'); keys.delete('w'); toPhoenix(); }
+    const speed = 300 * S * (hasPower('bracelet') ? 1.7 : 1), dx = g.tx - g.ux;
+    if (Math.abs(dx) > 3) { g.ux += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); g.uface = Math.sign(dx); g.umoving = true; g.uphase += dt * (hasPower('bracelet') ? 18 : 13); }
+    else g.umoving = false;
+    g.ux = clamp(g.ux, 60 * S, W - 60 * S); if (Math.abs(g.tx - g.ux) > 3 && (g.ux <= 60 * S || g.ux >= W - 60 * S)) g.tx = g.ux;
+    g.energy = Math.min(1, g.energy + dt / 3.5);
+    if (g.umoving && Math.random() < dt * 8) emit(g.ux - g.uface * 40 * S, GY, 1, { cols: ['rgba(255,255,255,.8)'], min: 20, max: 60, angle: -Math.PI / 2, spread: 1, g: 100, life: .5, size: 4 });
+    for (const r of g.rocks) if (!r.broken && Math.abs(r.fx * W - g.ux) < 46 * S) {
+      r.broken = true; r.bt = g.t; SFX.crack();
+      emit(r.fx * W, GY - 30 * S, 22, { cols: ['#efe4ff', '#d6c2ff', '#ffffff'], min: 80, max: 260, size: 6, g: 400 });
+      collect(r.type, r.fx * W, GY - 50 * S);
+    }
+  } else {
+    g.umoving = false;
+    if (g.form === 'phoenix') {
+      if (dirx || diry) { g.tx = g.px + dirx * 200 * S; g.ty = g.py + diry * 200 * S; }
+      g.ty = clamp(g.ty, 50 * S, GY - 70 * S); g.tx = clamp(g.tx, 30 * S, W - 30 * S);
+      const dx = g.tx - g.px, dy = g.ty - g.py, d = Math.hypot(dx, dy), sp = 420 * S;
+      if (d > 2) { const st = Math.min(d, sp * dt); g.px += dx / d * st; g.py += dy / d * st; if (Math.abs(dx) > 4) g.pface = Math.sign(dx); }
+      else g.py += Math.sin(g.t * 3) * .3;
+      if (!g.done) g.energy -= dt / (hasPower('necklace') ? 28 : 14);
+      if (g.energy <= 0) { g.energy = 0; g.form = 'landing'; say(`Your phoenix is sleepy! Back to ${save.look.uname}!`); setFireBtn(); }
+      if (Math.random() < dt * 30) emit(g.px - g.pface * 14 * S, g.py + 4 * S, 1, { cols: FIRE, min: 10, max: 50, g: -30, life: .8, size: 5 });
+      const mag = hasPower('ring');
+      for (const o of g.gems) {
+        if (!o.alive) continue;
+        let gx = o.fx * W, gy = o.fy * H + Math.sin(g.t * 2 + o.ph) * 6 * S;
+        const dd = Math.hypot(gx - g.px, gy - g.py);
+        if (mag && dd < 200 * S) { const k = Math.min(1, dt * 3); o.fx += (g.px - gx) / W * k; o.fy += (g.py - gy) / H * k; }
+        if (dd < Math.max(34, 48 * S)) { o.alive = false; collect(o.type, gx, gy); }
+      }
+    } else {
+      const s = seat(), dx = s.x - g.px, dy = s.y - g.py, d = Math.hypot(dx, dy), sp = 520 * S;
+      if (d < 12 * S) { g.form = 'ride'; g.flash = .7; SFX.land(); emit(s.x, s.y, 24, { cols: FIRE, max: 220, size: 6, g: -20 }); setFireBtn(); }
+      else { const st = Math.min(d, sp * dt); g.px += dx / d * st; g.py += dy / d * st; if (Math.abs(dx) > 4) g.pface = Math.sign(dx); }
+      if (Math.random() < dt * 30) emit(g.px, g.py, 1, { cols: FIRE, min: 10, max: 50, g: -30, life: .8, size: 5 });
+    }
+  }
+  g.flash = Math.max(0, g.flash - dt * 2.5);
+  // keep the field stocked
+  if (!g.done) {
+    g.spawnT += dt;
+    const aliveG = g.gems.filter(o => o.alive).length, aliveR = g.rocks.filter(o => !o.broken).length;
+    if (g.spawnT > 1.2) {
+      if (aliveG < 3) { spawnGem(); g.spawnT = 0; }
+      else if (aliveR < 2) { spawnRock(); g.spawnT = 0; }
+    }
+    g.idle += dt;
+    if (g.idle > 11) {
+      g.idle = 0; g.hintN++;
+      if (g.form === 'ride') say(g.hintN % 2 ? 'Tap the fire button to fly up to the sky gems!' : `Tap a crystal rock and ${save.look.uname} will run there!`);
+      else say('Fly to a sparkly gem! Tap where you want to go.');
+    }
+  }
+  g.gems = g.gems.filter(o => o.alive);
+  g.rocks = g.rocks.filter(o => !o.broken || g.t - o.bt < .8);
+  for (const f of g.fly) {
+    f.t += dt / .7;
+    if (f.t >= 1 && !f.done) {
+      f.done = true; const s = $('#sockets').children[f.i];
+      if (s) { s.innerHTML = ''; s.append(img(gemIcon[f.type], GEMS[f.type].name)); }
+    }
+  }
+  g.fly = g.fly.filter(f => !f.done);
+  if (g.fw > 0) {
+    g.fw -= dt;
+    if (Math.random() < dt * 3) { const x = rnd(.15, .85) * W, y = rnd(.12, .45) * H; emit(x, y, 36, { cols: [...MAGIC, '#ff8fb1', '#ffd23f'], min: 60, max: 240, size: 5, g: 60, life: 1.3 }); tone(rnd(700, 1300), .25, 'sine', .05); }
+  }
+  $('#fireBtn').style.setProperty('--e', g.energy.toFixed(3));
+  $('#fireBtn').classList.toggle('tired', g.form === 'ride' && g.energy < .2);
+}
+function drawRock(c, x, y, s, type, t, a) {
+  c.save(); c.globalAlpha = a; c.translate(x, y); c.scale(s, s);
+  c.fillStyle = 'rgba(40,20,70,.18)'; c.beginPath(); c.ellipse(0, 2, 38, 7, 0, 0, TAU); c.fill();
+  c.fillStyle = '#8f7aa8'; c.beginPath(); c.ellipse(0, -4, 34, 12, 0, Math.PI, TAU); c.fill();
+  const shard = (dx, w, h, tilt) => {
+    c.save(); c.translate(dx, -6); c.rotate(tilt);
+    const g = c.createLinearGradient(-w / 2, 0, w / 2, 0); g.addColorStop(0, 'rgba(255,255,255,.95)'); g.addColorStop(1, 'rgba(205,180,255,.92)');
+    c.fillStyle = g; c.strokeStyle = '#a084d6'; c.lineWidth = 2;
+    c.beginPath(); c.moveTo(-w / 2, 0); c.lineTo(-w / 2, -h + w / 2); c.lineTo(0, -h); c.lineTo(w / 2, -h + w / 2); c.lineTo(w / 2, 0); c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.moveTo(-w / 4, -4); c.lineTo(-w / 4, -h + w / 2); c.stroke();
+    c.restore();
+  };
+  shard(-20, 18, 38, -.25); shard(20, 18, 34, .28); shard(0, 30, 62, 0);
+  c.restore();
+  c.save(); c.globalAlpha = a * (.75 + .25 * Math.sin(t * 4)); drawGem(c, x, y - 34 * s, 11 * s, type, t); c.restore();
+}
+function drawGame() {
+  const g = game, c = ctx;
+  drawLand(c, g.land, W, H, g.t, S);
+  for (const r of g.rocks) {
+    const a = r.broken ? Math.max(0, 1 - (g.t - r.bt) / .8) : Math.min(1, (g.t - r.born) * 2);
+    const near = !r.broken && Math.abs(r.fx * W - g.ux) < 120 * S ? Math.sin(g.t * 30) * 1.5 : 0;
+    if (a > 0) drawRock(c, r.fx * W + near, GY, S * (r.broken ? 1 + (g.t - r.bt) : 1), r.type, g.t, a);
+  }
+  for (const o of g.gems) {
+    const x = o.fx * W, y = o.fy * H + Math.sin(g.t * 2 + o.ph) * 6 * S, a = Math.min(1, (g.t - o.born) * 2);
+    c.save(); c.globalAlpha = a;
+    const halo = c.createRadialGradient(x, y, 2, x, y, 40 * S); halo.addColorStop(0, 'rgba(255,255,255,.55)'); halo.addColorStop(1, 'rgba(255,255,255,0)');
+    c.fillStyle = halo; c.beginPath(); c.arc(x, y, 40 * S, 0, TAU); c.fill();
+    drawGem(c, x, y, Math.max(15, 22 * S) * a, o.type, g.t); c.restore();
+  }
+  drawUnicorn(c, g.ux, GY, S, g.uface, { t: g.t, phase: g.uphase, moving: g.umoving, rider: g.form === 'ride' });
+  if (g.form !== 'ride') drawPhoenix(c, g.px, g.py, S * 1.25, g.pface, g.t);
+  drawParts(c);
+  for (const f of g.fly) {
+    const p = socketPos(f.i), k = 1 - Math.pow(1 - Math.min(1, f.t), 3);
+    const x = f.x0 + (p.x - f.x0) * k, y = f.y0 + (p.y - f.y0) * k - Math.sin(k * Math.PI) * 80 * S;
+    drawGem(c, x, y, (20 - 8 * k) * S + 4, f.type, g.t);
+  }
+  if (g.flash > 0) { c.fillStyle = `rgba(255,220,150,${g.flash * .35})`; c.fillRect(0, 0, W, H); }
+}
+
+/* Ambient background for menus */
+let amb = { x: 0, y: 0 };
+function drawAmbient() {
+  const c = ctx;
+  drawLand(c, TWILIGHT, W, H, T, S);
+  const ux = screen === 's-title' ? W * .74 : W * .86;
+  if (screen === 's-title' || W > 700) drawUnicorn(c, ux, GY + 6, S * 1.05, -1, { t: T });
+  const px = W * .5 + Math.cos(T * .55) * W * .32, py = H * .32 + Math.sin(T * 1.1) * H * .1, face = -Math.sin(T * .55) >= 0 ? 1 : -1;
+  if (Math.random() < .5) emit(px - face * 16 * S, py, 1, { cols: FIRE, min: 10, max: 40, g: -30, life: .9, size: 5 });
+  drawParts(c);
+  drawPhoenix(c, px, py, S * 1.1, face, T);
+}
+
+/* ---------- Workshop ---------- */
+let shop = { type: null, gems: [], fx: 0, busy: false };
+function enterShop() {
+  shop = { type: null, gems: [], fx: 0, busy: false };
+  buildTypes(); buildBag(); $('#result').hidden = true; updEnchant();
+  const total = GEM_ORDER.reduce((a, k) => a + save.bag[k], 0);
+  say(total ? 'Pick something to make!' : 'Your gem bag is empty. Go on an adventure to find gems!');
+}
+function buildTypes() {
+  const box = $('#types'); box.innerHTML = '';
+  Object.entries(JEWELS).forEach(([k, j]) => {
+    const b = document.createElement('button'); b.className = 'type' + (shop.type === k ? ' sel' : '');
+    const c = document.createElement('canvas'); c.width = c.height = 120; drawJewel(c.getContext('2d'), 60, 62, 95, k, [], 0);
+    const n = document.createElement('b'); n.textContent = j.name;
+    const need = document.createElement('span'); need.className = 'need'; need.setAttribute('aria-label', j.slots + ' gems');
+    for (let i = 0; i < j.slots; i++) need.append(document.createElement('i'));
+    b.append(c, n, need);
+    b.addEventListener('click', () => pickType(k));
+    box.append(b);
+  });
+}
+function bagTotal() { return GEM_ORDER.reduce((a, k) => a + save.bag[k], 0); }
+function pickType(k) {
+  if (shop.busy) return;
+  shop.gems.forEach(g => { if (g) save.bag[g]++; });
+  shop.type = k; shop.gems = new Array(JEWELS[k].slots).fill(null);
+  buildTypes(); buildBag(); updEnchant(); SFX.tap();
+  const j = JEWELS[k];
+  if (bagTotal() < j.slots) say(`A ${j.name.toLowerCase()} needs ${j.slots} gems. You have ${bagTotal()}. Let's find more on an adventure!`);
+  else say(`A ${j.name.toLowerCase()} needs ${j.slots} gems. Tap your gems to add them!`);
+}
+function buildBag() {
+  const box = $('#bag'); box.innerHTML = '';
+  GEM_ORDER.forEach(k => {
+    if (!save.bag[k] && k === 'rainbow') return;
+    const b = document.createElement('button'); b.className = 'gembtn'; b.setAttribute('aria-label', GEMS[k].name);
+    const em = document.createElement('em'); em.textContent = save.bag[k];
+    b.append(img(gemIcon[k], GEMS[k].name), em);
+    b.disabled = !save.bag[k];
+    b.addEventListener('click', () => addGem(k));
+    box.append(b);
+  });
+}
+function addGem(k) {
+  if (shop.busy) return;
+  if (!shop.type) { say('First pick something to make!'); SFX.nope(); return; }
+  const i = shop.gems.indexOf(null);
+  if (i < 0) { say('It is full! Tap Enchant!'); return; }
+  if (!save.bag[k]) return;
+  save.bag[k]--; shop.gems[i] = k; persist();
+  SFX.gem(GEMS[k].note); say(GEMS[k].name, true); buildBag(); updEnchant();
+  if (shop.gems.indexOf(null) < 0) say('Beautiful! Now tap Enchant to make it magic!');
+}
+function updEnchant() { $('#enchantBtn').disabled = !shop.type || shop.gems.indexOf(null) >= 0 || shop.busy; }
+const BW = 920, BH = 500, BSZ = 300;
+$('#bench').addEventListener('pointerdown', e => {
+  if (!shop.type || shop.busy) return;
+  const r = e.currentTarget.getBoundingClientRect(), x = (e.clientX - r.left) / r.width * BW, y = (e.clientY - r.top) / r.height * BH;
+  slotsOf(shop.type).forEach(([sx, sy, sr], i) => {
+    const px = BW / 2 + sx * BSZ * 1.25, py = BH / 2 + 10 + sy * BSZ * 1.25;
+    if (shop.gems[i] && Math.hypot(x - px, y - py) < Math.max(sr * BSZ * 1.25, 40)) { save.bag[shop.gems[i]]++; shop.gems[i] = null; persist(); SFX.tap(); buildBag(); updEnchant(); }
+  });
+});
+function drawBench() {
+  const c = $('#bench').getContext('2d');
+  c.clearRect(0, 0, BW, BH);
+  if (!shop.type) {
+    c.fillStyle = '#6b4f8f'; c.font = `600 44px ${getComputedStyle(document.documentElement).getPropertyValue('--display')}`; c.textAlign = 'center';
+    c.fillText('Pick something to make!', BW / 2, BH / 2 + 14);
+    sparkle(c, BW * .2, BH * .3, 14 * Math.abs(Math.sin(T * 2))); sparkle(c, BW * .8, BH * .7, 12 * Math.abs(Math.sin(T * 2 + 1)));
+    return;
+  }
+  const busy = shop.busy, k = busy ? (T - shop.fx) : 0;
+  if (busy) {
+    for (let i = 0; i < 14; i++) { const a = i / 14 * TAU + k * 4, rr = 200 - k * 50; sparkle(c, BW / 2 + Math.cos(a) * rr * 1.5, BH / 2 + Math.sin(a) * rr * .7, 12 + 6 * Math.sin(k * 10 + i)); }
+    const gl = c.createRadialGradient(BW / 2, BH / 2, 10, BW / 2, BH / 2, 260); gl.addColorStop(0, `rgba(255,240,170,${Math.min(.9, k * .6)})`); gl.addColorStop(1, 'rgba(255,240,170,0)');
+    c.fillStyle = gl; c.fillRect(0, 0, BW, BH);
+  }
+  const sc = BSZ * 1.25 * (busy ? 1 + Math.sin(k * 8) * .04 : 1);
+  drawJewel(c, BW / 2, BH / 2 + 10, sc, shop.type, shop.gems, T, shop.gems.indexOf(null));
+}
+$('#enchantBtn').addEventListener('click', () => {
+  if (!shop.type || shop.gems.indexOf(null) >= 0 || shop.busy) return;
+  shop.busy = true; shop.fx = T; updEnchant(); SFX.magic(); say('Abracadabra!', true);
+  setTimeout(finishJewel, 1900);
+});
+function jewelName(type, gems) {
+  const cnt = {}; gems.forEach(g => cnt[g] = (cnt[g] || 0) + 1);
+  let best = gems[0]; for (const g of gems) if (cnt[g] > cnt[best]) best = g;
+  return `${GEMS[best].word} ${JEWELS[type].name}`;
+}
+function finishJewel() {
+  const type = shop.type, gems = shop.gems.slice(), isNew = !hasPower(type);
+  const name = jewelName(type, gems);
+  save.jewels.push({ type, gems, name, at: Date.now() }); persist();
+  shop.busy = false;
+  const c = $('#resultCv').getContext('2d'); c.clearRect(0, 0, 600, 400); drawJewel(c, 300, 210, 330, type, gems, 1.5);
+  $('#resultName').textContent = 'The ' + name + '!';
+  $('#resultPower').textContent = (isNew ? 'New power: ' : 'Power: ') + JEWELS[type].power + '. ' + JEWELS[type].desc;
+  $('#result').hidden = false;
+  SFX.win();
+  say(`You made the ${name}! ${isNew ? 'New power, ' : ''}${JEWELS[type].power}! ${JEWELS[type].desc}`);
+  shop.type = null; shop.gems = []; buildTypes(); buildBag(); updEnchant();
+}
+$('#resultOk').addEventListener('click', () => { $('#result').hidden = true; SFX.tap(); });
+
+/* ---------- Treasure box ---------- */
+function buildBox() {
+  const box = $('#box'); box.innerHTML = '';
+  if (!save.jewels.length) {
+    const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Your treasure box is empty. Make jewelry in the workshop!';
+    box.append(p); say(p.textContent); return;
+  }
+  save.jewels.slice().reverse().forEach(j => {
+    const b = document.createElement('button'); b.className = 'jcard';
+    const c = document.createElement('canvas'); c.width = 300; c.height = 200; drawJewel(c.getContext('2d'), 150, 106, 165, j.type, j.gems, 1.3);
+    const n = document.createElement('b'); n.textContent = j.name;
+    const p = document.createElement('small'); p.textContent = JEWELS[j.type].power;
+    b.append(c, n, p);
+    b.addEventListener('click', () => say(`The ${j.name}. ${JEWELS[j.type].power}! ${JEWELS[j.type].desc}`));
+    box.append(b);
+  });
+  say(`You have ${save.jewels.length} magic ${save.jewels.length === 1 ? 'treasure' : 'treasures'}!`);
+}
+
+/* ---------- Main loop ---------- */
+let last = performance.now();
+function frame(now) {
+  const dt = Math.min(.05, (now - last) / 1000); last = now; T += dt;
+  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+  stepParts(dt);
+  if (screen === 's-play' && game) { updateGame(dt); drawGame(); } else drawAmbient();
+  if (screen === 's-make') drawPreview();
+  if (screen === 's-shop') drawBench();
+  requestAnimationFrame(frame);
+}
+resize();
+requestAnimationFrame(frame);
+})();
+</script>
+</body>
+</html>
