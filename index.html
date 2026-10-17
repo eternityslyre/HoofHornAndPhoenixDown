@@ -593,7 +593,7 @@ const cv = $('#world'), ctx = cv.getContext('2d');
 // W, H: the world. On an adventure the land is bigger than the screen (WORLD_X by WORLD_Y screens) and the
 // camera (CX, CY) follows the hero; on menus the world is just the screen. VW, VH: the screen itself.
 let W = 0, H = 0, VW = 0, VH = 0, CX = 0, CY = 0, DPR = 1, S = 1, GY = 0, T = 0;
-const WORLD_X = 2.2, WORLD_Y = 1.6;
+const WORLD_X = 3.5, WORLD_Y = 2.2;
 function applyWorld() {
   const ow = W, oh = H, big = screen === 's-play';
   W = big ? VW * WORLD_X : VW; H = big ? VH * WORLD_Y : VH; GY = H * .8;
@@ -1641,8 +1641,8 @@ function startGame(land) {
   pzClose();
   parts = []; updateCamera(0, true);
   newGameExtras();
-  for (let i = 0; i < (hasPower('pendant') ? 9 : 5); i++) spawnGem();
-  for (let i = 0; i < 3; i++) spawnRock();
+  for (let i = 0; i < (hasPower('pendant') ? 13 : 8); i++) spawnGem();
+  for (let i = 0; i < 5; i++) spawnRock();
   if (land.critters) { spawnCritter('bunny'); spawnCritter('bunny'); spawnCritter('butterfly'); spawnCritter('butterfly'); }
   const s = $('#sockets'); s.innerHTML = ''; for (let i = 0; i < GOAL; i++) { const d = document.createElement('div'); d.className = 'sock'; s.append(d); }
   const pw = $('#powers'); pw.innerHTML = '';
@@ -1842,8 +1842,8 @@ function updateGame(dt) {
     g.spawnT += dt;
     const aliveG = g.gems.filter(o => o.alive).length, aliveR = g.rocks.filter(o => !o.broken).length;
     if (g.spawnT > 1.2) {
-      if (aliveG < (hasPower('wand') ? 8 + Math.round(3 * boost('wand')) : 5)) { spawnGem(); g.spawnT = 0; } // the land is big, so more gems at once
-      else if (aliveR < (gpow('emerald') ? 4 : 3)) { spawnRock(); g.spawnT = 0; }
+      if (aliveG < (hasPower('wand') ? 12 + Math.round(4 * boost('wand')) : 8)) { spawnGem(); g.spawnT = 0; } // the land is big, so more gems at once
+      else if (aliveR < (gpow('emerald') ? 6 : 5)) { spawnRock(); g.spawnT = 0; }
     }
     jewelHelpers(dt);
     g.idle += dt;
@@ -3184,20 +3184,20 @@ let darkCv = null;
 function drawDark(c) {
   const g = game;
   if (!darkCv) darkCv = document.createElement('canvas');
-  const cw = Math.ceil(W), ch = Math.ceil(H);
+  const cw = Math.ceil(VW), ch = Math.ceil(VH);
   if (darkCv.width !== cw || darkCv.height !== ch) { darkCv.width = cw; darkCv.height = ch; }
   const d = darkCv.getContext('2d');
   d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, cw, ch);
   d.fillStyle = 'rgba(6,10,32,.6)'; d.fillRect(0, 0, cw, ch);
-  d.globalCompositeOperation = 'destination-out';
+  d.globalCompositeOperation = 'destination-out'; d.setTransform(1, 0, 0, 1, -CX, -CY);
   const hole = (x, y, r) => { const gr = d.createRadialGradient(x, y, r * .2, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = gr; d.beginPath(); d.arc(x, y, r, 0, TAU); d.fill(); };
   for (const [x, y, r] of darkLights()) hole(x, y, r);
   hole(g.ux, GY - 50 * S, 110 * S);
   for (const o of g.gems) if (o.lit) hole(o.fx * W, o.fy * H, 50 * S);
   for (const f of g.fallers) hole(f.x, f.y, 40 * S);
   for (const o of g.bubbles) hole(o.fx * W, o.fy * H, 40 * S);
-  d.globalCompositeOperation = 'source-over';
-  c.drawImage(darkCv, 0, 0, W, H);
+  d.setTransform(1, 0, 0, 1, 0, 0); d.globalCompositeOperation = 'source-over';
+  c.drawImage(darkCv, CX, CY, VW, VH);
   for (const f of g.flies) drawFirefly(c, f.x, f.y, S, g.t + f.ph, f.tgt ? 1 : 0);
 }
 function updateStage(dt) {
