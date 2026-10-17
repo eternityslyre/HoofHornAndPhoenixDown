@@ -95,6 +95,14 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
 .fire.bird span{background:radial-gradient(circle at 40% 35%,#fff,#e6dcff 60%,var(--lilac))}
 .fire.bird svg{color:var(--lilac-deep)}
 .fire.tired{filter:saturate(.3) brightness(.9)}
+.breath{position:absolute;right:30px;bottom:136px;width:76px;height:76px;border-radius:50%;border:4px solid #fff3b0;padding:0;background:radial-gradient(circle at 40% 35%,#ffe08a,#ff8a2e 60%,#e2471f);color:#fff;display:grid;place-items:center;box-shadow:0 6px 16px rgba(120,30,0,.35)}
+.breath[hidden]{display:none}
+.breath svg{width:44px;height:44px}
+.breath:active{transform:scale(.92)}
+.wish{position:absolute;left:12px;top:74px;display:flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:rgba(255,248,255,.88);border:3px solid #ffd23f;font-family:var(--display);color:#5a2d82;font-size:1.05rem;pointer-events:none}
+.wish[hidden]{display:none}
+.wish img{width:30px;height:30px}
+.wish.done{border-color:#7ad38f;color:#2e8a5a}
 .powers{position:absolute;left:12px;bottom:16px;right:140px;display:flex;flex-wrap:wrap-reverse;gap:8px;pointer-events:none}
 .powers button{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:3px solid var(--gold);background:rgba(255,248,255,.85);padding:0;display:grid;place-items:center}
 .powers img{width:46px;height:46px}
@@ -227,6 +235,8 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     </div>
     <div class="powers" id="powers"></div>
     <button class="fire" id="fireBtn" aria-label="Turn into a phoenix"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 1.5c.8 4.2 6 6 6 11.5a6.5 6.5 0 0 1-13 0c0-2.8 1.4-4.6 2.8-5.8-.1 2.4 1 3.8 2.4 4.1-.6-3.8.3-6.8 1.8-9.8z"/></svg></span></button>
+    <button class="breath" id="breathBtn" aria-label="Breathe warm phoenix fire" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12c3-1 5-4 9-4 3 0 4 2 4 2s3-3 6-2c-2 1-3 3-3 4s1 3 3 4c-3 1-6-2-6-2s-1 2-4 2c-4 0-6-3-9-4z"/></svg></button>
+    <div class="wish" id="wishChip" hidden></div>
     <div class="panel puzzle" id="puzzle" hidden>
       <h2><span id="pzGem"></span><span id="pzTitle"></span></h2>
       <p class="pzsub">Ultra shiny gem vault</p>
@@ -299,7 +309,7 @@ const DEF = { look: { hair: '#2a1a12', skin: '#f1c7a5', dress: '#ff6f91', mane: 
     lapis: 0, moonstone: 0, kunzite: 0, pearl: 0, fluorite: 0, snowquartz: 0, morganite: 0, coral: 0, turquoise: 0, seaglass: 0,
     sundiamond: 0, moondiamond: 0, dreamopal: 0, phoenixheart: 0, fairyprism: 0, mermaidstar: 0, forestheart: 0, frostdiamond: 0,
     fireflygem: 0, rainbowprism: 0, blossomgem: 0 },
-  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0 };
+  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0, pets: {}, pet: null, wishes: 0 };
 const WEAR = 4; // how many treasures Lia can wear on an adventure at once
 function load() {
   const base = JSON.parse(JSON.stringify(DEF));
@@ -546,15 +556,35 @@ function say(text, quick) {
 
 /* ---------- Canvas ---------- */
 const cv = $('#world'), ctx = cv.getContext('2d');
-let W = 0, H = 0, DPR = 1, S = 1, GY = 0, T = 0;
+// W, H: the world. On an adventure the land is bigger than the screen (WORLD_X by WORLD_Y screens) and the
+// camera (CX, CY) follows the hero; on menus the world is just the screen. VW, VH: the screen itself.
+let W = 0, H = 0, VW = 0, VH = 0, CX = 0, CY = 0, DPR = 1, S = 1, GY = 0, T = 0;
+const WORLD_X = 2.2, WORLD_Y = 1.6;
+function applyWorld() {
+  const ow = W, oh = H, big = screen === 's-play';
+  W = big ? VW * WORLD_X : VW; H = big ? VH * WORLD_Y : VH; GY = H * .8;
+  if (game && ow && oh) { // keep the hero in the same spot of the land
+    const kx = W / ow, ky = H / oh;
+    game.ux *= kx; game.tx *= kx; game.px *= kx; game.py *= ky; game.ty *= ky;
+    game.ux = clamp(game.ux, 60 * S, W - 60 * S); game.px = clamp(game.px, 30, W - 30); game.py = clamp(game.py, 40, GY - 60 * S);
+  }
+}
 function resize() {
   const r = cv.getBoundingClientRect();
-  W = r.width; H = r.height; DPR = Math.min(2, window.devicePixelRatio || 1);
-  cv.width = Math.round(W * DPR); cv.height = Math.round(H * DPR);
-  S = clamp(Math.min(W / 900, H / 620) * 1.1, .64, 1.4);
-  GY = H * .8;
-  if (game) { game.ux = clamp(game.ux, 60 * S, W - 60 * S); game.px = clamp(game.px, 30, W - 30); game.py = clamp(game.py, 40, GY - 60 * S); }
+  VW = r.width; VH = r.height; DPR = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = Math.round(VW * DPR); cv.height = Math.round(VH * DPR);
+  S = clamp(Math.min(VW / 900, VH / 620) * 1.1, .64, 1.4);
+  applyWorld();
 }
+// The camera glides after the phoenix while flying, or the unicorn while riding.
+function updateCamera(dt, snap) {
+  const g = game, fx = g.form === 'ride' ? g.ux : g.px, fy = g.form === 'ride' ? GY - 100 * S : g.py;
+  const tx = clamp(fx - VW / 2, 0, Math.max(0, W - VW)), ty = clamp(fy - VH * .55, 0, Math.max(0, H - VH));
+  const k = snap ? 1 : Math.min(1, dt * 5);
+  CX += (tx - CX) * k; CY += (ty - CY) * k;
+}
+// Screen point (a tap) to a spot in the land
+function worldPt(e) { const r = cv.getBoundingClientRect(); return { x: e.clientX - r.left + CX, y: e.clientY - r.top + CY }; }
 window.addEventListener('resize', resize);
 
 /* ---------- Drawing: gems ---------- */
@@ -1396,6 +1426,7 @@ function show(id) {
   document.querySelectorAll('.screen').forEach(s => s.hidden = s.id !== id);
   screen = id; $('#app').dataset.s = id;
   if (id !== 's-play') game = null;
+  applyWorld();
   if (id === 's-map') buildMap();
   if (id === 's-make') buildMake();
   if (id === 's-shop') enterShop();
@@ -1550,9 +1581,10 @@ function startGame(land) {
   game.ultra = ULTRA.find(u => u.land === land.id) || null; game.vaultOpen = 0;
   game.cheetah = CHEETAH.lands.includes(land.id) ? { peek: .5, happy: -9, duck: -9, talk: -9, heart: false, gift: false } : null;
   pzClose();
-  parts = [];
-  for (let i = 0; i < (hasPower('pendant') ? 6 : 3); i++) spawnGem();
-  for (let i = 0; i < 2; i++) spawnRock();
+  parts = []; updateCamera(0, true);
+  newGameExtras();
+  for (let i = 0; i < (hasPower('pendant') ? 9 : 5); i++) spawnGem();
+  for (let i = 0; i < 3; i++) spawnRock();
   if (land.critters) { spawnCritter('bunny'); spawnCritter('bunny'); spawnCritter('butterfly'); spawnCritter('butterfly'); }
   const s = $('#sockets'); s.innerHTML = ''; for (let i = 0; i < GOAL; i++) { const d = document.createElement('div'); d.className = 'sock'; s.append(d); }
   const pw = $('#powers'); pw.innerHTML = '';
@@ -1586,6 +1618,7 @@ function startGame(land) {
   else if (u && first) words += ` See the shiny crystal vault? Tap it to find out how to open it!`;
   const cw = CHEETAH.wish[save.cheetah];
   if (game.cheetah && cw && hasPower(cw)) words += ` ${CHEETAH.name} the shy cheetah is peeking at your ${JEWELS[cw].name}! Tap her!`;
+  words += extrasWords();
   say(words);
 }
 function setFireBtn() {
@@ -1593,6 +1626,7 @@ function setFireBtn() {
   const bird = game.form !== 'ride';
   b.classList.toggle('bird', bird);
   b.setAttribute('aria-label', bird ? 'Fly back to your unicorn' : 'Turn into a phoenix');
+  setBreathBtn();
 }
 function seat() { return { x: game.ux + game.uface * -6 * S * 1, y: GY - 120 * S }; }
 function toPhoenix() {
@@ -1608,6 +1642,7 @@ function toPhoenix() {
 function toRider() { const g = game; if (!g || g.form !== 'phoenix') return; g.form = 'landing'; setFireBtn(); }
 $('#fireBtn').addEventListener('click', e => { e.stopPropagation(); ac(); if (!game) return; if (game.form === 'ride') toPhoenix(); else toRider(); });
 $('#homeBtn').addEventListener('click', () => { SFX.tap(); show('s-map'); });
+$('#breathBtn').addEventListener('click', e => { e.stopPropagation(); ac(); breathe(); });
 $('#pzCloseBtn').addEventListener('click', e => { e.stopPropagation(); SFX.tap(); pzClose(); });
 $('#winShop').addEventListener('click', () => { SFX.tap(); show('s-shop'); });
 $('#winMap').addEventListener('click', () => { SFX.tap(); show('s-map'); });
@@ -1615,7 +1650,7 @@ $('#winMap').addEventListener('click', () => { SFX.tap(); show('s-map'); });
 let pDown = false;
 function pointAt(e) {
   const g = game; if (!g || g.done) return;
-  const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+  const { x, y } = worldPt(e);
   if (g.form === 'ride') {
     if (y < GY - 170 * S && e.type === 'pointerdown') { if (toPhoenix()) { g.tx = x; g.ty = y; return; } }
     g.tx = x;
@@ -1627,17 +1662,18 @@ function pointAt(e) {
 cv.addEventListener('pointerdown', e => {
   if (!game) return; ac();
   if (!game.done) {
-    const r = cv.getBoundingClientRect();
-    if (stageTap(e.clientX - r.left, e.clientY - r.top)) return;
+    const p = worldPt(e);
+    if (fairyTap(p.x, p.y) || petTap(p.x, p.y) || eggTap(p.x, p.y)) return;
+    if (stageTap(p.x, p.y)) return;
   }
   if (game.critters.length && !game.done) {
-    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    const { x, y } = worldPt(e);
     const hit = game.critters.find(o => { if (o.left) return false; const p = critterPos(o); return Math.hypot(x - p.x, y - (p.y - 24 * S)) < Math.max(44, 52 * S); });
     if (hit) { touchCritter(hit); emit(x, y, 8, { kind: 'star', min: 20, max: 100, g: 0, life: .6 }); return; }
   }
   pDown = true; pointAt(e);
   try { cv.setPointerCapture(e.pointerId); } catch (_) {}
-  emit(e.clientX - cv.getBoundingClientRect().left, e.clientY - cv.getBoundingClientRect().top, 6, { kind: 'star', min: 20, max: 80, g: 0, life: .5 });
+  const tp = worldPt(e); emit(tp.x, tp.y, 6, { kind: 'star', min: 20, max: 80, g: 0, life: .5 });
 });
 cv.addEventListener('pointermove', e => { if (pDown && game) pointAt(e); });
 ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => pDown = false));
@@ -1646,6 +1682,7 @@ window.addEventListener('keydown', e => {
   if (!game || pz) return;
   const k = e.key;
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'].includes(k)) { keys.add(k); e.preventDefault(); ac(); if ((k === 'ArrowUp' || k === 'w') && game.form === 'ride') toPhoenix(); }
+  if (k === 'f' || k === 'F') { e.preventDefault(); ac(); breathe(); }
   if ((k === ' ' || k === 'Enter') && document.activeElement === document.body) { e.preventDefault(); ac(); if (game.form === 'ride') toPhoenix(); else toRider(); }
 });
 const MOVE_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'];
@@ -1662,6 +1699,7 @@ function collect(type, x, y, bonus) {
   const g = game; if (g.done) return;
   const i = g.got; g.got++; g.haul.push(type); g.idle = 0;
   save.bag[type]++; persist();
+  wishGem(type);
   g.fly.push({ type, x0: x, y0: y, t: 0, i });
   SFX.gem(GEMS[type].note);
   emit(x, y, 16, { cols: MAGIC, max: 220, size: 5, g: 60 }); emit(x, y, 6, { kind: 'star', max: 160, g: 0 });
@@ -1677,13 +1715,13 @@ function win() {
   const g = game; if (!g) return;
   save.trips[g.land.id] = (save.trips[g.land.id] || 0) + 1; persist();
   const h = $('#haul'); h.innerHTML = ''; g.haul.forEach(k => h.append(img(gemIcon[k], GEMS[k].name)));
-  $('#win').hidden = false; g.fw = 3.5;
+  $('#win').hidden = false; g.fw = 3.5; setBreathBtn();
   SFX.win(); say(`Hooray! You found ${GOAL} magic gems! Let's make some jewelry!`);
 }
 function socketPos(i) {
   const el = $('#sockets').children[i]; if (!el) return { x: 40, y: 30 };
   const r = el.getBoundingClientRect(), c = cv.getBoundingClientRect();
-  return { x: r.left - c.left + r.width / 2, y: r.top - c.top + r.height / 2 };
+  return { x: r.left - c.left + r.width / 2 + CX, y: r.top - c.top + r.height / 2 + CY }; // in the land, under the camera
 }
 function updateGame(dt) {
   const g = game; g.t += dt;
@@ -1734,13 +1772,14 @@ function updateGame(dt) {
   if (g.land.critters || g.critters.length) updateCritters(dt);
   updateStage(dt);
   updateCheetah(dt);
+  updateBreath(dt); updateWish(dt); updatePet(dt);
   // keep the field stocked
   if (!g.done) {
     g.spawnT += dt;
     const aliveG = g.gems.filter(o => o.alive).length, aliveR = g.rocks.filter(o => !o.broken).length;
     if (g.spawnT > 1.2) {
-      if (aliveG < (hasPower('wand') ? 5 + Math.round(2 * boost('wand')) : 3)) { spawnGem(); g.spawnT = 0; }
-      else if (aliveR < (gpow('emerald') ? 3 : 2)) { spawnRock(); g.spawnT = 0; }
+      if (aliveG < (hasPower('wand') ? 8 + Math.round(3 * boost('wand')) : 5)) { spawnGem(); g.spawnT = 0; } // the land is big, so more gems at once
+      else if (aliveR < (gpow('emerald') ? 4 : 3)) { spawnRock(); g.spawnT = 0; }
     }
     jewelHelpers(dt);
     g.idle += dt;
@@ -1764,7 +1803,7 @@ function updateGame(dt) {
   g.fly = g.fly.filter(f => !f.done);
   if (g.fw > 0) {
     g.fw -= dt;
-    if (Math.random() < dt * 3) { const x = rnd(.15, .85) * W, y = rnd(.12, .45) * H; emit(x, y, 36, { cols: [...MAGIC, '#ff8fb1', '#ffd23f'], min: 60, max: 240, size: 5, g: 60, life: 1.3 }); tone(rnd(700, 1300), .25, 'sine', .05); }
+    if (Math.random() < dt * 3) { const x = CX + rnd(.15, .85) * VW, y = CY + rnd(.12, .45) * VH; emit(x, y, 36, { cols: [...MAGIC, '#ff8fb1', '#ffd23f'], min: 60, max: 240, size: 5, g: 60, life: 1.3 }); tone(rnd(700, 1300), .25, 'sine', .05); }
   }
   $('#fireBtn').style.setProperty('--e', g.energy.toFixed(3));
   $('#fireBtn').classList.toggle('tired', g.form === 'ride' && g.energy < .2);
@@ -1859,6 +1898,285 @@ function bloomBud(i) {
   [784, 988, 1175].forEach((f, j) => tone(f, .25, 'triangle', .06, j * .07));
   if (!g.saidBud) { g.saidBud = true; say(`It bloomed! Catch the gem with ${save.look.uname}!`); }
 }
+/* ---------- Phoenix fire breath: a warm puff that wakes, pops, rings, shakes and warms things ---------- */
+function setBreathBtn() {
+  const b = $('#breathBtn'); if (!b || !game) return;
+  b.hidden = game.form !== 'phoenix' || game.done;
+}
+function breathe() {
+  const g = game; if (!g || g.form !== 'phoenix' || g.done || pz) return;
+  if (g.breath > 0) return;
+  if (g.energy < .12) { SFX.nope(); if (g.t - g.tiredT > 4) { g.tiredT = g.t; say(`Your fire is tired! Ride ${save.look.uname} to charge it up.`); } return; }
+  g.energy -= hasPower('wings') ? 0 : .06;
+  g.breath = .9; g.breathHits = new Set(); g.idle = 0;
+  noise(.5, .07); tone(180, .6, 'sawtooth', .04, 0, 2.2); tone(520, .4, 'triangle', .05, .05, 1.6);
+  if (!g.saidBreath) { g.saidBreath = true; say('Whoosh! Warm phoenix fire! It wakes, pops and warms things up!'); }
+}
+// Where the flame reaches: a spot in front of the phoenix's beak
+function breathSpot() { const g = game; return { x: g.px + g.pface * 90 * S, y: g.py + 6 * S, r: 95 * S * (1 + .3 * gpow('ruby')) }; }
+function updateBreath(dt) {
+  const g = game; if (!(g.breath > 0)) return;
+  g.breath -= dt;
+  if (g.form !== 'phoenix') { g.breath = 0; return; }
+  const bx = g.px + g.pface * 26 * S, by = g.py + 4 * S;
+  emit(bx, by, 3, { cols: FIRE, min: 160, max: 340, angle: g.pface > 0 ? 0 : Math.PI, spread: .35, g: -60, life: .55, size: 7 });
+  const sp = breathSpot(), near = (x, y, extra = 0) => Math.hypot(x - sp.x, y - sp.y) < sp.r + extra, once = k => { if (g.breathHits.has(k)) return false; g.breathHits.add(k); return true; };
+  for (const o of g.gems) {
+    if (!o.alive) continue;
+    const x = o.fx * W, y = o.fy * H;
+    if (!near(x, y)) continue;
+    if (!o.lit) { if (once(o)) wakeGem(o); }
+    else { o.alive = false; collect(o.type, x, y); }
+  }
+  for (const o of g.bubbles) if (o.pop < 0) { const p = bubblePos(o); if (near(p.x, p.y) && once(o)) popBubble(o); }
+  g.bells.forEach((b, i) => { const p = bellPos(BELL_FX[i], W, H, S); if (near(p.x, p.y + 14 * S, 20 * S) && once('bell' + i)) ringBell(i); });
+  g.trees.forEach((tr, i) => { const p = treeTop(TREE_FX[i], W, GY, S); if (near(p.x, p.y, p.r) && once('tree' + i)) shakeTree(i); });
+  g.buds.forEach((b, i) => {
+    const p = budTop(BUD_FX[i], W, GY, S, b.grow);
+    if (b.open >= 0 || !near(p.x, p.y, 20 * S) || !once('bud' + i)) return;
+    if (b.grow < 1) { b.grow = Math.min(1, b.grow + .5); emit(p.x, p.y, 10, { cols: ['#ffd1e6', '#ffe36e', '#ffffff'], max: 120, size: 4, g: -20 }); }
+    else bloomBud(i);
+  });
+  if (g.land.slide) { const rb = rainbowArc(W, H, GY); if (near(rb.cx, rb.top, 30 * S) && once('cloud') && g.slides.length < 3) sendSlide(); }
+  for (const o of g.critters) if (!o.left) { const p = critterPos(o); if (near(p.x, p.y - 20 * S, 10 * S) && once(o)) touchCritter(o); }
+  if (g.egg && !g.egg.hatched) { const p = eggPos(); if (near(p.x, p.y, 30 * S) && once('egg')) warmEgg(1); }
+}
+function drawBreathReach(c) { // a soft warm glow where the flame lands
+  const g = game; if (!(g.breath > 0) || g.form !== 'phoenix') return;
+  const sp = breathSpot(), a = Math.min(1, g.breath * 2) * .35;
+  const gr = c.createRadialGradient(sp.x, sp.y, 4, sp.x, sp.y, sp.r);
+  gr.addColorStop(0, `rgba(255,220,120,${a})`); gr.addColorStop(1, 'rgba(255,140,60,0)');
+  c.fillStyle = gr; c.beginPath(); c.arc(sp.x, sp.y, sp.r, 0, TAU); c.fill();
+}
+
+/* ---------- Gem Wishes: a little wish fairy asks for gems of one color ---------- */
+const WISH_FAIRY = 'Twinkle';
+const FAM_COLOR = { ruby: 'red', topaz: 'yellow', emerald: 'green', sapphire: 'blue', amethyst: 'purple', opal: 'shimmery white', rosequartz: 'pink', aquamarine: 'sea blue' };
+function wishWords(w) {
+  const here = [...new Set(Object.keys(game.land.gems).filter(k => famOf(k) === w.fam))].map(k => GEMS[k].name);
+  const main = GEMS[w.fam].name, more = here.filter(n => n !== main);
+  return `Can you find ${w.n} ${FAM_COLOR[w.fam]} ${main} gems for me?${more.length ? ` ${listWords(more)} ${more.length > 1 ? 'count' : 'counts'} too!` : ''}`;
+}
+function newWish() {
+  const g = game, fams = [...new Set(Object.keys(g.land.gems).map(famOf))].filter(f => FAM_COLOR[f]);
+  if (!fams.length) return;
+  const fam = fams[Math.floor(Math.random() * fams.length)];
+  g.wish = { fam, n: Math.random() < .5 ? 2 : 3, got: 0, done: false, t: g.t, x: g.ux, y: GY - 260 * S };
+  showWishChip();
+  tone(1568, .3, 'sine', .06); tone(2093, .4, 'sine', .05, .12);
+  say(`Hello! I'm ${WISH_FAIRY} the wish fairy! ${wishWords(g.wish)}`);
+}
+function showWishChip() {
+  const el = $('#wishChip'), w = game && game.wish; if (!el) return;
+  if (!w) { el.hidden = true; return; }
+  el.hidden = false; el.innerHTML = '';
+  const n = document.createElement('b'); n.textContent = w.done ? 'Wish granted!' : `${Math.min(w.got, w.n)} / ${w.n}`;
+  el.append(img(gemIcon[w.fam], GEMS[w.fam].name), n);
+  el.classList.toggle('done', w.done);
+  el.setAttribute('aria-label', w.done ? 'Wish granted' : `Wish: ${w.n} ${GEMS[w.fam].name} gems`);
+}
+function wishGem(type) { // called for every gem caught
+  const w = game.wish; if (!w || w.done || famOf(type) !== w.fam) return;
+  w.got++; showWishChip();
+  if (w.got >= w.n) setTimeout(() => { if (game && game.wish === w) grantWish(); }, 600);
+  else tone(1319, .15, 'sine', .05, .15);
+}
+function grantWish() {
+  const g = game, w = g.wish; w.done = true; w.joy = g.t; showWishChip();
+  save.wishes = (save.wishes || 0) + 1; persist();
+  SFX.magic(); emit(w.x, w.y, 40, { cols: [...MAGIC, '#ff8fb1', '#ffd23f'], max: 260, size: 5, g: 40 });
+  say(`You did it! Thank you! Here is a Rainbow Star for you!`);
+  if (!g.done) collect('rainbow', w.x, w.y, true);
+  else { save.bag.rainbow++; persist(); }
+  g.wishNext = g.t + 30;
+}
+function fairyTap(x, y) {
+  const w = game.wish; if (!w || Math.hypot(x - w.x, y - w.y) > Math.max(44, 50 * S)) return false;
+  tone(1760, .2, 'sine', .06); emit(w.x, w.y, 10, { kind: 'star', max: 120, g: 0 });
+  say(w.done ? `Thank you for my wish! ${WISH_FAIRY} is so happy!` : wishWords(w));
+  return true;
+}
+function updateWish(dt) {
+  const g = game;
+  if (!g.wish) { if (!g.done && g.t > (g.wishNext || 6)) newWish(); return; }
+  const w = g.wish;
+  if (w.done && g.t - w.joy > 6) { g.wish = null; showWishChip(); return; }
+  // The fairy flutters near the hero, a little above and ahead
+  const hx = g.form === 'ride' ? g.ux : g.px, hy = g.form === 'ride' ? GY - 230 * S : g.py - 90 * S;
+  const tx = hx + (g.form === 'ride' ? g.uface : g.pface) * 110 * S, ty = Math.max(60 * S, hy) + Math.sin(g.t * 2.2) * 10 * S;
+  const k = Math.min(1, dt * 2.5); w.x += (tx - w.x) * k; w.y += (ty - w.y) * k;
+}
+function drawFairy(c) {
+  const w = game.wish; if (!w) return;
+  const t = game.t, s = S * (w.done ? 1 + .15 * Math.sin((t - w.joy) * 10) : 1), flap = Math.sin(t * 18);
+  c.save(); c.translate(w.x, w.y); if (w.done) c.rotate(Math.sin((t - w.joy) * 6) * .4); c.scale(s, s);
+  const glow = c.createRadialGradient(0, 0, 2, 0, 0, 40); glow.addColorStop(0, 'rgba(255,250,200,.7)'); glow.addColorStop(1, 'rgba(255,250,200,0)');
+  c.fillStyle = glow; c.beginPath(); c.arc(0, 0, 40, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(200,235,255,.75)'; c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 1.5;
+  for (const sd of [-1, 1]) { c.save(); c.scale(sd, 1); c.rotate(-.3 + flap * .35); c.beginPath(); c.ellipse(12, -8, 14, 8, -.5, 0, TAU); c.fill(); c.stroke(); c.beginPath(); c.ellipse(10, 6, 9, 5, .4, 0, TAU); c.fill(); c.stroke(); c.restore(); }
+  c.fillStyle = '#ff9bd2'; c.beginPath(); c.moveTo(-7, 2); c.lineTo(7, 2); c.lineTo(10, 18); c.lineTo(-10, 18); c.closePath(); c.fill();
+  c.fillStyle = '#ffe3cc'; c.beginPath(); c.arc(0, -6, 8, 0, TAU); c.fill();
+  c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(0, -10, 8.5, Math.PI, TAU); c.fill();
+  c.fillStyle = '#2b1a3a'; c.beginPath(); c.arc(-3, -5, 1.3, 0, TAU); c.arc(3, -5, 1.3, 0, TAU); c.fill();
+  c.strokeStyle = '#c0567f'; c.lineWidth = 1.2; c.beginPath(); c.arc(0, -3, 2.5, .2 * Math.PI, .8 * Math.PI); c.stroke();
+  c.strokeStyle = '#ffd23f'; c.lineWidth = 2; c.beginPath(); c.moveTo(9, 6); c.lineTo(20, -6); c.stroke();
+  sparkle(c, 21, -8, 5 + 2 * Math.sin(t * 6));
+  c.restore();
+  if (!w.done) { // the wished-for gem floats over her head
+    const k = .8 + .2 * Math.sin(t * 3);
+    c.save(); c.globalAlpha = .95; c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.arc(w.x, w.y - 40 * S, 15 * S + 3, 0, TAU); c.fill(); c.restore();
+    drawGem(c, w.x, w.y - 40 * S, (10 * S + 2) * k, w.fam, t);
+  }
+}
+
+/* ---------- Baby gem pets: a gem egg appears in a land you've visited, warm it to hatch a friend ---------- */
+const PETS = {
+  meadow:  { kind: 'bunny',  name: 'Clover',   gem: 'emerald' },
+  lake:    { kind: 'owl',    name: 'Hoot',     gem: 'amethyst' },
+  clouds:  { kind: 'lamb',   name: 'Puff',     gem: 'opal' },
+  volcano: { kind: 'dragon', name: 'Ember',    gem: 'ruby' },
+  crystal: { kind: 'kitten', name: 'Prism',    gem: 'rosequartz' },
+  lagoon:  { kind: 'seal',   name: 'Splash',   gem: 'aquamarine' },
+  orchard: { kind: 'bear',   name: 'Honey',    gem: 'topaz' },
+  peak:    { kind: 'fox',    name: 'Snowball', gem: 'sapphire' },
+  forest:  { kind: 'owl',    name: 'Glimmer',  gem: 'topaz' },
+  falls:   { kind: 'dragon', name: 'Rainbow',  gem: 'rainbow' },
+  blossom: { kind: 'bunny',  name: 'Petal',    gem: 'rosequartz' },
+};
+const EGG_TRIPS = 2; // the egg shows up once a land has been finished this many times
+const petFlies = p => p.kind === 'owl' || p.kind === 'dragon';
+function petFor(landId) { // this land's own pet if hatched, else the newest one
+  const id = save.pets && save.pets[landId] ? landId : save.pet;
+  return id && PETS[id] && save.pets[id] ? { id, ...PETS[id] } : null;
+}
+function eggPos() { const g = game; return { x: g.egg.fx * W, y: GY - 6 * S }; }
+function warmEgg(n) {
+  const g = game, e = g.egg; if (!e || e.hatched) return;
+  e.warm += n; e.wob = 1;
+  const p = eggPos(); emit(p.x, p.y - 30 * S, 12, { cols: FIRE, max: 140, size: 5, g: -40 });
+  tone(600 + e.warm * 120, .2, 'sine', .06);
+  if (e.warm >= 3) hatchEgg();
+  else if (!e.said) { e.said = true; say('The egg wiggled! Keep it warm!'); }
+}
+function hatchEgg() {
+  const g = game, e = g.egg, P = PETS[g.land.id], p = eggPos();
+  e.hatched = g.t;
+  save.pets = save.pets || {}; save.pets[g.land.id] = true; save.pet = g.land.id; persist();
+  g.pet = { ...P, id: g.land.id, x: p.x, y: p.y - 20 * S, face: 1, hop: 0, findT: 0, happy: g.t };
+  SFX.magic(); emit(p.x, p.y - 30 * S, 50, { cols: [...MAGIC, GEMS[P.gem].c1, GEMS[P.gem].c2], max: 280, size: 6, g: 60 });
+  say(`Crack! The egg hatched! It's a baby gem ${P.kind}! Say hello to ${P.name}! ${P.name} will follow you and find gems for you.`);
+}
+function eggTap(x, y) {
+  const g = game, e = g.egg; if (!e || e.hatched) return false;
+  const p = eggPos(); if (Math.hypot(x - p.x, y - (p.y - 30 * S)) > Math.max(46, 50 * S)) return false;
+  e.wob = 1; tone(700, .15, 'triangle', .06);
+  say(g.form === 'phoenix' ? 'Breathe warm phoenix fire on the egg to help it hatch!' : `A gem egg! Fly over as a phoenix and breathe warm fire on it, or rest ${save.look.uname} next to it to keep it cozy.`);
+  return true;
+}
+function petTap(x, y) {
+  const g = game, P = g.pet; if (!P || Math.hypot(x - P.x, y - (P.y - 22 * S)) > Math.max(44, 46 * S)) return false;
+  P.happy = g.t; tone(1175, .12, 'sine', .07); tone(1568, .15, 'sine', .06, .1);
+  emit(P.x, P.y - 40 * S, 8, { kind: 'heart', cols: ['#ff8fb1'], max: 90, g: -30, life: .8 });
+  say(`${P.name} the baby gem ${P.kind} loves you!`);
+  return true;
+}
+function updatePet(dt) {
+  const g = game, e = g.egg;
+  if (e && !e.hatched) {
+    e.wob = Math.max(0, e.wob - dt * 2);
+    const p = eggPos();
+    if (g.form === 'ride' && !g.umoving && Math.abs(g.ux - p.x) < 80 * S) { e.cozy = (e.cozy || 0) + dt; if (e.cozy > 3) { e.cozy = 0; warmEgg(1); } }
+  }
+  const P = g.pet; if (!P) return;
+  const fly = petFlies(P) && g.form !== 'ride';
+  const hx = g.form === 'ride' ? g.ux : g.px, hface = g.form === 'ride' ? g.uface : g.pface;
+  const tx = hx - hface * (fly ? 70 : 85) * S, ty = fly ? g.py + 30 * S : GY;
+  const dx = tx - P.x, dy = ty - P.y, d = Math.hypot(dx, dy), sp = (fly ? 460 : 340) * S * (hasPower('bracelet') ? 1.5 : 1);
+  if (d > 4) { const st = Math.min(d, sp * dt); P.x += dx / d * st; P.y += dy / d * st; if (Math.abs(dx) > 3) P.face = Math.sign(dx); P.hop += dt * 12; }
+  P.fly = fly || P.y < GY - 2;
+  // Every so often the pet sniffs out a gem and brings it over
+  if (!g.done && (P.findT += dt) > 14 - 4 * gpow('rosequartz')) {
+    P.findT = 0; P.happy = g.t;
+    const type = Math.random() < .35 ? P.gem === 'rainbow' ? 'rainbow' : P.gem : pickGemType(g.land);
+    emit(P.x, P.y - 30 * S, 14, { kind: 'star', max: 140, g: 0 });
+    collect(type, P.x, P.y - 30 * S);
+    if (!g.saidPet) { g.saidPet = true; setTimeout(() => say(`${P.name} found ${/^[AEIOU]/.test(GEMS[type].name) ? "an" : "a"} ${GEMS[type].name} for you!`), 500); }
+  }
+}
+// One cute baby gem animal: body in the gem's colors, ears/wings by kind, a little gem on the forehead
+function drawPetBody(c, kind, gem, t, hop, happy) {
+  const G = GEMS[gem], fill = c.createLinearGradient(-16, -40, 16, 0);
+  fill.addColorStop(0, G.c1); fill.addColorStop(1, G.c2);
+  const bounce = -Math.abs(Math.sin(hop)) * 6, wing = Math.sin(t * 14);
+  c.translate(0, bounce); c.lineJoin = 'round'; c.lineCap = 'round';
+  c.fillStyle = 'rgba(40,20,70,.15)'; c.beginPath(); c.ellipse(0, -bounce + 1, 16, 4, 0, 0, TAU); c.fill();
+  c.fillStyle = fill; c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2;
+  if (kind === 'owl' || kind === 'dragon') { // little wings
+    c.fillStyle = 'rgba(255,255,255,.75)';
+    for (const sd of [-1, 1]) { c.save(); c.translate(sd * 14, -20); c.rotate(sd * (.5 + wing * .4)); c.beginPath(); c.ellipse(sd * 8, 0, 11, 6, 0, 0, TAU); c.fill(); c.restore(); }
+    c.fillStyle = fill;
+  }
+  if (kind === 'fox' || kind === 'kitten' || kind === 'dragon') { // tail
+    c.beginPath(); c.moveTo(-14, -8); c.quadraticCurveTo(-30, -14 + Math.sin(t * 4) * 4, -26, -30); c.quadraticCurveTo(-20, -18, -10, -14); c.fill();
+  }
+  c.beginPath(); c.ellipse(0, -16, 17, 15, 0, 0, TAU); c.fill(); // body
+  c.beginPath(); c.arc(2, -34, 14, 0, TAU); c.fill(); // head
+  const ear = (pts) => { c.beginPath(); c.moveTo(pts[0], pts[1]); for (let i = 2; i < pts.length; i += 2) c.lineTo(pts[i], pts[i + 1]); c.closePath(); c.fill(); };
+  if (kind === 'bunny') { for (const ex of [-5, 8]) { c.beginPath(); c.ellipse(ex, -54, 4.5, 12, ex < 0 ? -.2 : .2, 0, TAU); c.fill(); } }
+  else if (kind === 'kitten' || kind === 'fox') { const big = kind === 'fox' ? 1.4 : 1; ear([-10, -42, -9, -42 - 12 * big, -2, -46]); ear([14, -42, 13, -42 - 12 * big, 6, -46]); }
+  else if (kind === 'bear' || kind === 'seal' || kind === 'lamb') { if (kind !== 'seal') for (const ex of [-9, 13]) { c.beginPath(); c.arc(ex, -45, 5, 0, TAU); c.fill(); } }
+  else if (kind === 'owl') { ear([-10, -42, -12, -52, -3, -46]); ear([14, -42, 16, -52, 7, -46]); }
+  else if (kind === 'dragon') { c.fillStyle = '#fff3b0'; ear([-6, -45, -9, -56, -1, -47]); ear([10, -45, 13, -56, 5, -47]); c.fillStyle = fill; }
+  if (kind === 'lamb') { c.fillStyle = 'rgba(255,255,255,.85)'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(Math.cos(i) * 12, -16 + Math.sin(i * 1.7) * 9, 6, 0, TAU); c.fill(); } }
+  // face
+  c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(4, -30, 8, 6, 0, 0, TAU); c.fill();
+  c.fillStyle = '#2b1a3a';
+  const blink = (t % 4) < .12;
+  for (const ex of [-2, 8]) { if (blink) c.fillRect(ex - 2, -36, 4, 1.4); else { c.beginPath(); c.arc(ex, -36, 2.2, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + .7, -36.8, .8, 0, TAU); c.fill(); c.fillStyle = '#2b1a3a'; } }
+  if (kind === 'owl') { c.fillStyle = '#ffb13d'; ear([1, -32, 5, -32, 3, -28]); }
+  else { c.strokeStyle = '#7a3a5a'; c.lineWidth = 1.3; c.beginPath(); c.arc(3, -31, happy ? 3.2 : 2.2, .15 * Math.PI, .85 * Math.PI); c.stroke(); }
+  c.fillStyle = 'rgba(255,140,170,.55)'; c.beginPath(); c.arc(-6, -31, 2.3, 0, TAU); c.arc(12, -31, 2.3, 0, TAU); c.fill();
+  drawGem(c, 2, -45, 4.5, gem, t, false);
+}
+function drawPet(c, P, x, y, face, t, hop, happy, alpha = 1) {
+  c.save(); c.globalAlpha = alpha; c.translate(x, y); c.scale(S * 1.1 * (face < 0 ? -1 : 1), S * 1.1);
+  if (happy) c.translate(0, -Math.abs(Math.sin(t * 10)) * 8);
+  drawPetBody(c, P.kind, P.gem, t, hop, happy);
+  c.restore();
+}
+function drawEggAndPet(c) {
+  const g = game, e = g.egg, t = g.t;
+  if (e && (!e.hatched || t - e.hatched < .6)) {
+    const p = eggPos(), G = GEMS[PETS[g.land.id].gem], k = e.hatched ? 1 + (t - e.hatched) * 2 : 1;
+    c.save(); c.translate(p.x, p.y); c.globalAlpha = e.hatched ? Math.max(0, 1 - (t - e.hatched) / .6) : 1;
+    c.fillStyle = '#b98a5a'; c.beginPath(); c.ellipse(0, 0, 34 * S, 10 * S, 0, 0, TAU); c.fill(); // nest
+    c.strokeStyle = '#8a5f38'; c.lineWidth = 3 * S; for (let i = -2; i <= 2; i++) { c.beginPath(); c.moveTo(-30 * S, i * 3 * S); c.lineTo(30 * S, -i * 2 * S); c.stroke(); }
+    c.rotate(Math.sin(t * 20) * .25 * e.wob + Math.sin(t * 2) * .03 * Math.min(3, e.warm)); c.scale(S * k, S * k);
+    const gr = c.createLinearGradient(-16, -50, 16, 0); gr.addColorStop(0, '#ffffff'); gr.addColorStop(.5, G.c1); gr.addColorStop(1, G.c2);
+    c.fillStyle = gr; c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2;
+    c.beginPath(); c.ellipse(0, -24, 17, 23, 0, 0, TAU); c.fill(); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.8)'; for (const [sx, sy] of [[-6, -34], [7, -22], [-4, -14]]) { c.beginPath(); c.arc(sx, sy, 3, 0, TAU); c.fill(); }
+    if (e.warm > 0) { c.strokeStyle = 'rgba(120,70,140,.6)'; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-10, -26); c.lineTo(-4, -22); c.lineTo(2, -28); if (e.warm > 1) { c.lineTo(8, -23); c.lineTo(13, -27); } c.stroke(); }
+    c.restore();
+    sparkle(c, p.x + 20 * S, p.y - 50 * S, (5 + 3 * Math.sin(t * 4)) * S);
+  }
+  const P = g.pet; if (P) drawPet(c, P, P.x, P.y, P.face, t, P.hop, t - P.happy < 1.2);
+}
+function newGameExtras() { // set up breath, wish and pet for a fresh adventure
+  const g = game, land = g.land;
+  g.breath = 0; g.wish = null; g.wishNext = 7; showWishChip();
+  const own = petFor(land.id);
+  g.pet = own ? { ...own, x: g.ux - 85 * S, y: GY, face: 1, hop: 0, findT: 4, happy: -9 } : null;
+  g.egg = PETS[land.id] && !(save.pets && save.pets[land.id]) && (save.trips[land.id] || 0) >= EGG_TRIPS ? { fx: .62, warm: 0, wob: 0, hatched: 0 } : null;
+  setBreathBtn();
+}
+function extrasWords() {
+  const g = game; let w = '';
+  if (g.egg) w += ' Look! A sparkly gem egg is in a nest! Keep it warm to help it hatch!';
+  if (g.pet) w += ` ${g.pet.name} came along to help!`;
+  return w;
+}
+
 /* ---------- Ultra gem vaults: wear the right jewelry, then solve a pattern puzzle ---------- */
 function vaultPos() { return { x: W - Math.max(52, 62 * S), y: H * .42 + Math.sin(game.t * 2) * 5 * S, r: Math.max(30, 36 * S) }; }
 function drawVault(c) {
@@ -2410,9 +2728,12 @@ function drawGame() {
   for (const o of g.critters) drawCritter(c, o, g.t);
   if (g.land.dark) drawDark(c);
   drawVault(c);
+  drawEggAndPet(c);
   drawOthers(c, frameDt);
   drawUnicorn(c, g.ux, GY, S, g.uface, { t: g.t, phase: g.uphase, moving: g.umoving, rider: g.form === 'ride' });
   if (g.form !== 'ride') drawPhoenix(c, g.px, g.py, S * 1.25, g.pface, g.t);
+  drawBreathReach(c);
+  drawFairy(c);
   drawParts(c);
   for (const f of g.fly) {
     const p = socketPos(f.i), k = 1 - Math.pow(1 - Math.min(1, f.t), 3);
@@ -2420,6 +2741,23 @@ function drawGame() {
     drawGem(c, x, y, (20 - 8 * k) * S + 4, f.type, g.t);
   }
   if (g.flash > 0) { c.fillStyle = `rgba(255,220,150,${g.flash * .35})`; c.fillRect(0, 0, W, H); }
+}
+
+// Little glowing gems at the screen edges point to sky gems you can't see yet, so Lia knows where to go.
+function drawOffscreen(c) {
+  const g = game, pad = Math.max(22, 26 * S);
+  for (const o of g.gems) {
+    if (!o.alive || !o.lit) continue;
+    const x = o.fx * W - CX, y = o.fy * H - CY;
+    if (x > -10 && x < VW + 10 && y > -10 && y < VH + 10) continue;
+    const ex = clamp(x, pad, VW - pad), ey = clamp(y, pad + 60, VH - pad - 60), a = Math.atan2(y - ey, x - ex);
+    c.save(); c.globalAlpha = .75 + .25 * Math.sin(g.t * 4 + o.ph);
+    c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.arc(ex, ey, 18 * S + 4, 0, TAU); c.fill();
+    c.translate(ex, ey); c.rotate(a); c.fillStyle = '#ffffff';
+    c.beginPath(); c.moveTo(22 * S + 9, 0); c.lineTo(16 * S + 4, -7); c.lineTo(16 * S + 4, 7); c.closePath(); c.fill();
+    c.restore();
+    drawGem(c, ex, ey, 11 * S + 3, o.type, g.t, false);
+  }
 }
 
 /* Ambient background for menus */
@@ -2614,7 +2952,7 @@ function mpTick(dt) {
   if (mpGap < (intent === mpLast ? 1 / 15 : 1 / 30)) return;
   mpGap = 0; mpLast = intent;
   const st = g ? { land: g.land.id, ux: r3(g.ux / W), uface: g.uface, mv: g.umoving, form: g.form, px: r3(g.px / W), py: r3(g.py / H), pface: g.pface,
-                   tx: r3(g.tx / W), ty: r3(g.ty / H), fast: hasPower('bracelet'), wing: hasPower('brooch'), look: save.look }
+                   tx: r3(g.tx / W), ty: r3(g.ty / H), fast: hasPower('bracelet'), wing: hasPower('brooch'), look: save.look, pet: g.pet ? [g.pet.kind, g.pet.gem] : null }
                : { land: null, look: save.look };
   mpSock.send(JSON.stringify({ t: 'state', s: st }));
 }
@@ -2643,6 +2981,7 @@ function drawOthers(c, dt) {
     c.save(); c.globalAlpha = .9;
     drawUnicorn(c, o.ux, GY, S, s.uface || 1, { t: o.t, phase: o.phase, moving: s.mv, rider: s.form === 'ride' });
     if (s.form !== 'ride') drawPhoenix(c, o.x, o.y, S * 1.25, s.pface || 1, o.t);
+    if (Array.isArray(s.pet) && GEMS[s.pet[1]]) drawPet(c, { kind: String(s.pet[0]), gem: s.pet[1] }, o.ux - (s.uface || 1) * 85 * S, GY, s.uface || 1, o.t, o.phase, false);
     c.restore();
     save.look = mine;
     const nx = s.form === 'ride' ? o.ux : o.x, ny = s.form === 'ride' ? GY - 200 * S : o.y - 50 * S;
@@ -2661,7 +3000,16 @@ function frame(now) {
   mpTick(dt);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   stepParts(dt);
-  if (screen === 's-play' && game) { if (!pz) updateGame(dt); drawGame(); } else drawAmbient(); // the world waits while a vault puzzle is open
+  if (screen === 's-play' && game) {
+    if (!pz) updateGame(dt); // the world waits while a vault puzzle is open
+    if (game) {
+      updateCamera(dt);
+      ctx.setTransform(DPR, 0, 0, DPR, -CX * DPR, -CY * DPR);
+      drawGame();
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      drawOffscreen(ctx);
+    }
+  } else drawAmbient();
   if (screen === 's-make') drawPreview();
   if (screen === 's-shop') drawBench();
   requestAnimationFrame(frame);
