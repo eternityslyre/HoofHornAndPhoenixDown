@@ -1741,23 +1741,24 @@ function collect(type, x, y, bonus) {
   const i = g.got; g.got++; g.haul.push(type); g.idle = 0;
   save.bag[type]++; persist();
   wishGem(type);
-  g.fly.push({ type, x0: x, y0: y, t: 0, i });
+  // the gem flies to the next of the 12 sockets; after every 12 the sockets empty and fill again
+  g.fly.push({ type, x0: x, y0: y, t: 0, i: i % GOAL, fresh: i > 0 && i % GOAL === 0 });
   SFX.gem(GEMS[type].note);
   emit(x, y, 16, { cols: MAGIC, max: 220, size: 5, g: 60 }); emit(x, y, 6, { kind: 'star', max: 160, g: 0 });
   // Tiara: Lucky Sparkle sometimes drops a twin gem straight into your bag
   const twin = hasPower('tiara') && !GEMS[type].ultra && Math.random() < .15 + .15 * boost('tiara');
   if (twin) { save.bag[type]++; persist(); emit(x, y, 10, { kind: 'star', max: 200, g: 0 }); tone(GEMS[type].note * 1.5, .3, 'sine', .07, .12); }
-  if (g.got === GOAL / 2) say('Half way there!');
+  if (g.got % GOAL === GOAL / 2) say('Half way to a star!');
   else if (twin) say(`Lucky Sparkle! A twin ${GEMS[type].name} went in your bag!`, true);
   else say(GEMS[type].name + '!', true);
-  if (g.got >= GOAL) { g.done = true; g.form = g.form === 'ride' ? 'ride' : 'landing'; setTimeout(win, 900); }
+  if (g.got % GOAL === 0) setTimeout(() => { if (game === g) win(); }, 900); // a star every 12 gems, and the adventure keeps going
 }
 function win() {
   const g = game; if (!g) return;
   save.trips[g.land.id] = (save.trips[g.land.id] || 0) + 1; persist();
   const h = $('#haul'); h.innerHTML = ''; g.haul.forEach(k => h.append(img(gemIcon[k], GEMS[k].name)));
-  $('#win').hidden = false; g.fw = 3.5; setBreathBtn();
-  SFX.win(); say(`Hooray! You found ${GOAL} magic gems! Let's make some jewelry!`);
+  g.fw = 3.5;
+  SFX.win(); say(`Hooray! ${g.got < GOAL * 2 ? `You found ${GOAL}` : `${GOAL} more`} magic gems! You earned a star for ${g.land.name}! Keep exploring for more, or tap the little house to go make jewelry.`);
 }
 function socketPos(i) {
   const el = $('#sockets').children[i]; if (!el) return { x: 40, y: 30 };
@@ -1838,6 +1839,7 @@ function updateGame(dt) {
   for (const f of g.fly) {
     f.t += dt / .7;
     if (f.t >= 1 && !f.done) {
+      if (f.fresh) [...$('#sockets').children].forEach(k => { k.innerHTML = ''; });
       f.done = true; const s = $('#sockets').children[f.i];
       if (s) { s.innerHTML = ''; s.append(img(gemIcon[f.type], GEMS[f.type].name)); }
     }
