@@ -95,19 +95,50 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
 .fire.bird span{background:radial-gradient(circle at 40% 35%,#fff,#e6dcff 60%,var(--lilac))}
 .fire.bird svg{color:var(--lilac-deep)}
 .fire.tired{filter:saturate(.3) brightness(.9)}
-.powers{position:absolute;left:12px;bottom:16px;display:flex;gap:8px}
-.powers button{width:58px;height:58px;border-radius:50%;border:3px solid var(--gold);background:rgba(255,248,255,.85);padding:0;display:grid;place-items:center}
+.powers{position:absolute;left:12px;bottom:16px;right:140px;display:flex;flex-wrap:wrap-reverse;gap:8px;pointer-events:none}
+.powers button{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:3px solid var(--gold);background:rgba(255,248,255,.85);padding:0;display:grid;place-items:center}
 .powers img{width:46px;height:46px}
 .win{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(520px,calc(100% - 32px));text-align:center;display:flex;flex-direction:column;gap:14px;align-items:center}
 .win h2{font-size:clamp(2.2rem,8vw,3.2rem);color:var(--flame)}
 .win .haul{display:flex;flex-wrap:wrap;justify-content:center;gap:2px}
 .win .haul img{width:38px;height:38px}
+.puzzle{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);width:min(560px,calc(100% - 24px));max-height:calc(100% - 24px);overflow:auto;text-align:center;display:flex;flex-direction:column;gap:8px;align-items:center;z-index:4}
+.puzzle h2{display:flex;align-items:center;gap:8px;font-size:clamp(1.6rem,6vw,2.3rem);color:var(--flame)}
+.puzzle h2 img{width:72px;height:72px}
+.puzzle p{margin:0}
+.pzsub{font-family:var(--display);color:var(--ink-soft);font-size:1rem}
+.needs{margin:0;padding:0;list-style:none;display:flex;flex-direction:column;gap:6px;text-align:left;font-size:1.2rem;font-family:var(--display)}
+.needs li{display:flex;align-items:center;gap:8px}
+.needs li::before{content:'';width:24px;height:24px;flex:none;border-radius:50%;border:3px solid var(--lilac);box-sizing:border-box}
+.needs li.ok::before{content:'✓';border-color:#3fc28c;background:#3fc28c;color:#fff;display:grid;place-items:center;font-size:.9rem;font-weight:800}
+.pzfam{font-size:.95rem;color:var(--ink-soft);max-width:44ch}
+.pztext{font-size:1.25rem;font-family:var(--display);font-weight:700}
+.pzrow{display:flex;flex-wrap:wrap;justify-content:center;gap:4px;align-items:center}
+.pzrow:empty,.pzpick:empty,.pzfam:empty{display:none}
+.pzrow img{width:50px;height:50px}
+.pzrow .q{width:50px;height:50px;border-radius:50%;border:3px dashed var(--flame);display:grid;place-items:center;font-family:var(--display);font-weight:800;font-size:1.8rem;color:var(--flame)}
+.pzpick{display:flex;gap:14px;justify-content:center}
+.pzpick button{width:84px;height:84px;border-radius:22px;border:4px solid var(--white);background:var(--panel);padding:0;display:grid;place-items:center;box-shadow:0 4px 0 rgba(58,29,92,.25)}
+.pzpick img{width:64px;height:64px}
+.pzpick button.no{opacity:.3}
+.pzpick button.hint{border-color:var(--gold);animation:twinkle 1s ease-in-out infinite}
+@keyframes twinkle{50%{box-shadow:0 0 22px 6px var(--gold);transform:scale(1.06)}}
+/* Ultra gems list on the map */
+.ultras{width:min(860px,100%);display:flex;flex-direction:column;gap:8px}
+.ultras h3{color:var(--white);text-shadow:0 3px 0 var(--lilac-deep);font-size:clamp(1.3rem,4.5vw,1.8rem);text-align:center;margin:0}
+.urow{display:flex;align-items:center;gap:10px;padding:8px 12px;border-radius:20px;border:4px solid var(--white);background:var(--panel);text-align:left}
+.urow img{width:58px;height:58px;flex:none}
+.urow.locked img{opacity:.55;filter:saturate(.5)}
+.urow div{display:flex;flex-direction:column;gap:2px;min-width:0}
+.urow b{font-family:var(--display);font-size:1.15rem}
+.urow small{font-size:.95rem;color:var(--ink-soft)}
+.urow .ok{color:#2f9a6a;font-weight:700}
 
 /* Workshop */
 .bar{width:min(900px,100%);display:flex;align-items:center;gap:12px}
 .bar h2{flex:1;font-size:clamp(1.5rem,5vw,2.3rem);color:var(--white);text-shadow:0 3px 0 var(--lilac-deep)}
 .back{background:var(--panel);color:var(--ink);border:0}
-.types{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;width:min(900px,100%)}
+.types{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;width:min(900px,100%)}
 .type{display:flex;flex-direction:column;align-items:center;gap:2px;padding:8px 4px;border-radius:20px;border:4px solid var(--white);background:var(--panel)}
 .type.sel{border-color:var(--flame);background:#fff1e6}
 .type canvas{width:100%;max-width:110px;height:auto;aspect-ratio:1}
@@ -133,6 +164,12 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
 .jcard canvas{width:100%;height:auto;aspect-ratio:3/2}
 .jcard b{font-family:var(--display);font-size:1.1rem;text-align:center}
 .jcard small{font-size:.95rem;color:var(--ink-soft);text-align:center}
+.jcard{position:relative}
+.jcard.worn{border-color:var(--gold);box-shadow:0 0 0 4px rgba(255,210,63,.45)}
+.jcard .wear{position:absolute;top:6px;right:8px;padding:2px 10px;border-radius:12px;background:var(--gold);color:#5a3a00;font-family:var(--display);font-weight:800;font-size:.85rem}
+.wearline{color:var(--white);font-family:var(--display);font-size:1.1rem;text-align:center;margin:0 0 10px}
+.powers button.gp{width:46px;height:46px;border-color:var(--white)}
+.powers button.gp img{width:36px;height:36px}
 .empty{color:var(--white);font-family:var(--display);font-size:1.3rem;text-align:center;max-width:30ch}
 @media (max-width:560px){.sock{width:20px;height:20px}.sock img{width:24px;height:24px}.sockets{gap:3px;padding:5px 8px}#app[data-s="s-play"] #caption{top:112px}}
 @media (prefers-reduced-motion:reduce){.sock img{animation:none}.btn{transition:none}}
@@ -174,6 +211,7 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     <h2 class="title-big">Where shall we fly today?</h2>
     <div class="bagline" id="mapBag"></div>
     <div class="lands" id="lands"></div>
+    <div class="ultras" id="ultras"></div>
     <div class="dock">
       <button class="btn gold" id="toShop">Jewelry Workshop</button>
       <button class="btn lilac" id="toBox">Treasure Box</button>
@@ -189,6 +227,16 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     </div>
     <div class="powers" id="powers"></div>
     <button class="fire" id="fireBtn" aria-label="Turn into a phoenix"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 1.5c.8 4.2 6 6 6 11.5a6.5 6.5 0 0 1-13 0c0-2.8 1.4-4.6 2.8-5.8-.1 2.4 1 3.8 2.4 4.1-.6-3.8.3-6.8 1.8-9.8z"/></svg></span></button>
+    <div class="panel puzzle" id="puzzle" hidden>
+      <h2><span id="pzGem"></span><span id="pzTitle"></span></h2>
+      <p class="pzsub">Ultra shiny gem vault</p>
+      <ol class="needs" id="pzNeeds"></ol>
+      <p class="pzfam" id="pzFam"></p>
+      <p class="pztext" id="pzText"></p>
+      <div class="pzrow" id="pzRow"></div>
+      <div class="pzpick" id="pzPick"></div>
+      <button class="btn lilac" id="pzCloseBtn">Close</button>
+    </div>
     <div class="panel win" id="win" hidden>
       <h2>Hooray!</h2>
       <p style="font-size:1.3rem;margin:0">You found 12 magic gems!</p>
@@ -205,6 +253,7 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     <div class="bar">
       <button class="icon-btn back" data-go="s-map" aria-label="Back to the map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <h2>Jewelry Workshop</h2>
+      <button class="btn lilac" data-go="s-box">Treasure Box</button>
     </div>
     <div class="types" id="types"></div>
     <div class="bench">
@@ -227,7 +276,9 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     <div class="bar">
       <button class="icon-btn back" data-go="s-map" aria-label="Back to the map"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
       <h2>Treasure Box</h2>
+      <button class="btn gold" data-go="s-shop">Jewelry Workshop</button>
     </div>
+    <p class="wearline" id="wearline"></p>
     <div class="box" id="box"></div>
   </section>
 </div>
@@ -243,13 +294,23 @@ const rnd = (a, b) => a + Math.random() * (b - a);
 /* ---------- Save data (this browser only) ---------- */
 const KEY = 'lia-phoenix-jewels-v1';
 const DEF = { look: { hair: '#2a1a12', skin: '#f1c7a5', dress: '#ff6f91', mane: 'rainbow', uname: 'Stardust' },
-  bag: { ruby: 0, sapphire: 0, emerald: 0, topaz: 0, amethyst: 0, rainbow: 0 },
-  jewels: [], trips: {}, made: false, snd: true, voice: true };
+  bag: { ruby: 0, sapphire: 0, emerald: 0, topaz: 0, amethyst: 0, opal: 0, rosequartz: 0, aquamarine: 0, rainbow: 0,
+    garnet: 0, spinel: 0, fireopal: 0, sunstone: 0, citrine: 0, amber: 0, peridot: 0, jade: 0, tourmaline: 0, tanzanite: 0,
+    lapis: 0, moonstone: 0, kunzite: 0, pearl: 0, fluorite: 0, snowquartz: 0, morganite: 0, coral: 0, turquoise: 0, seaglass: 0,
+    sundiamond: 0, moondiamond: 0, dreamopal: 0, phoenixheart: 0, fairyprism: 0, mermaidstar: 0, forestheart: 0, frostdiamond: 0,
+    fireflygem: 0, rainbowprism: 0, blossomgem: 0 },
+  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0 };
+const WEAR = 4; // how many treasures Lia can wear on an adventure at once
 function load() {
   const base = JSON.parse(JSON.stringify(DEF));
   try {
     const s = JSON.parse(localStorage.getItem(KEY));
-    if (s && s.bag) return Object.assign(base, s, { look: Object.assign(base.look, s.look), bag: Object.assign(base.bag, s.bag) });
+    if (s && s.bag) {
+      const o = Object.assign(base, s, { look: Object.assign(base.look, s.look), bag: Object.assign(base.bag, s.bag) });
+      // Older saves wore everything: start them wearing their newest treasures
+      if (!Array.isArray(s.worn)) o.worn = (s.jewels || []).slice(-WEAR).map(j => j.at);
+      return o;
+    }
   } catch (e) {}
   return base;
 }
@@ -263,21 +324,131 @@ const GEMS = {
   emerald:  { name: 'Emerald',  c1: '#a2f7c6', c2: '#0e9a57', shape: 'square',  word: 'Forest',    note: 587 },
   sapphire: { name: 'Sapphire', c1: '#a8d8ff', c2: '#1f4fd8', shape: 'drop',    word: 'Ocean',     note: 784 },
   amethyst: { name: 'Amethyst', c1: '#efc8ff', c2: '#7d2ed6', shape: 'diamond', word: 'Moonlight', note: 698 },
+  opal:       { name: 'Opal',        c1: '#ffffff', c2: '#8fd8e8', shape: 'pearl', word: 'Dream',   note: 523 },
+  rosequartz: { name: 'Rose Quartz', c1: '#ffe3ef', c2: '#f2649c', shape: 'hex',   word: 'Love',    note: 988 },
+  aquamarine: { name: 'Aquamarine',  c1: '#d8fffb', c2: '#11a9b8', shape: 'cut',   word: 'Mermaid', note: 740 },
+  // like: newer gems share the gem power of an older gem friend
+  garnet:     { name: 'Garnet',          c1: '#ffb3a8', c2: '#a8122e', shape: 'round',  word: 'Cozy',      note: 622,  like: 'ruby' },
+  spinel:     { name: 'Spinel',          c1: '#ffc2d6', c2: '#e0245e', shape: 'diamond', word: 'Cherry',   note: 554,  like: 'ruby' },
+  fireopal:   { name: 'Fire Opal',       c1: '#ffe0a8', c2: '#ff5a1f', shape: 'tri',    word: 'Sunset',    note: 698,  like: 'ruby' },
+  sunstone:   { name: 'Sunstone',        c1: '#fff0b8', c2: '#ff9a3c', shape: 'flower', word: 'Daisy',     note: 932,  like: 'topaz' },
+  citrine:    { name: 'Citrine',         c1: '#fffbc2', c2: '#e8c000', shape: 'cut',    word: 'Lemon',     note: 831,  like: 'topaz' },
+  amber:      { name: 'Amber',           c1: '#ffe2a0', c2: '#d9800b', shape: 'drop',   word: 'Honey',     note: 740,  like: 'topaz' },
+  peridot:    { name: 'Peridot',         c1: '#eaffb0', c2: '#7cc21a', shape: 'heart',  word: 'Spring',    note: 659,  like: 'emerald' },
+  jade:       { name: 'Jade',            c1: '#c8f5d8', c2: '#3a9e6a', shape: 'pearl',  word: 'Leaf',      note: 523,  like: 'emerald' },
+  tourmaline: { name: 'Tourmaline',      c1: '#d4ffe8', c2: '#18b878', shape: 'oval',   word: 'Mint',      note: 1175, like: 'emerald' },
+  tanzanite:  { name: 'Tanzanite',       c1: '#cfd0ff', c2: '#4a3ac8', shape: 'drop',   word: 'Twilight',  note: 622,  like: 'sapphire' },
+  lapis:      { name: 'Lapis',           c1: '#b8c8ff', c2: '#1a2f9a', shape: 'square', word: 'Night Sky', note: 494,  like: 'sapphire' },
+  moonstone:  { name: 'Moonstone',       c1: '#ffffff', c2: '#9fb0e0', shape: 'moon',   word: 'Moonbeam',  note: 1109, like: 'amethyst' },
+  kunzite:    { name: 'Kunzite',         c1: '#ffe0ff', c2: '#c25ad8', shape: 'oval',   word: 'Lilac',     note: 784,  like: 'amethyst' },
+  pearl:      { name: 'Pearl',           c1: '#ffffff', c2: '#e8d8c8', shape: 'pearl',  word: 'Seashell',  note: 587,  like: 'opal' },
+  fluorite:   { name: 'Fluorite',        c1: '#e8fff4', c2: '#9a7ae8', shape: 'hex',    word: 'Fairy',     note: 880,  like: 'opal' },
+  snowquartz: { name: 'Snow Quartz',     c1: '#ffffff', c2: '#bcd4ee', shape: 'square', word: 'Snowflake', note: 1319, like: 'opal' },
+  morganite:  { name: 'Morganite',       c1: '#fff0e6', c2: '#f29a86', shape: 'heart',  word: 'Peach',     note: 830,  like: 'rosequartz' },
+  coral:      { name: 'Coral',           c1: '#ffd8cc', c2: '#ff6f61', shape: 'flower', word: 'Reef',      note: 698,  like: 'rosequartz' },
+  turquoise:  { name: 'Turquoise',       c1: '#d0fff6', c2: '#1cc2b0', shape: 'round',  word: 'Sky',       note: 880,  like: 'aquamarine' },
+  seaglass:   { name: 'Sea Glass',       c1: '#e6fff4', c2: '#6fcfb0', shape: 'tri',    word: 'Wave',      note: 784,  like: 'aquamarine' },
   rainbow:  { name: 'Rainbow Star', c1: '#ffffff', c2: '#ff7ad9', shape: 'star', word: 'Rainbow',  note: 1047 },
+  // ultra: ultra shiny gems locked in crystal vaults (see ULTRA). Each one counts as two gems for its gem power.
+  sundiamond:   { name: 'Sun Diamond',     c1: '#fffbe0', c2: '#ffb300', shape: 'sparkstar', word: 'Ultra Sun',     note: 1047, like: 'topaz',      ultra: true },
+  moondiamond:  { name: 'Moon Diamond',    c1: '#ffffff', c2: '#a070ff', shape: 'moon',      word: 'Ultra Moon',    note: 1175, like: 'amethyst',   ultra: true },
+  dreamopal:    { name: 'Dream Opal',      c1: '#ffffff', c2: '#ff9be0', shape: 'pearl',     word: 'Ultra Dream',   note: 1319, like: 'opal',       ultra: true },
+  phoenixheart: { name: 'Phoenix Heart',   c1: '#fff0c0', c2: '#ff3a3a', shape: 'heart',     word: 'Ultra Phoenix', note: 988,  like: 'ruby',       ultra: true },
+  fairyprism:   { name: 'Fairy Prism',     c1: '#fff0fa', c2: '#ff6fc0', shape: 'hex',       word: 'Ultra Fairy',   note: 1397, like: 'rosequartz', ultra: true },
+  mermaidstar:  { name: 'Mermaid Star',    c1: '#e8fffd', c2: '#00c2c7', shape: 'flower',    word: 'Ultra Mermaid', note: 1245, like: 'aquamarine', ultra: true },
+  forestheart:  { name: 'Forest Heart',    c1: '#eaffe0', c2: '#16b35a', shape: 'heart',     word: 'Ultra Forest',  note: 932,  like: 'emerald',    ultra: true },
+  frostdiamond: { name: 'Frost Diamond',   c1: '#ffffff', c2: '#4aa8ff', shape: 'diamond',   word: 'Ultra Frost',   note: 1480, like: 'sapphire',   ultra: true },
+  fireflygem:   { name: 'Firefly Diamond', c1: '#ffffe0', c2: '#b8d000', shape: 'sparkstar', word: 'Ultra Glow',    note: 1568, like: 'topaz',      ultra: true },
+  rainbowprism: { name: 'Rainbow Prism',   c1: '#ffffff', c2: '#c77dff', shape: 'sparkstar', word: 'Ultra Rainbow', note: 1661, like: 'rainbow',    ultra: true },
+  blossomgem:   { name: 'Blossom Crystal', c1: '#fff5fa', c2: '#ff86b8', shape: 'flower',    word: 'Ultra Blossom', note: 1109, like: 'rosequartz', ultra: true },
 };
-const GEM_ORDER = ['ruby', 'topaz', 'emerald', 'sapphire', 'amethyst', 'rainbow'];
+// Gem powers: every gem set in the jewelry you wear adds its own little magic to your adventures
+const GEM_POWERS = {
+  ruby:       { power: 'Warm Fire',       desc: 'Your phoenix stays warm and flies longer!' },
+  topaz:      { power: 'Sunbeam',         desc: 'You can catch gems from farther away, and you shine bright in the dark!' },
+  emerald:    { power: 'Green Thumb',     desc: 'Gem trees and flower buds grow faster, and more crystal rocks pop up!' },
+  sapphire:   { power: 'Calm Waves',      desc: 'Bubbles and sliding gems move nice and slow!' },
+  amethyst:   { power: 'Moon Glow',       desc: 'You glow in dark places, and night birds find gems faster!' },
+  opal:       { power: 'Dream Bubbles',   desc: 'Dreamy gem bubbles float up in every land!' },
+  rosequartz: { power: 'Friendly Hearts', desc: 'Gem bunnies come to visit and hop right over to you!' },
+  aquamarine: { power: 'Rain Cloud',      desc: 'A little cloud follows you and rains down gems!' },
+  rainbow:    { power: 'Rainbow Glow',    desc: 'All your other gem powers get stronger!' },
+};
+Object.keys(GEMS).forEach(k => { if (GEMS[k].like) GEM_POWERS[k] = GEM_POWERS[GEMS[k].like]; });
+const GEM_ORDER = ['ruby', 'topaz', 'emerald', 'sapphire', 'amethyst', 'opal', 'rosequartz', 'aquamarine',
+  'garnet', 'spinel', 'fireopal', 'sunstone', 'citrine', 'amber', 'peridot', 'jade', 'tourmaline', 'tanzanite',
+  'lapis', 'moonstone', 'kunzite', 'pearl', 'fluorite', 'snowquartz', 'morganite', 'coral', 'turquoise', 'seaglass', 'rainbow',
+  'sundiamond', 'moondiamond', 'dreamopal', 'phoenixheart', 'fairyprism', 'mermaidstar', 'forestheart', 'frostdiamond', 'fireflygem', 'rainbowprism', 'blossomgem'];
 const JEWELS = {
+  earrings: { name: 'Earrings', slots: 2, power: 'Gem Friends',    desc: 'Gem animals sometimes give you two gems!', pl: true },
+  wand:     { name: 'Wand',     slots: 3, power: 'Wish Wand',      desc: 'More sky gems float by on your adventures!' },
   ring:     { name: 'Ring',     slots: 2, power: 'Gem Magnet',     desc: 'Sky gems fly right to your phoenix!' },
   bracelet: { name: 'Bracelet', slots: 3, power: 'Swift Hooves',   desc: 'Your unicorn runs super fast!' },
   necklace: { name: 'Necklace', slots: 4, power: 'Forever Flame',  desc: 'Your phoenix can fly twice as long!' },
   crown:    { name: 'Crown',    slots: 5, power: 'Rainbow Wishes', desc: 'Rainbow star gems appear on your adventures!' },
+  locket:   { name: 'Locket',   slots: 3, power: 'Heart Helper',   desc: 'A little heart flies off and brings you sky gems!' },
+  brooch:   { name: 'Butterfly Brooch', slots: 4, power: 'Flutter Wings', desc: 'Your phoenix flies extra fast!' },
+  charm:    { name: 'Moon Charm', slots: 2, power: 'Star Shower',  desc: 'Shooting stars drop extra sky gems!' },
+  tiara:    { name: 'Tiara',           slots: 6,  power: 'Lucky Sparkle',  desc: 'Sometimes a gem you catch brings a twin gem with it!' },
+  pendant:  { name: 'Sun Pendant',     slots: 7,  power: 'Sunrise Start',  desc: 'Lots of sky gems are already waiting when you arrive!' },
+  scepter:  { name: 'Scepter',         slots: 8,  power: 'Wise Wishes',    desc: 'The right answer twinkles in ultra gem vault puzzles!' },
+  wings:    { name: 'Fairy Wings',     slots: 9,  power: 'Endless Flight', desc: 'Your phoenix never gets sleepy!', pl: true },
+  galaxy:   { name: 'Galaxy Necklace', slots: 10, power: 'Galaxy Magic',   desc: 'All your gem powers become full strength!' },
 };
-const LANDS = [
-  { id: 'meadow',  name: 'Flower Meadow',  sky: ['#7fcfff', '#e2f5ff'], ground: ['#74cc5e', '#4b9f45'], gems: { emerald: 4, ruby: 3, topaz: 2 } },
-  { id: 'lake',    name: 'Moonlight Lake', sky: ['#1d1550', '#5b3d9e'], ground: ['#2f6c78', '#1d4553'], gems: { sapphire: 4, amethyst: 4, emerald: 1 } },
-  { id: 'clouds',  name: 'Cloud Castle',   sky: ['#ffb8df', '#fff0f8'], ground: ['#ffffff', '#eadcff'], gems: { topaz: 3, amethyst: 3, sapphire: 2 } },
-  { id: 'volcano', name: 'Sunset Volcano', sky: ['#ff7a59', '#ffd486'], ground: ['#a45a3f', '#6e3528'], gems: { ruby: 4, topaz: 4 } },
+// Ultra shiny gems: one waits in a crystal vault in each land. To open it, wear the right jewelry
+// with enough gems of the right kind (n gems whose family is fam), then solve a little pattern puzzle.
+const ULTRA = [
+  { gem: 'sundiamond',   land: 'meadow',  jewel: 'crown',    fam: 'topaz',      n: 2 },
+  { gem: 'moondiamond',  land: 'lake',    jewel: 'necklace', fam: 'amethyst',   n: 2 },
+  { gem: 'dreamopal',    land: 'clouds',  jewel: 'pendant',  fam: 'opal',       n: 3 },
+  { gem: 'phoenixheart', land: 'volcano', jewel: 'ring',     fam: 'ruby',       n: 2 },
+  { gem: 'fairyprism',   land: 'crystal', jewel: 'locket',   fam: 'rosequartz', n: 2 },
+  { gem: 'mermaidstar',  land: 'lagoon',  jewel: 'earrings', fam: 'aquamarine', n: 2 },
+  { gem: 'forestheart',  land: 'orchard', jewel: 'bracelet', fam: 'emerald',    n: 2 },
+  { gem: 'frostdiamond', land: 'peak',    jewel: 'tiara',    fam: 'sapphire',   n: 3 },
+  { gem: 'fireflygem',   land: 'forest',  jewel: 'wand',     fam: 'amethyst',   n: 2 },
+  { gem: 'rainbowprism', land: 'falls',   jewel: 'scepter',  fam: 'sapphire',   n: 3 },
+  { gem: 'blossomgem',   land: 'blossom', jewel: 'wings',    fam: 'rosequartz', n: 3 },
 ];
+// Dotty the shy cheetah hides behind a bush in some lands. Each visit, wear the jewelry she wishes for
+// (her wishes go in order) and tap her: she gets a little less shy and gives you a heart (save.cheetah counts them).
+const CHEETAH = { name: 'Dotty', lands: ['meadow', 'orchard', 'falls', 'blossom'], wish: ['bracelet', 'earrings', 'necklace', 'tiara', 'crown'] };
+const famOf = g => (GEMS[g] && GEMS[g].like) || g;
+const aJewel = k => (JEWELS[k].pl ? '' : 'a ') + JEWELS[k].name;
+function listWords(a) { return a.length < 2 ? a.join('') : a.slice(0, -1).join(', ') + ' and ' + a[a.length - 1]; }
+// Plain gems in a family, e.g. topaz -> Topaz, Sunstone, Citrine, Amber
+const famNames = f => GEM_ORDER.filter(k => famOf(k) === f && !GEMS[k].ultra).map(k => GEMS[k].name);
+function needWords(u) {
+  const ns = famNames(u.fam), more = ns.slice(1);
+  return `Wear ${aJewel(u.jewel)} with ${u.n} ${ns[0]} gems in it${more.length ? ` (${listWords(more)} count as ${ns[0]} too)` : ''}. Then solve the puzzle!`;
+}
+// How many gems of the right family the best worn jewel of the right type has (-1: not wearing one)
+function ultraHave(u) {
+  return wornJewels().reduce((b, j) => j.type === u.jewel ? Math.max(b, j.gems.filter(g => famOf(g) === u.fam).length) : b, -1);
+}
+const ultraReady = u => ultraHave(u) >= u.n;
+// Gems power up the jewelry they sit in: the more gems that match, the stronger its power (all matching = super powered)
+// fav: the gem whose power is extra strong in that land
+const LANDS = [
+  { id: 'meadow',  name: 'Flower Meadow',  sky: ['#7fcfff', '#e2f5ff'], ground: ['#74cc5e', '#4b9f45'], gems: { emerald: 4, ruby: 3, topaz: 2, peridot: 2, sunstone: 2 }, fav: 'topaz' },
+  { id: 'lake',    name: 'Moonlight Lake', sky: ['#1d1550', '#5b3d9e'], ground: ['#2f6c78', '#1d4553'], gems: { sapphire: 4, amethyst: 4, emerald: 1, moonstone: 2, lapis: 2 }, fav: 'amethyst' },
+  { id: 'clouds',  name: 'Cloud Castle',   sky: ['#ffb8df', '#fff0f8'], ground: ['#ffffff', '#eadcff'], gems: { topaz: 3, amethyst: 3, sapphire: 2, pearl: 2, kunzite: 2 }, fav: 'opal' },
+  { id: 'volcano', name: 'Sunset Volcano', sky: ['#ff7a59', '#ffd486'], ground: ['#a45a3f', '#6e3528'], gems: { ruby: 4, topaz: 4, garnet: 2, fireopal: 2 }, fav: 'ruby' },
+  { id: 'crystal', name: 'Crystal Garden', sky: ['#2a1c63', '#9a7be0'], ground: ['#8a6fd6', '#4e3a9a'], gems: { opal: 3, rosequartz: 3, aquamarine: 3, fluorite: 2, spinel: 2 }, critters: true, fav: 'rosequartz' },
+  { id: 'lagoon',  name: 'Mermaid Lagoon', sky: ['#5fd3f0', '#d4f8ff'], ground: ['#f7e4ab', '#e3c47c'], gems: { aquamarine: 4, sapphire: 3, opal: 2, turquoise: 2, seaglass: 2, coral: 2 }, bubbles: true, fav: 'aquamarine',
+    intro: 'Welcome to Mermaid Lagoon! Gem bubbles float up from the water. Tap a bubble to pop it and get the gem inside!', hint: 'Tap a floating bubble to pop it!' },
+  { id: 'orchard', name: 'Gem Tree Orchard', sky: ['#ffc9a3', '#fff4e0'], ground: ['#8fd16a', '#5ea548'], gems: { emerald: 3, rosequartz: 3, topaz: 3, citrine: 2, amber: 2 }, trees: true, fav: 'emerald',
+    intro: 'Welcome to the Gem Tree Orchard! Tap a tree to shake it, then catch the gem that falls down!', hint: 'Tap a gem tree to shake it! Then catch the gem that falls!' },
+  { id: 'peak',    name: 'Snowy Bell Peak', sky: ['#8fb0ff', '#eef3ff'], ground: ['#ffffff', '#d9e5ff'], gems: { sapphire: 3, amethyst: 3, opal: 3, snowquartz: 2, tanzanite: 2 }, bells: true, fav: 'ruby',
+    intro: 'Welcome to Snowy Bell Peak! Tap the glowing bell to ring it, and it will give you a gem!', hint: 'Tap the glowing bell to ring it!' },
+  { id: 'forest',  name: 'Firefly Forest', sky: ['#0c1636', '#2a3d6b'], ground: ['#24543f', '#143424'], gems: { emerald: 3, amethyst: 3, topaz: 3, jade: 2 }, dark: true, fav: 'topaz',
+    intro: 'Welcome to Firefly Forest! The sky gems are sleeping in the dark. Fly close with your phoenix glow to wake them up, or tap a firefly and it will light one up!', hint: 'Tap a firefly! It will fly to a sleeping gem and light it up!' },
+  { id: 'falls',   name: 'Rainbow Falls',  sky: ['#9fe6ff', '#fff6fb'], ground: ['#7dd6a0', '#4fae7c'], gems: { sapphire: 3, aquamarine: 3, rosequartz: 2, topaz: 2, tourmaline: 2 }, slide: true, fav: 'sapphire',
+    intro: 'Welcome to Rainbow Falls! Tap the fluffy cloud on top of the rainbow, and a gem will slide down! Catch it at the bottom!', hint: 'Tap the cloud on top of the rainbow to send a gem sliding down!' },
+  { id: 'blossom', name: 'Blossom Hill',   sky: ['#ffd1e8', '#fff7e8'], ground: ['#9ddc78', '#6bb556'], gems: { rosequartz: 4, emerald: 3, ruby: 2, morganite: 2 }, buds: true, fav: 'emerald',
+    intro: 'Welcome to Blossom Hill! The flower buds are growing. When a bud glows, tap it and it will bloom with a gem inside!', hint: 'Tap a glowing flower bud to make it bloom!' },
+];
+const DRESS_RAINBOW = ['#ff6b8b', '#ffa94d', '#ffe066', '#69db7c', '#4dabf7', '#b197fc'];
 const MANES = {
   rainbow: ['#ff8fb1', '#ffcf6e', '#8fe3b0', '#8ec5ff', '#c9a2ff'],
   pink:    ['#ff9ccf', '#ff6fb5', '#ffc2e2', '#ff86c0', '#ffd6ec'],
@@ -288,10 +459,34 @@ const MANES = {
 const LOOKS = {
   hair:  ['#2a1a12', '#5a3420', '#a8692f', '#e8c06a', '#c7462e'],
   skin:  ['#ffe0c8', '#f1c7a5', '#d9a27a', '#a8714a', '#74462b'],
-  dress: ['#ff6f91', '#a77cff', '#4fa8ff', '#ffb13d', '#3fc28c'],
+  dress: ['#ff6f91', '#a77cff', '#4fa8ff', '#ffb13d', '#3fc28c', 'rainbow'],
 };
 const UNAMES = ['Stardust', 'Moonbeam', 'Buttercup', 'Sparkle'];
-const hasPower = t => save.jewels.some(j => j.type === t);
+const isWorn = j => save.worn.includes(j.at);
+const wornJewels = () => save.jewels.filter(isWorn);
+const hasPower = t => wornJewels().some(j => j.type === t);
+// Gem power strength from the gems in worn jewelry: one gem is a little, four or more is full strength
+function gemPowers(land) {
+  const cnt = {}; wornJewels().forEach(j => j.gems.forEach(g => { const k = famOf(g); cnt[k] = (cnt[k] || 0) + (GEMS[g] && GEMS[g].ultra ? 2 : 1); }));
+  const gp = {}, rb = cnt.rainbow ? .2 * cnt.rainbow : 0, gal = hasPower('galaxy');
+  GEM_ORDER.forEach(k => { gp[k] = cnt[k] ? (gal ? 1 : Math.min(1, .4 + .2 * (cnt[k] - 1) + (k === 'rainbow' ? 0 : rb))) : 0; });
+  if (land && land.fav && gp[land.fav]) gp[land.fav] = Math.min(1.5, gp[land.fav] * 1.5);
+  return gp;
+}
+const gpow = k => (game && game.gp && game.gp[k]) || 0;
+function mainGem(gems) {
+  const cnt = {}; gems.forEach(g => cnt[g] = (cnt[g] || 0) + 1);
+  let best = gems[0]; for (const g of gems) if (cnt[g] > cnt[best]) best = g;
+  return best;
+}
+// How powered up one jewel is, from 0 to 1: the share of its gems that match its main gem
+function gemBoost(gems) {
+  if (!gems || !gems.length) return 0;
+  const m = mainGem(gems); return gems.filter(g => g === m).length / gems.length;
+}
+const jewelBoost = t => wornJewels().reduce((b, j) => j.type === t ? Math.max(b, gemBoost(j.gems)) : b, 0);
+const boost = t => (game && game.pu && game.pu[t]) || 0;
+function boostWords(b) { return b >= 1 ? 'All the gems match, so it is super powered!' : b > .5 ? 'Its gems power it up a lot!' : 'Its gems power it up!'; }
 
 /* ---------- Sound ---------- */
 let AC = null;
@@ -371,7 +566,16 @@ function gemPath(c, shape) {
     case 'square': { const a = .82, b = 1, k = .3; c.moveTo(-a + k, -b); c.lineTo(a - k, -b); c.lineTo(a, -b + k); c.lineTo(a, b - k); c.lineTo(a - k, b); c.lineTo(-a + k, b); c.lineTo(-a, b - k); c.lineTo(-a, -b + k); break; }
     case 'heart': c.moveTo(0, 1.05); c.bezierCurveTo(-1.45, .05, -1, -1.2, 0, -.5); c.bezierCurveTo(1, -1.2, 1.45, .05, 0, 1.05); break;
     case 'diamond': c.moveTo(0, -1.2); c.lineTo(.9, -.2); c.lineTo(0, 1.2); c.lineTo(-.9, -.2); break;
+    case 'sparkstar': for (let i = 0; i < 16; i++) { const a = -Math.PI / 2 + i * Math.PI / 8, r = i % 2 ? .55 : (i % 4 ? 1 : 1.25); c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } break;
     case 'star': for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? .52 : 1.2; c.lineTo(Math.cos(a) * r, Math.sin(a) * r); } break;
+    case 'pearl': c.ellipse(0, 0, .95, 1.05, 0, 0, TAU); break;
+    case 'hex': for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + i * Math.PI / 3; c.lineTo(Math.cos(a) * 1.08, Math.sin(a) * 1.08); } break;
+    case 'cut': c.moveTo(-.55, -.85); c.lineTo(.55, -.85); c.lineTo(1, -.3); c.lineTo(0, 1.1); c.lineTo(-1, -.3); break;
+    case 'oval': c.ellipse(0, 0, .72, 1.12, 0, 0, TAU); break;
+    case 'tri': for (let i = 0; i < 3; i++) { const a = -Math.PI / 2 + i * TAU / 3; c.lineTo(Math.cos(a) * 1.2, Math.sin(a) * 1.2 + .15); } break;
+    case 'moon': c.arc(0, 0, 1.05, Math.PI * .3, Math.PI * 1.7); c.arc(.55, 0, .853, -1.489, 1.489, true); break;
+    case 'flower': c.moveTo(Math.cos(-Math.PI * .7) * .45, Math.sin(-Math.PI * .7) * .45);
+      for (let i = 0; i < 5; i++) { const a = -Math.PI / 2 + i * TAU / 5, b = a + Math.PI / 5; c.quadraticCurveTo(Math.cos(a) * 1.5, Math.sin(a) * 1.5, Math.cos(b) * .45, Math.sin(b) * .45); } break;
   }
   c.closePath();
 }
@@ -385,22 +589,36 @@ function drawGem(c, x, y, r, type, t = 0, glow = true) {
   const g = GEMS[type]; if (!g || r <= 0) return;
   c.save(); c.translate(x, y); c.scale(r, r);
   let fill;
-  if (type === 'rainbow') {
+  const rbw = type === 'rainbow' || type === 'rainbowprism';
+  // Ultra shiny gems: a turning rainbow sunburst behind them
+  if (g.ultra && glow) {
+    c.save(); c.rotate(t * .9);
+    for (let i = 0; i < 8; i++) { c.rotate(TAU / 8); c.fillStyle = `hsla(${(t * 90 + i * 45) % 360},100%,80%,.5)`; c.beginPath(); c.moveTo(-.12, -.4); c.lineTo(.16, -1.9); c.lineTo(-.16, -1.9); c.closePath(); c.fill(); }
+    c.restore();
+  }
+  if (rbw) {
     fill = c.createLinearGradient(-1, -1, 1, 1); const h = (t * 70) % 360;
-    for (let i = 0; i <= 5; i++) fill.addColorStop(i / 5, `hsl(${(h + i * 60) % 360},95%,68%)`);
+    for (let i = 0; i <= 5; i++) fill.addColorStop(i / 5, `hsl(${(h + i * 60) % 360},95%,${type === 'rainbow' ? 68 : 80}%)`);
   } else {
     fill = c.createLinearGradient(-.9, -1.1, .9, 1.1); fill.addColorStop(0, g.c1); fill.addColorStop(.6, g.c2); fill.addColorStop(1, g.c2);
   }
-  if (glow) { c.shadowColor = type === 'rainbow' ? '#ffffff' : g.c1; c.shadowBlur = Math.max(6, r * .8); }
+  if (glow) { c.shadowColor = g.ultra ? `hsl(${(t * 90) % 360},100%,85%)` : rbw ? '#ffffff' : g.c1; c.shadowBlur = Math.max(6, r * (g.ultra ? 1.4 : .8)); }
   gemPath(c, g.shape); c.fillStyle = fill; c.fill(); c.shadowBlur = 0;
   c.save(); gemPath(c, g.shape); c.clip();
   c.fillStyle = 'rgba(0,0,0,.16)'; c.beginPath(); c.moveTo(1.5, -1.5); c.lineTo(1.5, 1.5); c.lineTo(-1.5, 1.5); c.closePath(); c.fill();
   c.save(); c.scale(.5, .5); gemPath(c, g.shape); c.restore();
   c.fillStyle = 'rgba(255,255,255,.28)'; c.fill(); c.strokeStyle = 'rgba(255,255,255,.55)'; c.lineWidth = .06; c.stroke();
+  if (g.ultra) { // a shine that sweeps across, plus a soft rainbow sheen
+    const sx = ((t * .7) % 1.6) * 3 - 2.2;
+    c.fillStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.moveTo(sx, -1.5); c.lineTo(sx + .35, -1.5); c.lineTo(sx - .25, 1.5); c.lineTo(sx - .6, 1.5); c.closePath(); c.fill();
+    const sh = c.createLinearGradient(-1, 1, 1, -1); for (let i = 0; i <= 3; i++) sh.addColorStop(i / 3, `hsla(${(t * 60 + i * 90) % 360},100%,75%,.28)`);
+    c.fillStyle = sh; c.fillRect(-1.5, -1.5, 3, 3);
+  }
   c.restore();
-  gemPath(c, g.shape); c.strokeStyle = type === 'rainbow' ? '#fff' : g.c2; c.lineWidth = .09; c.stroke();
+  gemPath(c, g.shape); c.strokeStyle = rbw ? '#fff' : g.c2; c.lineWidth = .09; c.stroke();
   c.fillStyle = 'rgba(255,255,255,.85)'; c.beginPath(); c.ellipse(-.33, -.45, .24, .12, -.6, 0, TAU); c.fill();
   sparkle(c, .55, -.7, .38 * (.4 + .6 * Math.abs(Math.sin(t * 3 + x * .01))));
+  if (g.ultra) { sparkle(c, -.7, .55, .32 * Math.abs(Math.sin(t * 2.3 + 1))); sparkle(c, .8, .45, .26 * Math.abs(Math.sin(t * 2.7 + 2))); }
   c.restore();
 }
 
@@ -413,7 +631,12 @@ function drawGirl(c, t) {
   c.beginPath(); c.arc(0, -46, 16, 0, TAU); c.fill();
   c.strokeStyle = L.skin; c.lineWidth = 6; c.beginPath(); c.moveTo(3, -4); c.lineTo(8, 20); c.stroke();
   c.fillStyle = '#ff5c8a'; c.beginPath(); c.ellipse(11, 22, 6.5, 3.8, 0, 0, TAU); c.fill();
-  c.fillStyle = L.dress; c.beginPath(); c.moveTo(-9, -33); c.lineTo(9, -33); c.lineTo(18, 4); c.quadraticCurveTo(0, 11, -18, 4); c.closePath(); c.fill();
+  if (L.dress === 'rainbow') {
+    const rg = c.createLinearGradient(0, -33, 0, 8);
+    DRESS_RAINBOW.forEach((col, i) => rg.addColorStop(i / (DRESS_RAINBOW.length - 1), col));
+    c.fillStyle = rg;
+  } else c.fillStyle = L.dress;
+  c.beginPath(); c.moveTo(-9, -33); c.lineTo(9, -33); c.lineTo(18, 4); c.quadraticCurveTo(0, 11, -18, 4); c.closePath(); c.fill();
   c.fillStyle = 'rgba(255,255,255,.55)'; for (let i = -2; i <= 2; i++) { c.beginPath(); c.arc(i * 6.5, 5.5 - Math.abs(i) * .6, 1.6, 0, TAU); c.fill(); }
   c.strokeStyle = L.skin; c.lineWidth = 5; c.beginPath(); c.moveTo(5, -28); c.lineTo(21, -16); c.stroke();
   c.fillStyle = L.skin; c.beginPath(); c.arc(3, -46, 14, 0, TAU); c.fill();
@@ -535,42 +758,230 @@ function drawPhoenix(c, x, y, s, face, t) {
 }
 
 /* ---------- Drawing: jewelry ---------- */
-function goldFill(c, y0, y1) { const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, '#fff1a8'); g.addColorStop(.5, '#ffc83d'); g.addColorStop(1, '#c98d00'); return g; }
+// Jewelry metal changes with the gems set in it: [light, mid, deep, outline, bright, twinkle]
+const METALS = {
+  gold:       { m: ['#fff1a8', '#ffc83d', '#c98d00', '#b07a00', '#ffd23f', '#fff6d0'], look: 'shiny gold' },
+  ruby:       { m: ['#ffe0d6', '#f4a28c', '#c0634f', '#9a4a3a', '#ffb8a3', '#fff0ea'], look: 'rosy fire gold with dancing flames' },
+  topaz:      { m: ['#fffbd0', '#ffd84a', '#e09a00', '#b97800', '#ffe46b', '#fffbe0'], look: 'bright sunshine gold with sunbeams' },
+  emerald:    { m: ['#f0ffd0', '#b8d84a', '#7a9a1a', '#5e7a10', '#cfe86a', '#f6ffe0'], look: 'leafy green gold with little leaves' },
+  sapphire:   { m: ['#f4f9ff', '#b8cff0', '#6f8fc0', '#556f9e', '#cfe0ff', '#ffffff'], look: 'ocean blue silver with waves' },
+  amethyst:   { m: ['#fbf2ff', '#d4b8f0', '#9a72c8', '#7a55a8', '#e6d2ff', '#ffffff'], look: 'moonlight silver with a moon and stars' },
+  opal:       { m: ['#ffffff', '#e8eef8', '#a8b4cc', '#8a96b0', '#f2f6ff', '#ffffff'], look: 'dreamy pearl white with floating bubbles' },
+  rosequartz: { m: ['#fff0f6', '#ffbcd6', '#d0709a', '#b0547e', '#ffd0e4', '#fff6fa'], look: 'pink love gold with little hearts' },
+  aquamarine: { m: ['#effffd', '#a8ece6', '#4fb0aa', '#3a908a', '#c8f6f2', '#ffffff'], look: 'mermaid sea silver with seashells' },
+  rainbow:    { m: null, look: 'color-changing rainbow metal with a rainbow' },
+};
+function metalOf(fam, t) {
+  if (fam !== 'rainbow') return (METALS[fam] || METALS.gold).m;
+  const h = Math.round(t * 60) % 360;
+  return [`hsl(${h},100%,92%)`, `hsl(${h},90%,74%)`, `hsl(${(h + 40) % 360},70%,52%)`, `hsl(${(h + 40) % 360},60%,40%)`, `hsl(${h},95%,78%)`, '#ffffff'];
+}
+let JM = METALS.gold.m; // the metal drawJewel is using right now
+function goldFill(c, y0, y1) { const g = c.createLinearGradient(0, y0, 0, y1); g.addColorStop(0, JM[0]); g.addColorStop(.5, JM[1]); g.addColorStop(1, JM[2]); return g; }
+// What the gems in a jewel add up to: the strongest gem family (ultra gems count double) and whether an ultra gem is set
+function jewelLook(gems) {
+  const cnt = {}; let ultra = false, n = 0, fam = null;
+  (gems || []).forEach(g => { if (!g || !GEMS[g]) return; const G = GEMS[g], f = G.like || g; cnt[f] = (cnt[f] || 0) + (G.ultra ? 2 : 1); n++; if (G.ultra) ultra = true; });
+  for (const f in cnt) if (!fam || cnt[f] > cnt[fam]) fam = f;
+  return { fam, n, ultra, power: fam ? cnt[fam] : 0 };
+}
+// Glow and little decorations that grow around a jewel as matching gems are set in it (unit coordinates)
+function drawJewelMagic(c, L, slots, t) {
+  if (!L.n) return;
+  const col = GEMS[L.fam].c1, deep = GEMS[L.fam].c2, k = Math.min(1, L.n / slots), pulse = .75 + .25 * Math.sin(t * 3);
+  const gl = c.createRadialGradient(0, 0, .05, 0, 0, .95);
+  gl.addColorStop(0, L.fam === 'rainbow' ? `hsla(${(t * 60) % 360},100%,80%,${.5 * k * pulse})` : hexA(col, .55 * k * pulse)); gl.addColorStop(1, hexA(col, 0));
+  c.fillStyle = gl; c.beginPath(); c.arc(0, 0, .95, 0, TAU); c.fill();
+  if (L.ultra) {
+    c.save(); c.rotate(t * .5);
+    for (let i = 0; i < 12; i++) { c.rotate(TAU / 12); c.fillStyle = `hsla(${(t * 80 + i * 30) % 360},100%,78%,${.35 * pulse})`; c.beginPath(); c.moveTo(-.04, -.3); c.lineTo(.07, -.98); c.lineTo(-.07, -.98); c.closePath(); c.fill(); }
+    c.restore();
+  }
+  if (L.power < 2) return;
+  const a = Math.min(1, .45 + .2 * (L.power - 2)) * pulse;
+  c.save(); c.globalAlpha *= a;
+  switch (L.fam) {
+    case 'ruby': for (const sx of [-1, 1]) for (const [fx, fy, h] of [[.64, -.36, 1], [.7, .1, .7]]) {
+      const x = sx * fx, y = fy, hh = .2 * h * (1 + .15 * Math.sin(t * 9 + fx * 7));
+      c.fillStyle = '#ff7a3c'; c.beginPath(); c.moveTo(x, y - hh); c.quadraticCurveTo(x + .09 * h, y - .02, x, y + .05); c.quadraticCurveTo(x - .09 * h, y - .02, x, y - hh); c.fill();
+      c.fillStyle = '#ffe07a'; c.beginPath(); c.moveTo(x, y - hh * .55); c.quadraticCurveTo(x + .045 * h, y, x, y + .03); c.quadraticCurveTo(x - .045 * h, y, x, y - hh * .55); c.fill();
+    } break;
+    case 'topaz': c.save(); c.rotate(t * .3); c.fillStyle = '#ffd84a';
+      for (let i = 0; i < 14; i++) { c.rotate(TAU / 14); c.beginPath(); c.moveTo(-.05, -.66); c.lineTo(0, -.86); c.lineTo(.05, -.66); c.closePath(); c.fill(); }
+      c.restore(); break;
+    case 'emerald': c.fillStyle = '#5ccf7a'; c.strokeStyle = '#2f9a52'; c.lineWidth = .015;
+      for (const sx of [-1, 1]) for (const [x, y, r] of [[.66, -.18, -.6], [.62, .24, .5], [.7, .04, 0]]) {
+        c.save(); c.translate(sx * x, y); c.rotate(sx * (r + Math.sin(t * 2 + x * 9) * .15)); c.beginPath(); c.ellipse(0, 0, .05, .12, 0, 0, TAU); c.fill(); c.stroke(); c.restore();
+      } break;
+    case 'sapphire': c.strokeStyle = deep; c.lineWidth = .035; c.lineCap = 'round';
+      for (const yy of [.62, .72]) { c.beginPath(); for (let x = -.55; x <= .55; x += .05) c.lineTo(x, yy + Math.sin(x * 14 + t * 3 + yy * 9) * .03); c.stroke(); }
+      c.fillStyle = col; for (const [x, y] of [[-.66, -.3], [.66, -.2]]) { c.save(); c.translate(x, y + Math.sin(t * 2 + x) * .03); c.scale(.07, .07); gemPath(c, 'drop'); c.fill(); c.restore(); }
+      break;
+    case 'amethyst': c.fillStyle = '#fff6c8'; c.save(); c.translate(-.64, -.46); c.scale(.13, .13); gemPath(c, 'moon'); c.fill(); c.restore();
+      for (const [x, y, p] of [[.62, -.5, 0], [.7, .25, 1.5], [-.68, .3, 3]]) sparkle(c, x, y, .07 * (.5 + .5 * Math.abs(Math.sin(t * 2.5 + p))));
+      break;
+    case 'opal': c.lineWidth = .015;
+      for (let i = 0; i < 6; i++) { const ph = (t * .25 + i / 6) % 1, x = (i % 2 ? 1 : -1) * (.6 + .08 * Math.sin(i * 3 + t * 2)), y = .5 - ph * 1.1, r = .035 + .02 * (i % 3);
+        c.strokeStyle = `hsla(${(i * 60 + t * 40) % 360},90%,80%,${1 - ph})`; c.beginPath(); c.arc(x, y, r, 0, TAU); c.stroke(); }
+      break;
+    case 'rosequartz': c.fillStyle = '#ff8fbf';
+      for (const [x, y, p] of [[-.64, -.36, 0], [.64, -.36, 1], [-.58, .36, 2], [.58, .36, 3]]) { c.save(); c.translate(x, y + Math.sin(t * 2 + p) * .03); c.scale(.075, .075); gemPath(c, 'heart'); c.fill(); c.restore(); }
+      break;
+    case 'aquamarine': for (const sx of [-1, 1]) {
+      const x = sx * .64, y = .3; c.fillStyle = '#ffd6c8'; c.strokeStyle = '#e8907a'; c.lineWidth = .012;
+      c.beginPath(); c.moveTo(x, y + .06); c.arc(x, y, .12, Math.PI * 1.1, Math.PI * 1.9); c.closePath(); c.fill(); c.stroke();
+      for (let i = 1; i < 4; i++) { const an = Math.PI * (1.1 + .2 * i); c.beginPath(); c.moveTo(x, y + .06); c.lineTo(x + Math.cos(an) * .12, y + Math.sin(an) * .12); c.stroke(); }
+      c.strokeStyle = 'rgba(255,255,255,.9)'; const ph = (t * .4 + (sx > 0 ? .5 : 0)) % 1; c.beginPath(); c.arc(x - sx * .06, y - .2 - ph * .4, .03, 0, TAU); c.stroke();
+    } break;
+    case 'rainbow': c.lineWidth = .045;
+      RAINBOW.forEach((rc, i) => { c.strokeStyle = rc; c.beginPath(); c.arc(0, .2, .86 - i * .05, Math.PI * 1.08, Math.PI * 1.92); c.stroke(); });
+      break;
+  }
+  c.restore();
+  if (L.ultra) for (let i = 0; i < 4; i++) { const an = t * .7 + i * TAU / 4; sparkle(c, Math.cos(an) * .74, Math.sin(an) * .56, .08 * (.4 + .6 * Math.abs(Math.sin(t * 3 + i)))); }
+}
+function hexA(hex, a) { const n = parseInt(hex.slice(1), 16); return `rgba(${n >> 16},${n >> 8 & 255},${n & 255},${a})`; }
 function slotsOf(type) {
   if (type === 'ring') return [[-.15, -.27, .15], [.15, -.27, .15]];
+  if (type === 'earrings') return [[-.32, .18, .17], [.32, .18, .17]];
+  if (type === 'wand') return [[.22, -.24, .17], [-.06, .11, .09], [-.24, .33, .09]];
   if (type === 'bracelet') return [[-.36, .23, .13], [0, .28, .15], [.36, .23, .13]];
   if (type === 'necklace') {
     const P = t => [(1 - t) * (1 - t) * -.6 + t * t * .6, (1 - t) * (1 - t) * -.5 + 2 * (1 - t) * t * .7 + t * t * -.5];
     return [.24, .41, .59, .76].map((t, i) => { const p = P(t); return [p[0], p[1] + .04, i === 1 || i === 2 ? .14 : .12]; });
   }
+  if (type === 'locket') return [[0, .24, .14], [-.3, -.1, .08], [.3, -.1, .08]];
+  if (type === 'brooch') return [[-.3, -.14, .13], [.3, -.14, .13], [-.22, .24, .1], [.22, .24, .1]];
+  if (type === 'charm') return [[-.28, 0, .12], [-.05, .3, .1]];
+  if (type === 'tiara') return [.1, .26, .42, .58, .74, .9].map((k, i) => { const [x, y] = qpt(TIARA, k); return [x, y - .02, i === 2 || i === 3 ? .1 : .085]; });
+  if (type === 'pendant') return [[0, .18, .11], ...[0, 1, 2, 3, 4, 5].map(i => { const a = -Math.PI / 2 + i * TAU / 6; return [Math.cos(a) * .21, .18 + Math.sin(a) * .21, .065]; })];
+  if (type === 'scepter') return [[0, -.32, .13], [-.22, -.18, .06], [.22, -.18, .06], [0, -.58, .065], [0, .06, .055], [0, .2, .055], [0, .34, .055], [0, .48, .055]];
+  if (type === 'wings') return [[-.44, -.2, .09], [.44, -.2, .09], [-.24, -.12, .07], [.24, -.12, .07], [0, -.1, .06], [-.34, .27, .065], [.34, .27, .065], [-.16, .22, .055], [.16, .22, .055]];
+  if (type === 'galaxy') return [
+    ...[.18, .34, .5, .66, .82].map(k => { const [x, y] = qpt(GAL_IN, k); return [x, y, k === .5 ? .075 : .06]; }),
+    ...[.2, .4, .6, .8].map(k => { const [x, y] = qpt(GAL_OUT, k); return [x, y, .07]; }), [0, .42, .1]];
   return [[-.4, .2, .1], [-.2, .2, .11], [0, .2, .13], [.2, .2, .11], [.4, .2, .1]];
 }
+// Curves for the bigger jewelry: [start x, start y, bend x, bend y, end x, end y]
+const TIARA = [-.62, .36, 0, -.04, .62, .36], GAL_IN = [-.55, -.55, 0, .35, .55, -.55], GAL_OUT = [-.66, -.5, 0, .95, .66, -.5];
+function qpt(q, k) { const u = 1 - k; return [u * u * q[0] + 2 * u * k * q[2] + k * k * q[4], u * u * q[1] + 2 * u * k * q[3] + k * k * q[5]]; }
 function drawJewel(c, cx, cy, sz, type, gems, t, nextIdx = -1) {
+  const L = jewelLook(gems), sl = slotsOf(type);
+  JM = L.fam ? metalOf(L.fam, t) : METALS.gold.m;
   c.save(); c.translate(cx, cy); c.scale(sz, sz);
+  drawJewelMagic(c, L, sl.length, t);
   c.lineCap = 'round'; c.lineJoin = 'round';
-  if (type === 'ring') {
-    c.strokeStyle = '#c98d00'; c.lineWidth = .13; c.beginPath(); c.ellipse(0, .15, .42, .36, 0, 0, TAU); c.stroke();
+  if (type === 'tiara') {
+    const q = TIARA;
+    sl.forEach(([x, y], i) => {
+      const h = .2 + .16 * (1 - Math.abs(x) / .62);
+      c.fillStyle = goldFill(c, y - h, y); c.strokeStyle = JM[3]; c.lineWidth = .02;
+      c.beginPath(); c.moveTo(x - .08, y); c.quadraticCurveTo(x - .05, y - h * .55, x, y - h); c.quadraticCurveTo(x + .05, y - h * .55, x + .08, y); c.closePath(); c.fill(); c.stroke();
+      c.fillStyle = JM[5]; c.beginPath(); c.arc(x, y - h, .03, 0, TAU); c.fill();
+    });
+    c.fillStyle = goldFill(c, -.5, .1); c.strokeStyle = JM[3]; c.lineWidth = .02;
+    c.beginPath(); c.moveTo(-.07, .02); c.quadraticCurveTo(-.06, -.3, 0, -.5); c.quadraticCurveTo(.06, -.3, .07, .02); c.closePath(); c.fill(); c.stroke();
+    c.save(); c.translate(0, -.54); c.scale(.08, .08); gemPath(c, 'star'); c.restore(); c.fillStyle = JM[4]; c.fill(); c.stroke();
+    c.strokeStyle = JM[3]; c.lineWidth = .1; c.beginPath(); c.moveTo(q[0], q[1]); c.quadraticCurveTo(q[2], q[3], q[4], q[5]); c.stroke();
+    c.strokeStyle = goldFill(c, 0, .4); c.lineWidth = .065; c.stroke();
+  } else if (type === 'pendant') {
+    c.strokeStyle = JM[2]; c.lineWidth = .04; c.setLineDash([.035, .045]);
+    c.beginPath(); c.moveTo(-.5, -.6); c.quadraticCurveTo(-.2, -.2, 0, -.16); c.quadraticCurveTo(.2, -.2, .5, -.6); c.stroke(); c.setLineDash([]);
+    c.save(); c.translate(0, .18); c.rotate(t * .2);
+    c.fillStyle = JM[4]; c.strokeStyle = JM[3]; c.lineWidth = .015;
+    for (let i = 0; i < 12; i++) { const a = i * TAU / 12; c.beginPath(); c.moveTo(Math.cos(a - .13) * .29, Math.sin(a - .13) * .29); c.lineTo(Math.cos(a) * .38, Math.sin(a) * .38); c.lineTo(Math.cos(a + .13) * .29, Math.sin(a + .13) * .29); c.closePath(); c.fill(); c.stroke(); }
+    c.restore();
+    c.fillStyle = goldFill(c, -.12, .48); c.strokeStyle = JM[3]; c.lineWidth = .025; c.beginPath(); c.arc(0, .18, .3, 0, TAU); c.fill(); c.stroke();
+    c.strokeStyle = JM[2]; c.lineWidth = .03; c.beginPath(); c.arc(0, -.14, .045, 0, TAU); c.stroke();
+  } else if (type === 'scepter') {
+    c.strokeStyle = JM[3]; c.lineWidth = .1; c.beginPath(); c.moveTo(0, .64); c.lineTo(0, -.12); c.stroke();
+    c.strokeStyle = goldFill(c, -.1, .64); c.lineWidth = .065; c.stroke();
+    c.fillStyle = JM[4]; c.beginPath(); c.arc(0, .66, .05, 0, TAU); c.fill();
+    c.strokeStyle = JM[3]; c.lineWidth = .025; c.fillStyle = goldFill(c, -.3, -.05);
+    for (const sx of [-1, 1]) { c.beginPath(); c.moveTo(0, -.1); c.quadraticCurveTo(sx * .3, -.06, sx * .24, -.24); c.quadraticCurveTo(sx * .12, -.14, 0, -.16); c.closePath(); c.fill(); c.stroke(); }
+    c.fillStyle = goldFill(c, -.52, -.12); c.beginPath(); c.arc(0, -.32, .2, 0, TAU); c.fill(); c.stroke();
+    c.strokeStyle = JM[3]; c.lineWidth = .03; c.beginPath(); c.moveTo(0, -.52); c.lineTo(0, -.5); c.stroke();
+    c.fillStyle = JM[2]; c.beginPath(); c.ellipse(0, -.1, .16, .05, 0, 0, TAU); c.fill();
+  } else if (type === 'wings') {
+    c.fillStyle = goldFill(c, -.45, .45); c.strokeStyle = JM[3]; c.lineWidth = .022;
+    const flap = 1 + Math.sin(t * 3) * .04;
+    for (const sx of [-1, 1]) {
+      c.save(); c.scale(flap, 1);
+      c.beginPath(); c.ellipse(sx * .35, -.17, .32, .23, sx * -.35, 0, TAU); c.fill(); c.stroke();
+      c.beginPath(); c.ellipse(sx * .25, .24, .22, .16, sx * .4, 0, TAU); c.fill(); c.stroke();
+      c.strokeStyle = JM[5]; c.lineWidth = .012;
+      c.beginPath(); c.moveTo(sx * .06, -.05); c.quadraticCurveTo(sx * .3, -.3, sx * .6, -.3); c.moveTo(sx * .06, .05); c.quadraticCurveTo(sx * .2, .3, sx * .42, .3); c.stroke();
+      c.strokeStyle = JM[3]; c.lineWidth = .022; c.restore();
+    }
+    c.fillStyle = JM[2]; c.beginPath(); c.ellipse(0, .04, .055, .3, 0, 0, TAU); c.fill();
+    c.beginPath(); c.moveTo(-.03, -.24); c.quadraticCurveTo(-.08, -.42, -.16, -.46); c.moveTo(.03, -.24); c.quadraticCurveTo(.08, -.42, .16, -.46); c.stroke();
+  } else if (type === 'galaxy') {
+    for (const q of [GAL_OUT, GAL_IN]) {
+      c.strokeStyle = JM[2]; c.lineWidth = .045; c.setLineDash([.04, .05]);
+      c.beginPath(); c.moveTo(q[0], q[1]); c.quadraticCurveTo(q[2], q[3], q[4], q[5]); c.stroke(); c.setLineDash([]);
+      c.strokeStyle = JM[4]; c.lineWidth = .018; c.stroke();
+    }
+    c.fillStyle = JM[2]; for (const sx of [-1, 1]) { c.beginPath(); c.arc(sx * .6, -.52, .05, 0, TAU); c.fill(); }
+    c.strokeStyle = JM[2]; c.lineWidth = .025; c.beginPath(); c.moveTo(0, .225); c.lineTo(0, .3); c.stroke();
+    c.save(); c.translate(0, .42); c.scale(.2, .2); gemPath(c, 'star'); c.restore();
+    c.fillStyle = goldFill(c, .2, .65); c.fill(); c.strokeStyle = JM[3]; c.lineWidth = .02; c.stroke();
+    for (const [x, y, p] of [[-.3, .3, 0], [.32, .34, 1.3], [-.1, .62, 2.1], [.16, .6, 3.4], [-.5, .05, 4.2], [.52, .1, 5]]) sparkle(c, x, y, .04 * (.3 + .7 * Math.abs(Math.sin(t * 2 + p))));
+  } else if (type === 'ring') {
+    c.strokeStyle = JM[2]; c.lineWidth = .13; c.beginPath(); c.ellipse(0, .15, .42, .36, 0, 0, TAU); c.stroke();
     c.strokeStyle = goldFill(c, -.2, .5); c.lineWidth = .09; c.stroke();
     c.fillStyle = goldFill(c, -.4, -.1); c.beginPath(); c.ellipse(0, -.24, .36, .13, 0, 0, TAU); c.fill();
   } else if (type === 'bracelet') {
-    c.strokeStyle = '#b07a00'; c.lineWidth = .08; c.beginPath(); c.ellipse(0, 0, .62, .28, 0, Math.PI, TAU); c.stroke();
-    c.strokeStyle = '#c98d00'; c.lineWidth = .14; c.beginPath(); c.ellipse(0, 0, .62, .28, 0, 0, Math.PI); c.stroke();
+    c.strokeStyle = JM[3]; c.lineWidth = .08; c.beginPath(); c.ellipse(0, 0, .62, .28, 0, Math.PI, TAU); c.stroke();
+    c.strokeStyle = JM[2]; c.lineWidth = .14; c.beginPath(); c.ellipse(0, 0, .62, .28, 0, 0, Math.PI); c.stroke();
     c.strokeStyle = goldFill(c, 0, .4); c.lineWidth = .1; c.stroke();
   } else if (type === 'necklace') {
-    c.strokeStyle = '#c98d00'; c.lineWidth = .05; c.setLineDash([.04, .05]);
+    c.strokeStyle = JM[2]; c.lineWidth = .05; c.setLineDash([.04, .05]);
     c.beginPath(); c.moveTo(-.6, -.5); c.quadraticCurveTo(0, .7, .6, -.5); c.stroke(); c.setLineDash([]);
-    c.strokeStyle = '#ffd23f'; c.lineWidth = .02; c.beginPath(); c.moveTo(-.6, -.5); c.quadraticCurveTo(0, .7, .6, -.5); c.stroke();
+    c.strokeStyle = JM[4]; c.lineWidth = .02; c.beginPath(); c.moveTo(-.6, -.5); c.quadraticCurveTo(0, .7, .6, -.5); c.stroke();
+  } else if (type === 'earrings') {
+    for (const ex of [-.32, .32]) {
+      c.strokeStyle = JM[2]; c.lineWidth = .06; c.beginPath(); c.arc(ex, -.3, .14, Math.PI * .9, Math.PI * 2.25); c.stroke();
+      c.strokeStyle = JM[4]; c.lineWidth = .03; c.stroke();
+      c.fillStyle = goldFill(c, -.2, .05); c.beginPath(); c.moveTo(ex, -.18); c.lineTo(ex, -.02); c.lineWidth = .05; c.strokeStyle = JM[2]; c.stroke();
+      c.beginPath(); c.arc(ex, -.13, .05, 0, TAU); c.fill();
+    }
+  } else if (type === 'wand') {
+    c.strokeStyle = JM[3]; c.lineWidth = .09; c.beginPath(); c.moveTo(-.48, .62); c.lineTo(.18, -.18); c.stroke();
+    c.strokeStyle = goldFill(c, -.2, .6); c.lineWidth = .055; c.stroke();
+    c.fillStyle = goldFill(c, -.56, .1); c.strokeStyle = JM[3]; c.lineWidth = .025; c.beginPath();
+    for (let i = 0; i < 10; i++) { const a = -Math.PI / 2 + i * Math.PI / 5, r = i % 2 ? .17 : .36; c.lineTo(.22 + Math.cos(a) * r, -.24 + Math.sin(a) * r); }
+    c.closePath(); c.fill(); c.stroke();
+    c.strokeStyle = '#ff9ccf'; c.lineWidth = .025; c.beginPath(); c.moveTo(-.36, .48); c.quadraticCurveTo(-.62, .42, -.66, .22); c.moveTo(-.36, .48); c.quadraticCurveTo(-.3, .7, -.5, .78); c.stroke();
+  } else if (type === 'locket') {
+    c.strokeStyle = JM[2]; c.lineWidth = .04; c.setLineDash([.035, .045]);
+    c.beginPath(); c.moveTo(-.55, -.55); c.quadraticCurveTo(-.25, .05, 0, .02); c.quadraticCurveTo(.25, .05, .55, -.55); c.stroke(); c.setLineDash([]);
+    c.save(); c.translate(0, .24); c.scale(.36, .36); gemPath(c, 'heart'); c.restore();
+    c.fillStyle = goldFill(c, -.05, .55); c.fill(); c.strokeStyle = JM[3]; c.lineWidth = .025; c.stroke();
+    c.strokeStyle = JM[2]; c.lineWidth = .03; c.beginPath(); c.arc(0, .02, .04, 0, TAU); c.stroke();
+  } else if (type === 'brooch') {
+    c.fillStyle = goldFill(c, -.45, .45); c.strokeStyle = JM[3]; c.lineWidth = .025;
+    for (const sx of [-1, 1]) {
+      c.beginPath(); c.ellipse(sx * .3, -.14, .26, .22, sx * -.4, 0, TAU); c.fill(); c.stroke();
+      c.beginPath(); c.ellipse(sx * .22, .24, .17, .15, sx * .4, 0, TAU); c.fill(); c.stroke();
+    }
+    c.fillStyle = JM[2]; c.beginPath(); c.ellipse(0, .04, .06, .3, 0, 0, TAU); c.fill();
+    c.strokeStyle = JM[3]; c.lineWidth = .025; c.beginPath(); c.moveTo(-.03, -.24); c.quadraticCurveTo(-.08, -.4, -.16, -.44); c.moveTo(.03, -.24); c.quadraticCurveTo(.08, -.4, .16, -.44); c.stroke();
+  } else if (type === 'charm') {
+    c.save(); c.beginPath(); c.rect(-1, -1, 2, 2); c.arc(.22, -.12, .38, 0, TAU); c.clip('evenodd');
+    c.fillStyle = goldFill(c, -.45, .45); c.beginPath(); c.arc(0, 0, .45, 0, TAU); c.fill(); c.strokeStyle = JM[3]; c.lineWidth = .025; c.stroke();
+    c.restore();
+    c.strokeStyle = JM[2]; c.lineWidth = .035; c.beginPath(); c.arc(-.22, -.47, .07, 0, TAU); c.stroke();
+    c.fillStyle = JM[5]; for (const [bx, by, br] of [[.42, -.36, .05], [.5, .1, .035]]) { c.beginPath(); c.arc(bx, by, br, 0, TAU); c.fill(); }
   } else {
-    c.fillStyle = goldFill(c, -.55, .35); c.strokeStyle = '#b07a00'; c.lineWidth = .03;
+    c.fillStyle = goldFill(c, -.55, .35); c.strokeStyle = JM[3]; c.lineWidth = .03;
     c.beginPath(); c.moveTo(-.55, .35); c.lineTo(-.62, -.42); c.lineTo(-.4, -.05); c.lineTo(-.28, -.34); c.lineTo(-.14, -.05); c.lineTo(0, -.56);
     c.lineTo(.14, -.05); c.lineTo(.28, -.34); c.lineTo(.4, -.05); c.lineTo(.62, -.42); c.lineTo(.55, .35); c.closePath(); c.fill(); c.stroke();
-    c.fillStyle = '#c98d00'; c.fillRect(-.55, .3, 1.1, .06);
-    c.fillStyle = '#fff6d0'; for (const [bx, by] of [[-.62, -.42], [-.28, -.34], [0, -.56], [.28, -.34], [.62, -.42]]) { c.beginPath(); c.arc(bx, by, .045, 0, TAU); c.fill(); }
+    c.fillStyle = JM[2]; c.fillRect(-.55, .3, 1.1, .06);
+    c.fillStyle = JM[5]; for (const [bx, by] of [[-.62, -.42], [-.28, -.34], [0, -.56], [.28, -.34], [.62, -.42]]) { c.beginPath(); c.arc(bx, by, .045, 0, TAU); c.fill(); }
   }
-  const sl = slotsOf(type);
   sl.forEach(([x, y, r], i) => {
     if (gems[i]) {
-      c.fillStyle = '#c98d00'; c.beginPath(); c.arc(x, y, r * 1.15, 0, TAU); c.fill();
+      c.fillStyle = JM[2]; c.beginPath(); c.arc(x, y, r * 1.15, 0, TAU); c.fill();
       c.restore(); c.save(); drawGem(c, cx + x * sz, cy + y * sz, r * sz * .9, gems[i], t); c.restore(); c.save(); c.translate(cx, cy); c.scale(sz, sz);
     } else {
       c.fillStyle = 'rgba(70,35,110,.22)'; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
@@ -578,7 +989,7 @@ function drawJewel(c, cx, cy, sz, type, gems, t, nextIdx = -1) {
       c.lineWidth = i === nextIdx ? .025 : .015; c.setLineDash([.03, .025]); c.stroke(); c.setLineDash([]);
     }
   });
-  c.restore();
+  c.restore(); JM = METALS.gold.m;
 }
 
 /* ---------- Drawing: lands ---------- */
@@ -597,6 +1008,83 @@ function genDeco(id) {
   return d;
 }
 const DECO = {}; LANDS.forEach(l => DECO[l.id] = genDeco(l.id)); DECO.twilight = genDeco('twilight');
+/* Gem trees (orchard) and crystal bells (peak): shared spots for drawing and tapping */
+const TREE_FX = [.2, .5, .8], BELL_FX = [.16, .38, .62, .84];
+const TREE_GEMS = [[-32, 18], [30, 12], [0, -26]];
+function treeTop(fx, w, gy, sc) { return { x: fx * w, y: gy - 175 * sc, r: 62 * sc }; }
+function bellPos(fx, w, h, sc) { return { x: fx * w, y: h * .12 + Math.sin(fx * Math.PI) * h * .06 + 40 * sc }; }
+function drawTree(c, x, gy, sc, hang, shake, t) {
+  const top = gy - 175 * sc, sx = Math.sin(t * 40) * shake * 6 * sc;
+  c.fillStyle = 'rgba(40,20,70,.15)'; c.beginPath(); c.ellipse(x, gy + 2, 60 * sc, 9 * sc, 0, 0, TAU); c.fill();
+  c.fillStyle = '#9a6a45'; c.beginPath(); c.moveTo(x - 12 * sc, gy); c.lineTo(x - 7 * sc, top + 30 * sc); c.lineTo(x + 7 * sc, top + 30 * sc); c.lineTo(x + 12 * sc, gy); c.closePath(); c.fill();
+  c.fillStyle = '#5fbf63';
+  c.beginPath(); c.arc(x + sx - 34 * sc, top + 10 * sc, 40 * sc, 0, TAU); c.arc(x + sx + 34 * sc, top + 8 * sc, 42 * sc, 0, TAU); c.arc(x + sx, top - 18 * sc, 48 * sc, 0, TAU); c.arc(x + sx, top + 22 * sc, 40 * sc, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.18)'; c.beginPath(); c.arc(x + sx - 14 * sc, top - 32 * sc, 22 * sc, 0, TAU); c.fill();
+  c.fillStyle = '#ffb3d6'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(x + sx + Math.cos(i * 2.4) * 46 * sc, top + Math.sin(i * 2.4) * 30 * sc, 4 * sc, 0, TAU); c.fill(); }
+  TREE_GEMS.forEach(([dx, dy], i) => {
+    if (!hang[i]) return;
+    const gx = x + sx + dx * sc, gyy = top + dy * sc;
+    c.strokeStyle = '#3f8a3a'; c.lineWidth = 2 * sc; c.beginPath(); c.moveTo(gx, gyy - 14 * sc); c.lineTo(gx, gyy - 6 * sc); c.stroke();
+    drawGem(c, gx, gyy, 11 * sc, hang[i], t);
+  });
+}
+function drawBell(c, x, y, s, type, glow, ring, t) {
+  const G = GEMS[type];
+  if (glow) {
+    const r = 46 * s * (1 + .12 * Math.sin(t * 6));
+    const gl = c.createRadialGradient(x, y + 12 * s, 4, x, y + 12 * s, r); gl.addColorStop(0, 'rgba(255,250,190,.9)'); gl.addColorStop(1, 'rgba(255,250,190,0)');
+    c.fillStyle = gl; c.beginPath(); c.arc(x, y + 12 * s, r, 0, TAU); c.fill();
+  }
+  c.save(); c.translate(x, y); c.rotate(Math.sin(t * 14) * ring * .45); c.scale(s, s);
+  const f = c.createLinearGradient(-18, -4, 18, 30); f.addColorStop(0, G.c1); f.addColorStop(1, G.c2);
+  c.fillStyle = '#ffd23f'; c.beginPath(); c.arc(0, 32, 5, 0, TAU); c.fill();
+  c.fillStyle = f; c.strokeStyle = type === 'rainbow' ? '#ff7ad9' : G.c2; c.lineWidth = 2;
+  c.beginPath(); c.moveTo(-20, 30); c.quadraticCurveTo(-16, 24, -15, 10); c.bezierCurveTo(-15, -6, 15, -6, 15, 10); c.quadraticCurveTo(16, 24, 20, 30); c.closePath(); c.fill(); c.stroke();
+  c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(-7, 8, 3, 9, .2, 0, TAU); c.fill();
+  c.strokeStyle = '#d99a00'; c.lineWidth = 2; c.beginPath(); c.arc(0, -6, 4, 0, TAU); c.stroke();
+  c.restore();
+  if (glow) sparkle(c, x + 18 * s, y - 4 * s, 7 * s * Math.abs(Math.sin(t * 4)));
+}
+/* Firefly Forest pines and fireflies, Rainbow Falls rainbow slide, Blossom Hill flower buds */
+function pine(c, x, gy, ht, col) {
+  c.fillStyle = col;
+  for (let j = 0; j < 3; j++) { const y0 = gy - ht * j * .28, wd = ht * (.3 - j * .07); c.beginPath(); c.moveTo(x - wd, y0); c.lineTo(x, y0 - ht * .45); c.lineTo(x + wd, y0); c.closePath(); c.fill(); }
+}
+function drawFirefly(c, x, y, sc, t, bright = 0) {
+  const a = .6 + .4 * Math.sin(t * 5), r = (14 + 8 * bright) * sc;
+  const gl = c.createRadialGradient(x, y, 1, x, y, r); gl.addColorStop(0, `rgba(255,250,170,${.75 * a})`); gl.addColorStop(1, 'rgba(255,240,120,0)');
+  c.fillStyle = gl; c.beginPath(); c.arc(x, y, r, 0, TAU); c.fill();
+  c.fillStyle = 'rgba(255,255,255,.6)'; const fl = 2 + 2 * Math.abs(Math.sin(t * 30));
+  c.beginPath(); c.ellipse(x - 3 * sc, y - 3 * sc, 3 * sc, fl * sc, -.5, 0, TAU); c.ellipse(x + 3 * sc, y - 3 * sc, 3 * sc, fl * sc, .5, 0, TAU); c.fill();
+  c.fillStyle = '#fffbd0'; c.beginPath(); c.arc(x, y, 3 * sc, 0, TAU); c.fill();
+}
+const RAINBOW = ['#ff8fa8', '#ffc46e', '#fff07a', '#8fe3a0', '#8ec5ff', '#c9a2ff'];
+function rainbowArc(w, h, gy) { return { cx: w * .5, rx: w * .36, ry: gy - h * .24, top: h * .24 }; }
+const BUD_FX = [.12, .31, .5, .69, .88];
+function budTop(fx, w, gy, sc, grow) { return { x: fx * w, y: gy - (22 + 40 * grow) * sc }; }
+function drawBud(c, x, gy, sc, grow, type, open, t) {
+  const G = GEMS[type], top = gy - (22 + 40 * grow) * sc, ready = grow >= 1 && open < 0, wig = ready ? Math.sin(t * 7) * 3 * sc : 0;
+  c.strokeStyle = '#3f9a45'; c.lineWidth = 4 * sc; c.beginPath(); c.moveTo(x, gy + 4 * sc); c.quadraticCurveTo(x - 6 * sc, (gy + top) / 2, x + wig, top); c.stroke();
+  c.fillStyle = '#5cc061';
+  c.beginPath(); c.ellipse(x - 10 * sc, gy - 10 * sc, 10 * sc, 4 * sc, .5, 0, TAU); c.ellipse(x + 10 * sc, gy - 14 * sc, 10 * sc, 4 * sc, -.5, 0, TAU); c.fill();
+  if (open >= 0) {
+    const k = Math.min(1, (t - open) * 4), r = 22 * sc * k;
+    c.fillStyle = '#ff9cc9';
+    for (let i = 0; i < 6; i++) { const a = i / 6 * TAU + .3; c.beginPath(); c.ellipse(x + Math.cos(a) * r * .8, top + Math.sin(a) * r * .8, r * .55, r * .35, a, 0, TAU); c.fill(); }
+    c.fillStyle = '#ffe36e'; c.beginPath(); c.arc(x, top, 7 * sc, 0, TAU); c.fill();
+    return;
+  }
+  if (ready) {
+    const r = 34 * sc * (1 + .12 * Math.sin(t * 6));
+    const gl = c.createRadialGradient(x, top, 3, x, top, r); gl.addColorStop(0, 'rgba(255,250,200,.9)'); gl.addColorStop(1, 'rgba(255,250,200,0)');
+    c.fillStyle = gl; c.beginPath(); c.arc(x, top, r, 0, TAU); c.fill();
+  }
+  const bs = (7 + 9 * grow) * sc, f = c.createLinearGradient(x - bs, top - bs, x + bs, top + bs);
+  f.addColorStop(0, '#ffd1e6'); f.addColorStop(1, G.c2 === '#ffffff' ? '#ff9cc9' : G.c2);
+  c.fillStyle = f; c.beginPath(); c.moveTo(x + wig, top - bs * 1.4); c.quadraticCurveTo(x + wig + bs, top, x + wig, top + bs * .6); c.quadraticCurveTo(x + wig - bs, top, x + wig, top - bs * 1.4); c.fill();
+  c.fillStyle = '#5cc061'; c.beginPath(); c.moveTo(x + wig - bs * .7, top + bs * .2); c.lineTo(x + wig, top + bs * .8); c.lineTo(x + wig + bs * .7, top + bs * .2); c.closePath(); c.fill();
+  if (ready) sparkle(c, x + 14 * sc, top - 14 * sc, 6 * sc * Math.abs(Math.sin(t * 4)));
+}
 function hills(c, w, h, gy, amp, f, ph, col) {
   c.fillStyle = col; c.beginPath(); c.moveTo(0, h);
   for (let x = 0; x <= w + 12; x += 12) c.lineTo(x, gy - amp * (.55 + .45 * Math.sin(x / w * f * TAU + ph)));
@@ -614,10 +1102,20 @@ function drawStars(c, w, gy, d, t, a = 1) {
 }
 /* Night birds: little glowing songbirds that drift across night skies and sing now and then */
 function birdSinging(b, t) { const k = (t * .11 + b.p) % 1; return k < .1 ? k / .1 : -1; }
+function birdPos(b, w, gy, t, sc) {
+  const m = (((b.fx + t * b.sp * b.dir) % 1) + 1) % 1;
+  return { x: -60 * sc + m * (w + 120 * sc), y: b.fy * gy + Math.sin(t * 1.6 + b.p * TAU) * 8 * sc };
+}
 function drawNightBirds(c, w, gy, d, t, sc) {
-  for (const b of d.birds) {
-    const m = (((b.fx + t * b.sp * b.dir) % 1) + 1) % 1, x = -60 * sc + m * (w + 120 * sc), y = b.fy * gy + Math.sin(t * 1.6 + b.p * TAU) * 8 * sc;
+  const live = c === ctx && game && game.birdGems && DECO[game.land.id] === d ? game : null;
+  d.birds.forEach((b, bi) => {
+    const { x, y } = birdPos(b, w, gy, t, sc);
     const face = b.dir, q = birdSinging(b, t), fl = Math.sin(t * 9 + b.p * TAU);
+    // Birds carrying a gem hold it in their little feet
+    if (live && live.birdGems[bi]) {
+      c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 1.5 * sc; c.beginPath(); c.moveTo(x, y + 8 * sc); c.lineTo(x, y + 14 * sc); c.stroke();
+      drawGem(c, x, y + 21 * sc, 8 * sc, live.birdGems[bi], t);
+    }
     const halo = c.createRadialGradient(x, y, 2, x, y, 30 * sc); halo.addColorStop(0, 'rgba(255,255,255,.35)'); halo.addColorStop(1, 'rgba(255,255,255,0)');
     c.fillStyle = halo; c.beginPath(); c.arc(x, y, 30 * sc, 0, TAU); c.fill();
     c.save(); c.translate(x, y); c.scale(face * sc, sc);
@@ -642,7 +1140,19 @@ function drawNightBirds(c, w, gy, d, t, sc) {
       }
       c.restore();
     }
-  }
+  });
+}
+// A night bird lets go of its gem so you can catch it
+function birdDrop(i) {
+  const g = game, b = DECO[g.land.id].birds[i], type = g.birdGems[i];
+  if (!type) return false;
+  const p = birdPos(b, W, GY, g.t, S);
+  g.fallers.push({ x: Math.min(W - 20 * S, Math.max(20 * S, p.x)), y: p.y + 21 * S, vy: 0, type, landed: false, born: g.t });
+  g.birdGems[i] = null; g.birdGrow[i] = 0;
+  SFX.bird(b.note);
+  emit(p.x, p.y, 12, { cols: [b.c, '#ffffff', '#fff6a8'], max: 160, size: 4, g: 40 });
+  if (!g.saidBird) { g.saidBird = true; say(`The bird gave you a gem! Catch it with ${save.look.uname}!`); }
+  return true;
 }
 function singBirds(d, t) {
   for (const b of d.birds) {
@@ -716,6 +1226,136 @@ function drawLand(c, land, w, h, t, sc) {
     for (let i = 0; i < 4; i++) { const k = ((t * .12 + i / 4) % 1); puff(c, vx - 26 * sc + Math.sin(k * 6 + i) * 10 * sc, vt - k * h * .3, (.4 + k * .6) * sc, `rgba(255,230,220,${.6 * (1 - k)})`); }
     groundFill(c, w, h, gy, land.ground);
     for (const f of d.flowers.slice(0, 12)) { const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc; c.fillStyle = 'rgba(255,170,90,.8)'; c.beginPath(); c.moveTo(fx - 4 * s, fy + 6 * s); c.lineTo(fx, fy - 8 * s); c.lineTo(fx + 4 * s, fy + 6 * s); c.fill(); }
+  } else if (land.id === 'crystal') {
+    drawStars(c, w, gy, d, t, .8);
+    // soft glowing ribbons of light across the sky
+    for (let i = 0; i < 3; i++) {
+      c.strokeStyle = ['rgba(140,255,230,.18)', 'rgba(255,160,220,.16)', 'rgba(190,170,255,.18)'][i]; c.lineWidth = (26 - i * 6) * sc; c.beginPath();
+      for (let x = -20; x <= w + 20; x += 20) c.lineTo(x, gy * (.18 + i * .1) + Math.sin(x / w * 5 + t * .4 + i * 2) * gy * .05);
+      c.stroke();
+    }
+    hills(c, w, h, gy, h * .16, 1.4, 2, '#5a43a8');
+    const spire = (x, sw, sh, col) => {
+      c.fillStyle = col; c.beginPath(); c.moveTo(x - sw / 2, gy); c.lineTo(x - sw / 2, gy - sh + sw * .6); c.lineTo(x, gy - sh); c.lineTo(x + sw / 2, gy - sh + sw * .6); c.lineTo(x + sw / 2, gy); c.closePath(); c.fill();
+      c.fillStyle = 'rgba(255,255,255,.35)'; c.beginPath(); c.moveTo(x - sw / 2, gy); c.lineTo(x - sw / 2, gy - sh + sw * .6); c.lineTo(x, gy - sh); c.lineTo(x, gy); c.closePath(); c.fill();
+    };
+    const cols = ['#9fe8f0', '#ffb3d1', '#c7b6ff', '#b8f5df'];
+    for (let i = 0; i < 7; i++) { const x = w * (.06 + i * .15), k = .5 + .5 * Math.sin(i * 2.3); spire(x, (26 + k * 22) * sc, h * (.14 + k * .16), cols[i % 4]); }
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers) {
+      const fx = f.fx * w, fy = gy + 12 * sc + f.fy * (h - gy) * .8, s = f.s * sc, gl = .55 + .45 * Math.sin(t * 2 + f.fx * 20);
+      c.globalAlpha = gl; c.fillStyle = cols[Math.floor(f.fx * 40) % 4];
+      c.beginPath(); c.moveTo(fx - 4 * s, fy + 5 * s); c.lineTo(fx - 4 * s, fy - 4 * s); c.lineTo(fx, fy - 11 * s); c.lineTo(fx + 4 * s, fy - 4 * s); c.lineTo(fx + 4 * s, fy + 5 * s); c.closePath(); c.fill();
+    }
+    c.globalAlpha = 1;
+    for (const f of d.flies) sparkle(c, f.fx * w + Math.sin(t * .6 + f.p) * 30 * sc, f.fy * gy + Math.cos(t * .8 + f.p) * 20 * sc, 5 * sc * Math.abs(Math.sin(t * 2 + f.p)));
+  } else if (land.id === 'lagoon') {
+    const sx = w * .82, sy = h * .15, sr = 30 * sc;
+    c.fillStyle = 'rgba(255,240,150,.45)'; c.beginPath(); c.arc(sx, sy, sr * 1.6, 0, TAU); c.fill();
+    c.fillStyle = '#ffe36e'; c.beginPath(); c.arc(sx, sy, sr, 0, TAU); c.fill();
+    for (const k of d.clouds.slice(0, 3)) puff(c, ((k.fx * w + t * k.sp * 12 * sc) % (w + 160 * sc)) - 80 * sc, k.fy * gy * .7, k.s * sc, 'rgba(255,255,255,.9)');
+    const wt = gy - h * .16;
+    const sea = c.createLinearGradient(0, wt, 0, gy); sea.addColorStop(0, '#2fb4d6'); sea.addColorStop(1, '#7fe3ee');
+    c.fillStyle = sea; c.beginPath(); c.moveTo(0, gy + 2);
+    for (let x = 0; x <= w + 12; x += 12) c.lineTo(x, wt + Math.sin(x * .03 + t * 2) * 4 * sc);
+    c.lineTo(w, gy + 2); c.closePath(); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 2 * sc;
+    for (let i = 0; i < 6; i++) { const x = ((i * .19 + t * .02) % 1) * w, y = wt + (14 + (i % 3) * 14) * sc; c.beginPath(); c.arc(x, y, 10 * sc, Math.PI * 1.15, Math.PI * 1.85); c.stroke(); }
+    c.fillStyle = '#5a9fb0'; c.beginPath(); c.ellipse(w * .1, gy - 4 * sc, 40 * sc, 22 * sc, 0, Math.PI, TAU); c.fill();
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers.slice(0, 12)) {
+      const fx = f.fx * w, fy = gy + 12 * sc + f.fy * (h - gy) * .75, s = f.s * sc;
+      c.fillStyle = ['#ffb3c7', '#ffd9a8', '#ffffff'][Math.floor(f.fx * 30) % 3];
+      c.beginPath(); c.moveTo(fx, fy + 5 * s); c.arc(fx, fy + 5 * s, 8 * s, Math.PI * 1.15, Math.PI * 1.85); c.closePath(); c.fill();
+    }
+  } else if (land.id === 'orchard') {
+    const sx = w * .14, sy = h * .2, sr = 34 * sc;
+    c.fillStyle = 'rgba(255,220,150,.5)'; c.beginPath(); c.arc(sx, sy, sr * 1.5, 0, TAU); c.fill();
+    c.fillStyle = '#ffd36e'; c.beginPath(); c.arc(sx, sy, sr, 0, TAU); c.fill();
+    for (const k of d.clouds.slice(0, 3)) puff(c, ((k.fx * w + t * k.sp * 10 * sc) % (w + 160 * sc)) - 80 * sc, k.fy * gy * .6, k.s * sc, 'rgba(255,255,255,.85)');
+    hills(c, w, h, gy, h * .18, 1.1, 2, '#b6e38f'); hills(c, w, h, gy, h * .09, 2, 5, '#9bd67a');
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers.slice(0, 14)) { const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc; c.fillStyle = f.c; c.beginPath(); c.arc(fx, fy, 3.5 * s, 0, TAU); c.fill(); }
+    const live = c === ctx && game && game.land === land ? game : null;
+    TREE_FX.forEach((fx, i) => {
+      const tr = live && live.trees[i];
+      drawTree(c, fx * w, gy, sc, tr ? tr.hang : Object.keys(land.gems), tr ? tr.shake : 0, t);
+    });
+  } else if (land.id === 'peak') {
+    for (let i = 0; i < 3; i++) {
+      const mx = w * (.15 + i * .35), mw = w * (.32 - (i % 2) * .06), mh = h * (.38 + (i % 2) * .1);
+      c.fillStyle = ['#b3c4f2', '#9fb3ea', '#b9c8f5'][i]; c.beginPath(); c.moveTo(mx - mw, gy); c.lineTo(mx, gy - mh); c.lineTo(mx + mw, gy); c.closePath(); c.fill();
+      c.fillStyle = '#ffffff'; c.beginPath(); c.moveTo(mx - mw * .28, gy - mh * .72); c.lineTo(mx, gy - mh); c.lineTo(mx + mw * .28, gy - mh * .72);
+      c.lineTo(mx + mw * .12, gy - mh * .66); c.lineTo(mx, gy - mh * .74); c.lineTo(mx - mw * .12, gy - mh * .66); c.closePath(); c.fill();
+    }
+    groundFill(c, w, h, gy, land.ground);
+    c.fillStyle = '#ffffff';
+    for (const s of d.stars.slice(0, 40)) { const x = s.fx * w + Math.sin(t + s.p) * 10 * sc, y = ((s.fy + t * .03 * s.r) % 1) * gy; c.globalAlpha = .85; c.beginPath(); c.arc(x, y, (1 + s.r) * sc * 1.4, 0, TAU); c.fill(); }
+    c.globalAlpha = 1;
+    // a ribbon garland with crystal bells hanging from it
+    c.strokeStyle = '#ff8fc8'; c.lineWidth = 4 * sc; c.beginPath();
+    for (let x = 0; x <= w; x += 10) c.lineTo(x, h * .12 + Math.sin(x / w * Math.PI) * h * .06);
+    c.stroke();
+    const live = c === ctx && game && game.land === land ? game : null, kinds = Object.keys(land.gems);
+    BELL_FX.forEach((fx, i) => {
+      const p = bellPos(fx, w, h, sc), b = live && live.bells[i];
+      c.strokeStyle = '#d99a00'; c.lineWidth = 1.5 * sc; c.beginPath(); c.moveTo(p.x, p.y - 40 * sc + 0); c.lineTo(p.x, p.y - 10 * sc); c.stroke();
+      drawBell(c, p.x, p.y, sc * 1.1, b ? b.type : kinds[i % kinds.length], !!(b && live.bellOn === i), b ? b.ring : 0, t);
+    });
+  } else if (land.id === 'forest') {
+    drawStars(c, w, gy, d, t, .6);
+    c.fillStyle = '#fff6d8'; c.beginPath(); c.arc(w * .82, h * .13, 22 * sc, 0, TAU); c.fill();
+    c.fillStyle = '#122045'; c.beginPath(); c.arc(w * .82 + 10 * sc, h * .13 - 6 * sc, 20 * sc, 0, TAU); c.fill();
+    for (let i = 0; i < 9; i++) pine(c, w * i / 8, gy, h * (.34 + .16 * (.5 + .5 * Math.sin(i * 1.7))), '#18324a');
+    for (let i = 0; i < 6; i++) pine(c, w * (.08 + i * .17), gy, h * (.24 + .07 * Math.sin(i * 2.1)), '#1d4540');
+    groundFill(c, w, h, gy, land.ground);
+    // glowing mushrooms
+    for (const f of d.flowers.slice(0, 12)) {
+      const fx = f.fx * w, fy = gy + 12 * sc + f.fy * (h - gy) * .75, s = f.s * sc, gl = .6 + .4 * Math.sin(t * 2 + f.fx * 30);
+      c.fillStyle = '#e8f4ff'; c.fillRect(fx - 1.5 * s, fy - 4 * s, 3 * s, 8 * s);
+      c.globalAlpha = gl; c.fillStyle = ['#8ff0ff', '#ffb3f0', '#c9ff9a'][Math.floor(f.fx * 30) % 3];
+      c.beginPath(); c.arc(fx, fy - 4 * s, 7 * s, Math.PI, TAU); c.fill(); c.globalAlpha = 1;
+    }
+    if (!(c === ctx && game && game.land === land)) for (const f of d.flies.slice(0, 6)) drawFirefly(c, f.fx * w + Math.sin(t + f.p) * 20 * sc, f.fy * gy, sc, t + f.p);
+  } else if (land.id === 'falls') {
+    for (const k of d.clouds.slice(0, 3)) puff(c, ((k.fx * w + t * k.sp * 12 * sc) % (w + 160 * sc)) - 80 * sc, k.fy * gy * .6, k.s * sc, 'rgba(255,255,255,.9)');
+    hills(c, w, h, gy, h * .2, 1.2, 1, '#bfeccb'); hills(c, w, h, gy, h * .1, 2.2, 4, '#a3e2b5');
+    // a cliff with a sparkly waterfall
+    const fx0 = w * .91, ft = gy - h * .48;
+    c.fillStyle = '#9fb0d6'; c.beginPath(); c.moveTo(w * .86, gy); c.lineTo(w * .88, ft + 20 * sc); c.quadraticCurveTo(w * .95, ft - 14 * sc, w + 4, ft); c.lineTo(w + 4, gy); c.closePath(); c.fill();
+    const wf = c.createLinearGradient(0, ft, 0, gy); wf.addColorStop(0, '#d8f6ff'); wf.addColorStop(1, '#7fd3f0');
+    c.fillStyle = wf; c.fillRect(fx0, ft + 6 * sc, w * .05, gy - ft);
+    c.strokeStyle = 'rgba(255,255,255,.8)'; c.lineWidth = 2 * sc;
+    for (let i = 0; i < 4; i++) { const x = fx0 + w * .01 * (i + .5), y = ft + ((t * 120 * sc + i * 37 * sc) % (gy - ft)); c.beginPath(); c.moveTo(x, y); c.lineTo(x, y + 18 * sc); c.stroke(); }
+    const rb = rainbowArc(w, h, gy);
+    c.lineWidth = 10 * sc; c.globalAlpha = .85;
+    RAINBOW.forEach((col, i) => { c.strokeStyle = col; c.beginPath(); c.ellipse(rb.cx, gy, rb.rx + (2.5 - i) * 10 * sc, rb.ry + (2.5 - i) * 10 * sc, 0, Math.PI, TAU); c.stroke(); });
+    c.globalAlpha = 1;
+    groundFill(c, w, h, gy, land.ground);
+    c.fillStyle = '#7fd3f0'; c.beginPath(); c.ellipse(w * .93, gy + 16 * sc, w * .09, 14 * sc, 0, 0, TAU); c.fill();
+    for (const f of d.flowers.slice(0, 12)) { const fx = f.fx * w * .8, fy = gy + 12 * sc + f.fy * (h - gy) * .75, s = f.s * sc; c.fillStyle = f.c; c.beginPath(); c.arc(fx, fy, 3.5 * s, 0, TAU); c.fill(); }
+    const live = c === ctx && game && game.land === land ? game : null;
+    const bob = live ? Math.sin(t * 6) * (live.cloudPuff || 0) * 4 * sc : 0;
+    puff(c, rb.cx - 26 * sc * 1.3, rb.top - 10 * sc + bob, sc * 1.3, '#ffffff');
+    if (live && !live.done) sparkle(c, rb.cx + 30 * sc, rb.top - 30 * sc, 7 * sc * Math.abs(Math.sin(t * 3)));
+  } else if (land.id === 'blossom') {
+    const sx = w * .84, sy = h * .16, sr = 32 * sc;
+    c.fillStyle = 'rgba(255,230,160,.5)'; c.beginPath(); c.arc(sx, sy, sr * 1.5, 0, TAU); c.fill();
+    c.fillStyle = '#ffe28a'; c.beginPath(); c.arc(sx, sy, sr, 0, TAU); c.fill();
+    hills(c, w, h, gy, h * .2, 1.1, 2, '#c6eba0'); hills(c, w, h, gy, h * .1, 2, 5, '#b0e28e');
+    // cherry blossom trees far away
+    for (const x of [.08, .38, .64, .95]) {
+      const tx = w * x, tt = gy - h * .3;
+      c.fillStyle = '#a5765a'; c.fillRect(tx - 5 * sc, tt + 20 * sc, 10 * sc, gy - tt - 20 * sc);
+      c.fillStyle = '#ffc4de'; c.beginPath(); c.arc(tx - 22 * sc, tt + 14 * sc, 26 * sc, 0, TAU); c.arc(tx + 22 * sc, tt + 12 * sc, 28 * sc, 0, TAU); c.arc(tx, tt - 6 * sc, 32 * sc, 0, TAU); c.fill();
+    }
+    groundFill(c, w, h, gy, land.ground);
+    for (const f of d.flowers.slice(0, 14)) { const fx = f.fx * w, fy = gy + 10 * sc + f.fy * (h - gy) * .8, s = f.s * sc; c.fillStyle = '#ffd6ea'; c.beginPath(); c.arc(fx, fy, 3.5 * s, 0, TAU); c.fill(); }
+    // drifting petals
+    c.fillStyle = 'rgba(255,170,205,.85)';
+    for (const s of d.stars.slice(0, 16)) { const x = ((s.fx + t * .02 * s.r) % 1) * w, y = ((s.fy + t * .04) % 1) * gy; c.beginPath(); c.ellipse(x, y, 4 * sc, 2.4 * sc, t + s.p, 0, TAU); c.fill(); }
+    const live = c === ctx && game && game.land === land ? game : null, kinds = Object.keys(land.gems);
+    BUD_FX.forEach((fx, i) => { const b = live && live.buds[i]; drawBud(c, fx * w, gy, sc, b ? b.grow : .4 + .15 * i, b ? b.type : kinds[i % kinds.length], b ? b.open : -1, t); });
   } else {
     drawStars(c, w, gy, d, t);
     hills(c, w, h, gy, h * .24, 1, 1.5, '#4a2f86'); hills(c, w, h, gy, h * .12, 1.9, 4, '#5d3f9a');
@@ -792,7 +1432,8 @@ function buildMake() {
     const r = document.createElement('div'); r.className = 'sw-row';
     list.forEach(v => {
       const b = document.createElement('button'); b.className = 'sw'; b.setAttribute('aria-label', label + ' ' + v);
-      b.style.background = isMane ? `linear-gradient(135deg,${MANES[v].slice(0, 4).join(',')})` : v;
+      b.style.background = isMane ? `linear-gradient(135deg,${MANES[v].slice(0, 4).join(',')})`
+        : v === 'rainbow' ? `linear-gradient(180deg,${DRESS_RAINBOW.join(',')})` : v;
       if (save.look[key] === v) b.classList.add('sel');
       b.addEventListener('click', () => { save.look[key] = v; persist(); r.querySelectorAll('.sw').forEach(x => x.classList.remove('sel')); b.classList.add('sel'); SFX.gem(700 + Math.random() * 300); });
       r.append(b);
@@ -847,6 +1488,29 @@ function buildMap() {
     b.addEventListener('click', () => { SFX.tap(); startGame(land); });
     box.append(b);
   });
+  buildUltras();
+}
+// Map list of the ultra shiny gems: where each one is and exactly what opens its vault
+function buildUltras() {
+  const box = $('#ultras'); box.innerHTML = '';
+  const h = document.createElement('h3'); h.textContent = 'Ultra Shiny Gems'; box.append(h);
+  ULTRA.forEach(u => {
+    const G = GEMS[u.gem], land = LANDS.find(l => l.id === u.land), found = save.ultra[u.gem] || 0, ready = ultraReady(u);
+    const b = document.createElement('button'); b.className = 'urow' + (found ? '' : ' locked');
+    const txt = document.createElement('div');
+    const n = document.createElement('b'); n.textContent = `${G.name} · ${land.name}`;
+    const need = document.createElement('small'); need.textContent = needWords(u);
+    const st = document.createElement('small');
+    st.textContent = (found ? `Found ${found === 1 ? 'once' : found + ' times'}! ` : 'Not found yet. ') + (ready ? 'You are wearing the right jewelry!' : '');
+    if (ready) st.className = 'ok';
+    // How to use it: set it in jewelry and wear it, and its gem power counts double
+    const P = GEM_POWERS[u.gem], pw = document.createElement('small');
+    pw.textContent = P ? `Gem power: ${P.power}! Put it in jewelry and wear it. It counts as two gems!` : '';
+    txt.append(n, need, st, pw);
+    b.append(img(gemIcon[u.gem], G.name), txt);
+    b.addEventListener('click', () => { SFX.gem(G.note); say(`The ${G.name} is in a crystal vault in ${land.name}. ${needWords(u)}${ready ? ' You are wearing the right jewelry!' : ''}${GEM_POWERS[u.gem] ? ` Put it in jewelry and wear it to get ${GEM_POWERS[u.gem].power}, extra strong!` : ''}`); });
+    box.append(b);
+  });
 }
 $('#toShop').addEventListener('click', () => { SFX.tap(); show('s-shop'); });
 $('#toBox').addEventListener('click', () => { SFX.tap(); show('s-box'); });
@@ -855,7 +1519,7 @@ $('#toBox').addEventListener('click', () => { SFX.tap(); show('s-box'); });
 let game = null;
 const GOAL = 12;
 function pickGemType(land) {
-  if (hasPower('crown') && Math.random() < .2) return 'rainbow';
+  if (hasPower('crown') && Math.random() < .2 + .2 * boost('crown')) return 'rainbow';
   const e = Object.entries(land.gems), tot = e.reduce((a, [, v]) => a + v, 0);
   let r = Math.random() * tot; for (const [k, v] of e) { r -= v; if (r <= 0) return k; } return e[0][0];
 }
@@ -863,32 +1527,66 @@ function spawnGem() {
   const g = game; const maxFy = Math.max(.22, (GY - 190 * S) / H);
   let fx = .5, tries = 0;
   do { fx = rnd(.08, .92); tries++; } while (tries < 20 && g.gems.some(o => o.alive && Math.abs(o.fx - fx) < .1));
-  g.gems.push({ fx, fy: rnd(.12, maxFy), type: pickGemType(g.land), ph: rnd(0, TAU), alive: true, born: g.t });
+  g.gems.push({ fx, fy: rnd(.12, maxFy), type: pickGemType(g.land), ph: rnd(0, TAU), alive: true, born: g.t, lit: !g.land.dark });
 }
 function spawnRock() {
   const g = game; let fx = .5, tries = 0;
-  do { fx = rnd(.08, .92); tries++; } while (tries < 30 && (g.rocks.some(o => !o.broken && Math.abs(o.fx - fx) < .14) || Math.abs(fx * W - g.ux) < 110 * S));
+  do { fx = rnd(.08, .92); tries++; } while (tries < 30 && (g.rocks.some(o => !o.broken && Math.abs(o.fx - fx) < .14) || Math.abs(fx * W - g.ux) < 110 * S || (g.cheetah && fx * W < cheetahX() + 60 * S)));
   g.rocks.push({ fx, type: pickGemType(g.land), broken: false, bt: 0, born: g.t });
 }
 function startGame(land) {
   show('s-play');
-  game = { land, t: 0, got: 0, haul: [], gems: [], rocks: [], fly: [], form: 'ride', ux: W * .25, uface: 1, uphase: 0, umoving: false,
-    px: 0, py: 0, pface: 1, energy: 1, tx: W * .25, ty: H * .4, done: false, spawnT: 0, idle: 0, hintN: 0, flash: 0, tiredT: -9, fw: 0 };
+  game = { land, t: 0, got: 0, haul: [], gems: [], rocks: [], critters: [], fly: [], form: 'ride', ux: W * .25, uface: 1, uphase: 0, umoving: false,
+    px: 0, py: 0, pface: 1, energy: 1, tx: W * .25, ty: H * .4, done: false, spawnT: 0, idle: 0, hintN: 0, flash: 0, tiredT: -9, fw: 0,
+    pu: Object.fromEntries(Object.keys(JEWELS).map(k => [k, jewelBoost(k)])), bubbles: [], bubT: 0, trees: [], fallers: [], bells: [], bellOn: 0, bellNext: 0, heartT: 0, showerT: 0,
+    gp: gemPowers(land), flies: [], slides: [], slideT: 3, cloudT: -9, cloudPuff: 0, buds: [], rain: null, dreamT: 0, visitT: 0 };
+  if (land.dark) game.flies = Array.from({ length: 5 }, (_, i) => ({ x: W * (.15 + i * .18), y: H * rnd(.25, .5), wx: 0, wy: 0, wt: 0, ph: rnd(0, TAU), tgt: null }));
+  if (land.buds) game.buds = BUD_FX.map((_, i) => ({ type: pickGemType(land), grow: i % 2 ? 1 : .5, open: -1 }));
+  if (game.gp.aquamarine) game.rain = { x: game.ux, t: 0 };
+  if (land.trees) game.trees = TREE_FX.map(() => ({ hang: TREE_GEMS.map(() => pickGemType(land)), shake: 0, grow: 0, bump: 0 }));
+  if (land.bells) game.bells = BELL_FX.map(() => ({ type: pickGemType(land), ring: 0 }));
+  if (land.id === 'lake') { game.birdGems = DECO.lake.birds.map(() => pickGemType(land)); game.birdGrow = DECO.lake.birds.map(() => 0); }
+  if (land.bubbles) for (let i = 0; i < 3; i++) spawnBubble(rnd(.35, .7));
+  game.ultra = ULTRA.find(u => u.land === land.id) || null; game.vaultOpen = 0;
+  game.cheetah = CHEETAH.lands.includes(land.id) ? { peek: .5, happy: -9, duck: -9, talk: -9, heart: false, gift: false } : null;
+  pzClose();
   parts = [];
-  for (let i = 0; i < 3; i++) spawnGem();
+  for (let i = 0; i < (hasPower('pendant') ? 6 : 3); i++) spawnGem();
   for (let i = 0; i < 2; i++) spawnRock();
+  if (land.critters) { spawnCritter('bunny'); spawnCritter('bunny'); spawnCritter('butterfly'); spawnCritter('butterfly'); }
   const s = $('#sockets'); s.innerHTML = ''; for (let i = 0; i < GOAL; i++) { const d = document.createElement('div'); d.className = 'sock'; s.append(d); }
   const pw = $('#powers'); pw.innerHTML = '';
   Object.keys(JEWELS).forEach(k => {
     if (!hasPower(k)) return;
     const b = document.createElement('button'); b.append(img(jewelIcon[k], JEWELS[k].name)); b.setAttribute('aria-label', JEWELS[k].power);
-    b.addEventListener('click', e => { e.stopPropagation(); say(`${JEWELS[k].power}! ${JEWELS[k].desc}`); });
+    const pb = game.pu[k];
+    b.addEventListener('click', e => { e.stopPropagation(); say(`${JEWELS[k].power}! ${JEWELS[k].desc}${pb ? ' ' + (pb >= 1 ? 'Super powered by matching gems!' : 'Powered up by gems!') : ''}`); });
+    pw.append(b);
+  });
+  GEM_ORDER.forEach(k => {
+    if (!game.gp[k]) return;
+    const b = document.createElement('button'); b.className = 'gp'; b.append(img(gemIcon[k], GEMS[k].name)); b.setAttribute('aria-label', GEM_POWERS[k].power);
+    b.addEventListener('click', e => { e.stopPropagation(); say(`${GEMS[k].name} power, ${GEM_POWERS[k].power}! ${GEM_POWERS[k].desc}${k === land.fav ? ' It is extra strong here!' : ''}`); });
     pw.append(b);
   });
   $('#win').hidden = true; setFireBtn();
   const first = !save.trips[land.id];
-  say(first ? `Welcome to ${land.name}! Tap the sky to fly as a phoenix and catch gems. Ride ${save.look.uname} to crack the crystal rocks!`
-            : `${land.name}! Let's find ${GOAL} magic gems!`);
+  let words;
+  if (land.intro) words = first ? land.intro : `${land.name}! ${land.hint}`;
+  else if (land.critters) words = first ? `Welcome to ${land.name}! The gem bunnies and gem butterflies are alive! Touch them and they will give you gems!`
+                                        : `${land.name}! Touch the gem animals to find ${GOAL} magic gems!`;
+  else words = first ? `Welcome to ${land.name}! Tap the sky to fly as a phoenix and catch gems. Ride ${save.look.uname} to crack the crystal rocks!`
+                     : `${land.name}! Let's find ${GOAL} magic gems!`;
+  // The gem this land loves: wearing it makes that gem power extra strong here
+  const fav = land.fav;
+  if (fav && game.gp[fav]) words += ` Your ${GEMS[fav].name} glows! ${GEM_POWERS[fav].power} is extra strong here!`;
+  else if (fav && !first) words += ` Tip: wear jewelry with a ${GEMS[fav].name} for ${GEM_POWERS[fav].power}. It is extra strong here!`;
+  const u = game.ultra;
+  if (u && ultraReady(u)) words += ` Your ${JEWELS[u.jewel].name} can open the crystal vault! Tap it to get the ultra shiny ${GEMS[u.gem].name}!`;
+  else if (u && first) words += ` See the shiny crystal vault? Tap it to find out how to open it!`;
+  const cw = CHEETAH.wish[save.cheetah];
+  if (game.cheetah && cw && hasPower(cw)) words += ` ${CHEETAH.name} the shy cheetah is peeking at your ${JEWELS[cw].name}! Tap her!`;
+  say(words);
 }
 function setFireBtn() {
   const b = $('#fireBtn'); if (!game) return;
@@ -910,6 +1608,7 @@ function toPhoenix() {
 function toRider() { const g = game; if (!g || g.form !== 'phoenix') return; g.form = 'landing'; setFireBtn(); }
 $('#fireBtn').addEventListener('click', e => { e.stopPropagation(); ac(); if (!game) return; if (game.form === 'ride') toPhoenix(); else toRider(); });
 $('#homeBtn').addEventListener('click', () => { SFX.tap(); show('s-map'); });
+$('#pzCloseBtn').addEventListener('click', e => { e.stopPropagation(); SFX.tap(); pzClose(); });
 $('#winShop').addEventListener('click', () => { SFX.tap(); show('s-shop'); });
 $('#winMap').addEventListener('click', () => { SFX.tap(); show('s-map'); });
 
@@ -926,7 +1625,17 @@ function pointAt(e) {
   }
 }
 cv.addEventListener('pointerdown', e => {
-  if (!game) return; ac(); pDown = true; pointAt(e);
+  if (!game) return; ac();
+  if (!game.done) {
+    const r = cv.getBoundingClientRect();
+    if (stageTap(e.clientX - r.left, e.clientY - r.top)) return;
+  }
+  if (game.critters.length && !game.done) {
+    const r = cv.getBoundingClientRect(), x = e.clientX - r.left, y = e.clientY - r.top;
+    const hit = game.critters.find(o => { if (o.left) return false; const p = critterPos(o); return Math.hypot(x - p.x, y - (p.y - 24 * S)) < Math.max(44, 52 * S); });
+    if (hit) { touchCritter(hit); emit(x, y, 8, { kind: 'star', min: 20, max: 100, g: 0, life: .6 }); return; }
+  }
+  pDown = true; pointAt(e);
   try { cv.setPointerCapture(e.pointerId); } catch (_) {}
   emit(e.clientX - cv.getBoundingClientRect().left, e.clientY - cv.getBoundingClientRect().top, 6, { kind: 'star', min: 20, max: 80, g: 0, life: .5 });
 });
@@ -934,7 +1643,7 @@ cv.addEventListener('pointermove', e => { if (pDown && game) pointAt(e); });
 ['pointerup', 'pointercancel'].forEach(t => cv.addEventListener(t, () => pDown = false));
 const keys = new Set();
 window.addEventListener('keydown', e => {
-  if (!game) return;
+  if (!game || pz) return;
   const k = e.key;
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'].includes(k)) { keys.add(k); e.preventDefault(); ac(); if ((k === 'ArrowUp' || k === 'w') && game.form === 'ride') toPhoenix(); }
   if ((k === ' ' || k === 'Enter') && document.activeElement === document.body) { e.preventDefault(); ac(); if (game.form === 'ride') toPhoenix(); else toRider(); }
@@ -949,14 +1658,18 @@ function stopIfNoKeys() {
 window.addEventListener('keyup', e => { if (keys.delete(e.key)) stopIfNoKeys(); });
 window.addEventListener('blur', () => { keys.clear(); stopIfNoKeys(); });
 
-function collect(type, x, y) {
+function collect(type, x, y, bonus) {
   const g = game; if (g.done) return;
   const i = g.got; g.got++; g.haul.push(type); g.idle = 0;
   save.bag[type]++; persist();
   g.fly.push({ type, x0: x, y0: y, t: 0, i });
   SFX.gem(GEMS[type].note);
   emit(x, y, 16, { cols: MAGIC, max: 220, size: 5, g: 60 }); emit(x, y, 6, { kind: 'star', max: 160, g: 0 });
+  // Tiara: Lucky Sparkle sometimes drops a twin gem straight into your bag
+  const twin = hasPower('tiara') && !GEMS[type].ultra && Math.random() < .15 + .15 * boost('tiara');
+  if (twin) { save.bag[type]++; persist(); emit(x, y, 10, { kind: 'star', max: 200, g: 0 }); tone(GEMS[type].note * 1.5, .3, 'sine', .07, .12); }
   if (g.got === GOAL / 2) say('Half way there!');
+  else if (twin) say(`Lucky Sparkle! A twin ${GEMS[type].name} went in your bag!`, true);
   else say(GEMS[type].name + '!', true);
   if (g.got >= GOAL) { g.done = true; g.form = g.form === 'ride' ? 'ride' : 'landing'; setTimeout(win, 900); }
 }
@@ -979,13 +1692,14 @@ function updateGame(dt) {
   if (g.form === 'ride') {
     if (dirx) g.tx = g.ux + dirx * 200 * S;
     if (diry < 0 && !g.done && g.ux === g.ux) { keys.delete('ArrowUp'); keys.delete('w'); toPhoenix(); }
-    const speed = 300 * S * (hasPower('bracelet') ? 1.7 : 1), dx = g.tx - g.ux;
-    if (Math.abs(dx) > 3) { g.ux += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); g.uface = Math.sign(dx); g.umoving = true; g.uphase += dt * (hasPower('bracelet') ? 18 : 13); }
+    const speed = 300 * S * (hasPower('bracelet') ? 1.7 + .5 * boost('bracelet') : 1), dx = g.tx - g.ux;
+    if (Math.abs(dx) > 3) { g.ux += Math.sign(dx) * Math.min(Math.abs(dx), speed * dt); g.uface = Math.sign(dx); g.umoving = true; g.uphase += dt * (hasPower('bracelet') ? 18 + 4 * boost('bracelet') : 13); }
     else g.umoving = false;
     g.ux = clamp(g.ux, 60 * S, W - 60 * S); if (Math.abs(g.tx - g.ux) > 3 && (g.ux <= 60 * S || g.ux >= W - 60 * S)) g.tx = g.ux;
     g.energy = Math.min(1, g.energy + dt / 3.5);
     if (g.umoving && Math.random() < dt * 8) emit(g.ux - g.uface * 40 * S, GY, 1, { cols: ['rgba(255,255,255,.8)'], min: 20, max: 60, angle: -Math.PI / 2, spread: 1, g: 100, life: .5, size: 4 });
-    for (const r of g.rocks) if (!r.broken && Math.abs(r.fx * W - g.ux) < 46 * S) {
+    const reach = 46 * S;
+    for (const r of g.rocks) if (!r.broken && Math.abs(r.fx * W - g.ux) < reach) {
       r.broken = true; r.bt = g.t; SFX.crack();
       emit(r.fx * W, GY - 30 * S, 22, { cols: ['#efe4ff', '#d6c2ff', '#ffffff'], min: 80, max: 260, size: 6, g: 400 });
       collect(r.type, r.fx * W, GY - 50 * S);
@@ -995,19 +1709,19 @@ function updateGame(dt) {
     if (g.form === 'phoenix') {
       if (dirx || diry) { g.tx = g.px + dirx * 200 * S; g.ty = g.py + diry * 200 * S; }
       g.ty = clamp(g.ty, 50 * S, GY - 70 * S); g.tx = clamp(g.tx, 30 * S, W - 30 * S);
-      const dx = g.tx - g.px, dy = g.ty - g.py, d = Math.hypot(dx, dy), sp = 420 * S;
+      const dx = g.tx - g.px, dy = g.ty - g.py, d = Math.hypot(dx, dy), sp = 420 * S * (hasPower('brooch') ? 1.4 + .3 * boost('brooch') : 1);
       if (d > 2) { const st = Math.min(d, sp * dt); g.px += dx / d * st; g.py += dy / d * st; if (Math.abs(dx) > 4) g.pface = Math.sign(dx); }
       else g.py += Math.sin(g.t * 3) * .3;
-      if (!g.done) g.energy -= dt / (hasPower('necklace') ? 28 : 14);
+      if (!g.done && !hasPower('wings')) g.energy -= dt / ((hasPower('necklace') ? 28 * (1 + .5 * boost('necklace')) : 14) * (1 + .6 * gpow('ruby')));
       if (g.energy <= 0) { g.energy = 0; g.form = 'landing'; say(`Your phoenix is sleepy! Back to ${save.look.uname}!`); setFireBtn(); }
       if (Math.random() < dt * 30) emit(g.px - g.pface * 14 * S, g.py + 4 * S, 1, { cols: FIRE, min: 10, max: 50, g: -30, life: .8, size: 5 });
-      const mag = hasPower('ring');
+      const mag = hasPower('ring'), magR = 200 * S * (1 + .6 * boost('ring'));
       for (const o of g.gems) {
         if (!o.alive) continue;
         let gx = o.fx * W, gy = o.fy * H + Math.sin(g.t * 2 + o.ph) * 6 * S;
         const dd = Math.hypot(gx - g.px, gy - g.py);
-        if (mag && dd < 200 * S) { const k = Math.min(1, dt * 3); o.fx += (g.px - gx) / W * k; o.fy += (g.py - gy) / H * k; }
-        if (dd < Math.max(34, 48 * S)) { o.alive = false; collect(o.type, gx, gy); }
+        if (mag && dd < magR) { const k = Math.min(1, dt * 3 * (1 + boost('ring')));o.fx += (g.px - gx) / W * k; o.fy += (g.py - gy) / H * k; }
+        if (dd < catchR() && o.lit) { o.alive = false; collect(o.type, gx, gy); }
       }
     } else {
       const s = seat(), dx = s.x - g.px, dy = s.y - g.py, d = Math.hypot(dx, dy), sp = 520 * S;
@@ -1017,18 +1731,24 @@ function updateGame(dt) {
     }
   }
   g.flash = Math.max(0, g.flash - dt * 2.5);
+  if (g.land.critters || g.critters.length) updateCritters(dt);
+  updateStage(dt);
+  updateCheetah(dt);
   // keep the field stocked
   if (!g.done) {
     g.spawnT += dt;
     const aliveG = g.gems.filter(o => o.alive).length, aliveR = g.rocks.filter(o => !o.broken).length;
     if (g.spawnT > 1.2) {
-      if (aliveG < 3) { spawnGem(); g.spawnT = 0; }
-      else if (aliveR < 2) { spawnRock(); g.spawnT = 0; }
+      if (aliveG < (hasPower('wand') ? 5 + Math.round(2 * boost('wand')) : 3)) { spawnGem(); g.spawnT = 0; }
+      else if (aliveR < (gpow('emerald') ? 3 : 2)) { spawnRock(); g.spawnT = 0; }
     }
+    jewelHelpers(dt);
     g.idle += dt;
     if (g.idle > 11) {
       g.idle = 0; g.hintN++;
-      if (g.form === 'ride') say(g.hintN % 2 ? 'Tap the fire button to fly up to the sky gems!' : `Tap a crystal rock and ${save.look.uname} will run there!`);
+      if (g.land.hint && g.hintN % 2) say(g.land.hint);
+      else if (g.land.critters && g.hintN % 2) say('Touch a gem bunny or a gem butterfly! They will give you a gem!');
+      else if (g.form === 'ride') say(g.hintN % 2 ? 'Tap the fire button to fly up to the sky gems!' : `Tap a crystal rock and ${save.look.uname} will run there!`);
       else say('Fly to a sparkly gem! Tap where you want to go.');
     }
   }
@@ -1065,6 +1785,610 @@ function drawRock(c, x, y, s, type, t, a) {
   c.restore();
   c.save(); c.globalAlpha = a * (.75 + .25 * Math.sin(t * 4)); drawGem(c, x, y - 34 * s, 11 * s, type, t); c.restore();
 }
+
+/* ---------- Stage toys: gem bubbles (lagoon), gem trees (orchard), crystal bells (peak) ---------- */
+const catchR = () => Math.max(34, 48 * S) * (1 + .3 * gpow('topaz'));
+function spawnBubble(fy) {
+  const g = game;
+  g.bubbles.push({ fx: rnd(.1, .9), fy: fy ?? GY / H + .03, type: pickGemType(g.land), ph: rnd(0, TAU), born: g.t, pop: -1 });
+}
+function bubblePos(o) { return { x: o.fx * W + Math.sin(game.t * 1.5 + o.ph) * 14 * S, y: o.fy * H }; }
+function popBubble(o) {
+  const g = game, p = bubblePos(o); o.pop = g.t;
+  tone(900, .1, 'sine', .1, 0, 2); tone(1400, .12, 'triangle', .05, .05);
+  emit(p.x, p.y, 16, { cols: ['#ffffff', '#bff3ff', GEMS[o.type].c1], max: 180, size: 4, g: 20, life: .7 });
+  collect(o.type, p.x, p.y);
+  if (!g.saidBubble) { g.saidBubble = true; setTimeout(() => say('Pop! There was a gem inside!'), 500); }
+}
+function shakeTree(i) {
+  const g = game, tr = g.trees[i], top = treeTop(TREE_FX[i], W, GY, S);
+  tr.shake = 1; noise(.18, .05); tone(520, .15, 'triangle', .06, 0, 1.4);
+  emit(top.x, top.y, 10, { cols: ['#ffb3d6', '#8fe08a', '#ffffff'], min: 30, max: 140, size: 4, g: 120, life: .9 });
+  const full = tr.hang.map((k, j) => k ? j : -1).filter(j => j >= 0);
+  if (!full.length) { if (g.t - (g.treeSaid || -9) > 5) { g.treeSaid = g.t; say('New gems are growing! Try another tree.'); } return; }
+  const j = full[Math.floor(Math.random() * full.length)], [dx, dy] = TREE_GEMS[j];
+  g.fallers.push({ x: top.x + dx * S, y: top.y + dy * S, vy: 0, type: tr.hang[j], landed: false, born: g.t });
+  tr.hang[j] = null; tr.grow = 0;
+  if (!g.saidTree) { g.saidTree = true; say(`A gem fell down! Catch it with ${save.look.uname}!`); }
+}
+function ringBell(i) {
+  const g = game, b = g.bells[i], p = bellPos(BELL_FX[i], W, H, S), n = GEMS[b.type].note;
+  b.ring = 1; tone(n, 1, 'sine', .12); tone(n * 2, .7, 'triangle', .04, .02);
+  if (i === g.bellOn) {
+    emit(p.x, p.y + 14 * S, 20, { cols: MAGIC, max: 220, size: 5, g: 60 });
+    collect(b.type, p.x, p.y + 14 * S);
+    g.bellOn = -1; g.bellNext = g.t + .8; g.bellLast = i; b.type = pickGemType(g.land);
+  } else if (g.bellOn >= 0 && g.t - (g.bellSaid || -9) > 6) { g.bellSaid = g.t; say('Pretty sound! Now find the glowing bell!'); }
+}
+// Firefly Forest: a tapped firefly zooms off to wake the nearest sleeping gem
+function sendFirefly(f) {
+  const g = game, sleepy = g.gems.filter(o => o.alive && !o.lit && !g.flies.some(q => q.tgt === o));
+  if (!sleepy.length) { if (g.t - (g.flySaid || -9) > 5) { g.flySaid = g.t; say('All the gems are awake! Go catch them!'); } return; }
+  f.tgt = sleepy.reduce((a, o) => Math.hypot(o.fx * W - f.x, o.fy * H - f.y) < Math.hypot(a.fx * W - f.x, a.fy * H - f.y) ? o : a);
+  tone(880, .25, 'sine', .07, 0, 1.6);
+  if (!g.saidFly2) { g.saidFly2 = true; say('Follow the firefly! It will wake up a gem!'); }
+}
+function wakeGem(o) {
+  o.lit = true; const x = o.fx * W, y = o.fy * H;
+  emit(x, y, 10, { kind: 'star', min: 30, max: 140, g: 0, life: .7 }); tone(GEMS[o.type].note * 2, .25, 'sine', .05);
+}
+// Rainbow Falls: a gem slides down the rainbow from the cloud on top
+function slidePos(o) {
+  const rb = rainbowArc(W, H, GY), a = -Math.PI / 2 + o.side * o.k * Math.PI / 2;
+  return { x: rb.cx + Math.cos(a) * rb.rx, y: GY + Math.sin(a) * rb.ry - 8 * S };
+}
+function sendSlide() {
+  const g = game; if (g.done) return;
+  g.slideT = 0; g.cloudT = g.t; g.cloudPuff = 1;
+  const side = Math.random() < .7 ? (g.ux < W / 2 ? -1 : 1) : (Math.random() < .5 ? -1 : 1);
+  g.slides.push({ k: 0, side, type: pickGemType(g.land) });
+  const rb = rainbowArc(W, H, GY);
+  emit(rb.cx, rb.top, 12, { cols: RAINBOW, max: 160, size: 4, g: 40 });
+  tone(1400, .7, 'sine', .06, 0, .45);
+  if (!g.saidSlide) { g.saidSlide = true; say(`Wheee! Catch it at the bottom of the rainbow with ${save.look.uname}!`); }
+}
+// Blossom Hill: a glowing bud blooms and pops out a gem
+function bloomBud(i) {
+  const g = game, b = g.buds[i];
+  if (b.open >= 0 || g.done) return;
+  const p = budTop(BUD_FX[i], W, GY, S, b.grow);
+  if (b.grow < 1) { if (g.t - (g.budSaid || -9) > 5) { g.budSaid = g.t; say('This bud is still growing! Find a glowing one.'); } return; }
+  b.open = g.t;
+  g.fallers.push({ x: p.x, y: p.y, vy: -420 * S, type: b.type, landed: false, born: g.t });
+  emit(p.x, p.y, 18, { cols: ['#ff9cc9', '#ffd1e6', '#ffffff', '#ffe36e'], max: 220, size: 5, g: 80 });
+  [784, 988, 1175].forEach((f, j) => tone(f, .25, 'triangle', .06, j * .07));
+  if (!g.saidBud) { g.saidBud = true; say(`It bloomed! Catch the gem with ${save.look.uname}!`); }
+}
+/* ---------- Ultra gem vaults: wear the right jewelry, then solve a pattern puzzle ---------- */
+function vaultPos() { return { x: W - Math.max(52, 62 * S), y: H * .42 + Math.sin(game.t * 2) * 5 * S, r: Math.max(30, 36 * S) }; }
+function drawVault(c) {
+  const g = game, u = g.ultra; if (!u) return;
+  const p = vaultPos(), R = p.r, t = g.t;
+  if (g.vaultOpen) { // a fading puff of sparkles where the vault was
+    const k = (g.t - g.vaultOpen) / 1.5; if (k > 1) return;
+    c.save(); c.globalAlpha = 1 - k; for (let i = 0; i < 6; i++) { const a = i * TAU / 6 + k * 2; sparkle(c, p.x + Math.cos(a) * R * (1 + k), p.y + Math.sin(a) * R * (1 + k), 10 * S + 4); } c.restore();
+    return;
+  }
+  const ready = ultraReady(u), h = (t * 60) % 360;
+  c.save();
+  const halo = c.createRadialGradient(p.x, p.y, R * .3, p.x, p.y, R * 2.1);
+  halo.addColorStop(0, `hsla(${h},100%,88%,.75)`); halo.addColorStop(1, `hsla(${h},100%,88%,0)`);
+  c.fillStyle = halo; c.beginPath(); c.arc(p.x, p.y, R * 2.1, 0, TAU); c.fill();
+  c.translate(p.x, p.y);
+  c.beginPath(); for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + i * TAU / 6; c.lineTo(Math.cos(a) * R, Math.sin(a) * R * 1.15); } c.closePath();
+  c.fillStyle = 'rgba(225,235,255,.35)'; c.fill();
+  c.restore();
+  drawGem(c, p.x, p.y, R * .55, u.gem, t);
+  c.save(); c.translate(p.x, p.y);
+  // crystal bars in front of the gem
+  c.strokeStyle = 'rgba(255,255,255,.75)'; c.lineWidth = Math.max(2, 3 * S);
+  for (const bx of [-.45, 0, .45]) { c.beginPath(); c.moveTo(bx * R, -R * (1.1 - Math.abs(bx) * .5)); c.lineTo(bx * R, R * (1.1 - Math.abs(bx) * .5)); c.stroke(); }
+  c.beginPath(); for (let i = 0; i < 6; i++) { const a = -Math.PI / 2 + i * TAU / 6; c.lineTo(Math.cos(a) * R, Math.sin(a) * R * 1.15); } c.closePath();
+  c.strokeStyle = ready ? '#ffd23f' : '#ffffff'; c.lineWidth = Math.max(3, 4 * S); c.stroke();
+  // the lock: golden and bouncing when your jewelry can open it
+  const ly = R * 1.2 + (ready ? -Math.abs(Math.sin(t * 5)) * 5 * S : 0), lw = R * .5, up = ready ? R * .12 : 0;
+  c.strokeStyle = ready ? '#e0a400' : '#9a86c8'; c.lineWidth = Math.max(3, 4 * S);
+  c.beginPath(); c.arc(0, ly - lw * .3 - up, lw * .32, Math.PI, TAU); c.stroke();
+  c.fillStyle = ready ? '#ffd23f' : '#b9a8e8'; c.fillRect(-lw / 2, ly - lw * .3, lw, lw * .75);
+  c.fillStyle = 'rgba(60,30,90,.6)'; c.beginPath(); c.arc(0, ly + lw * .05, lw * .1, 0, TAU); c.fill();
+  c.restore();
+  if (ready) sparkle(c, p.x + R * .8, p.y + R * 1.1, (8 + 6 * Math.abs(Math.sin(t * 4))) * S);
+}
+let pz = null; // the open vault puzzle: { u, answer, tries }
+function pzClose() { pz = null; const el = $('#puzzle'); if (el) el.hidden = true; }
+function openVault() {
+  const g = game, u = g.ultra, G = GEMS[u.gem];
+  if (g.vaultOpen) return;
+  const have = ultraHave(u), ready = have >= u.n, J = JEWELS[u.jewel], ns = famNames(u.fam);
+  pz = { u, answer: null, tries: 0 };
+  $('#pzTitle').textContent = G.name;
+  const big = $('#pzGem'); big.innerHTML = ''; big.append(img(gemIcon[u.gem], G.name));
+  // Clear list of what is needed, with a check mark for each part already done
+  const list = $('#pzNeeds'); list.innerHTML = '';
+  const item = (ok, text) => { const li = document.createElement('li'); if (ok) li.className = 'ok'; li.textContent = text; list.append(li); };
+  item(have >= 0, `Wear ${aJewel(u.jewel)}`);
+  item(ready, `With ${u.n} ${ns[0]} gems in it` + (have > 0 && !ready ? ` (yours has ${have})` : ''));
+  item(false, 'Solve the pattern puzzle');
+  $('#pzFam').textContent = ns.length > 1 ? `${listWords(ns.slice(1))} count as ${ns[0]} too! Ultra gems are extra strong: each one counts as two gems for its gem power.` : '';
+  const row = $('#pzRow'), pick = $('#pzPick'); row.innerHTML = ''; pick.innerHTML = '';
+  $('#puzzle').hidden = false; SFX.tap();
+  if (!ready) {
+    $('#pzText').textContent = 'The vault is locked. Do the steps above to open it!';
+    let tip;
+    if (have >= 0) tip = `Your ${J.name} has ${have} ${ns[0]} ${have === 1 ? 'gem' : 'gems'}. It needs ${u.n}! Make a new one in the Jewelry Workshop.`;
+    else if (save.jewels.some(j => j.type === u.jewel)) tip = `You have ${aJewel(u.jewel)} in your Treasure Box. Put it on!`;
+    else tip = `You can make ${aJewel(u.jewel)} in the Jewelry Workshop. ${J.pl ? 'They need' : 'It needs'} ${J.slots} gems.`;
+    say(`The ultra shiny ${G.name} is locked in a crystal vault! ${needWords(u)} ${tip}`);
+    return;
+  }
+  // Pattern puzzle: which gem comes next?
+  // (gems with different shapes and colors, so they are easy to tell apart)
+  const pool = ['ruby', 'topaz', 'emerald', 'sapphire', 'amethyst', 'opal', 'rosequartz', 'aquamarine'].sort(() => Math.random() - .5);
+  const pat = ['AB', 'ABC', 'AAB', 'ABB'][Math.floor(Math.random() * 4)], letter = { A: pool[0], B: pool[1], C: pool[2] };
+  const seq = Array.from({ length: 6 }, (_, i) => letter[pat[i % pat.length]]);
+  pz.answer = seq[5];
+  seq.slice(0, 5).forEach(k => row.append(img(gemIcon[k], GEMS[k].name)));
+  const q = document.createElement('span'); q.className = 'q'; q.textContent = '?'; row.append(q);
+  const choices = [...new Set([pz.answer, ...pool.slice(0, 4)])].slice(0, 3).sort(() => Math.random() - .5);
+  choices.forEach(k => {
+    const b = document.createElement('button'); b.append(img(gemIcon[k], GEMS[k].name)); b.setAttribute('aria-label', GEMS[k].name);
+    if (k === pz.answer && hasPower('scepter')) b.classList.add('hint');
+    b.addEventListener('click', () => pzPick(k, b));
+    pick.append(b);
+  });
+  $('#pzText').textContent = 'Which gem comes next? Tap it!';
+  say(`Your ${J.name} opened the lock! Now the puzzle. Look at the gems. Which gem comes next?${hasPower('scepter') ? ' Your Scepter makes the right one twinkle!' : ''}`);
+}
+function pzPick(k, b) {
+  if (!pz || !pz.answer) return;
+  if (k !== pz.answer) {
+    pz.tries++; b.classList.add('no'); SFX.nope();
+    say(pz.tries > 1 ? `Almost! Say the gems out loud: ${[...$('#pzRow').querySelectorAll('img')].map(i => i.alt).join(', ')}... what comes next?` : 'Not that one. Look at the pattern again!');
+    return;
+  }
+  const g = game, u = pz.u, p = vaultPos();
+  pzClose(); g.vaultOpen = g.t;
+  save.ultra[u.gem] = (save.ultra[u.gem] || 0) + 1;
+  SFX.magic(); [1047, 1319, 1568, 2093].forEach((f, j) => tone(f, .35, 'sine', .08, j * .1));
+  emit(p.x, p.y, 40, { cols: [...MAGIC, ...RAINBOW], max: 320, size: 6, g: 40, life: 1.2 }); emit(p.x, p.y, 14, { kind: 'star', max: 260, g: 0 });
+  collect(u.gem, p.x, p.y);
+  say(`You did it! The vault opened! You got the ultra shiny ${GEMS[u.gem].name}! Set it in jewelry to make it glow!`);
+}
+function stageTap(x, y) {
+  const g = game;
+  if (g.ultra) {
+    const p = vaultPos();
+    if (!g.vaultOpen && Math.hypot(x - p.x, y - p.y) < p.r * 1.5) { openVault(); return true; }
+  }
+  if (g.cheetah) {
+    const cx = cheetahX();
+    if (Math.hypot(x - cx, y - (GY - 45 * S)) < Math.max(50, 60 * S) || Math.hypot(x - (cx + 66 * S), y - (GY - 130 * S)) < Math.max(34, 36 * S)) { tapCheetah(); return true; }
+  }
+  for (const f of g.flies) if (Math.hypot(x - f.x, y - f.y) < Math.max(44, 44 * S)) { sendFirefly(f); return true; }
+  if (g.land.slide) {
+    const rb = rainbowArc(W, H, GY);
+    if (Math.hypot(x - rb.cx, y - rb.top) < Math.max(55, 65 * S)) { if (g.t - g.cloudT > .5) sendSlide(); return true; }
+  }
+  for (let i = 0; i < g.buds.length; i++) {
+    const p = budTop(BUD_FX[i], W, GY, S, g.buds[i].grow);
+    if (Math.hypot(x - p.x, y - p.y) < Math.max(44, 46 * S)) { bloomBud(i); if (g.form === 'ride') g.tx = p.x; return true; }
+  }
+  for (const o of g.bubbles) {
+    if (o.pop >= 0) continue;
+    const p = bubblePos(o); if (Math.hypot(x - p.x, y - p.y) < Math.max(40, 46 * S)) { popBubble(o); return true; }
+  }
+  for (let i = 0; i < g.bells.length; i++) {
+    const p = bellPos(BELL_FX[i], W, H, S); if (Math.hypot(x - p.x, y - (p.y + 14 * S)) < Math.max(40, 42 * S)) { ringBell(i); return true; }
+  }
+  for (let i = 0; i < g.trees.length; i++) {
+    const top = treeTop(TREE_FX[i], W, GY, S);
+    if (Math.hypot(x - top.x, y - top.y) < top.r * 1.25) { shakeTree(i); if (g.form === 'ride') g.tx = top.x; return true; }
+  }
+  if (g.birdGems) for (let i = 0; i < g.birdGems.length; i++) {
+    const p = birdPos(DECO[g.land.id].birds[i], W, GY, g.t, S);
+    if (g.birdGems[i] && Math.hypot(x - p.x, y - (p.y + 8 * S)) < Math.max(40, 40 * S) && birdDrop(i)) { if (g.form === 'ride') g.tx = p.x; return true; }
+  }
+  return false;
+}
+// Firefly Forest lights: [x, y, radius]. Moon Glow and Sunbeam gems make you shine brighter.
+function darkLights() {
+  const g = game, glow = 1 + .5 * gpow('amethyst') + .5 * gpow('topaz'), L = [[g.ux, GY - 110 * S, 120 * S * glow]];
+  if (g.form !== 'ride') L.push([g.px, g.py, 150 * S * glow]);
+  for (const f of g.flies) L.push([f.x, f.y, 70 * S]);
+  return L;
+}
+let darkCv = null;
+function drawDark(c) {
+  const g = game;
+  if (!darkCv) darkCv = document.createElement('canvas');
+  const cw = Math.ceil(W), ch = Math.ceil(H);
+  if (darkCv.width !== cw || darkCv.height !== ch) { darkCv.width = cw; darkCv.height = ch; }
+  const d = darkCv.getContext('2d');
+  d.globalCompositeOperation = 'source-over'; d.clearRect(0, 0, cw, ch);
+  d.fillStyle = 'rgba(6,10,32,.6)'; d.fillRect(0, 0, cw, ch);
+  d.globalCompositeOperation = 'destination-out';
+  const hole = (x, y, r) => { const gr = d.createRadialGradient(x, y, r * .2, x, y, r); gr.addColorStop(0, 'rgba(0,0,0,1)'); gr.addColorStop(1, 'rgba(0,0,0,0)'); d.fillStyle = gr; d.beginPath(); d.arc(x, y, r, 0, TAU); d.fill(); };
+  for (const [x, y, r] of darkLights()) hole(x, y, r);
+  hole(g.ux, GY - 50 * S, 110 * S);
+  for (const o of g.gems) if (o.lit) hole(o.fx * W, o.fy * H, 50 * S);
+  for (const f of g.fallers) hole(f.x, f.y, 40 * S);
+  for (const o of g.bubbles) hole(o.fx * W, o.fy * H, 40 * S);
+  d.globalCompositeOperation = 'source-over';
+  c.drawImage(darkCv, 0, 0, W, H);
+  for (const f of g.flies) drawFirefly(c, f.x, f.y, S, g.t + f.ph, f.tgt ? 1 : 0);
+}
+function updateStage(dt) {
+  const g = game, bird = g.form === 'phoenix';
+  if (g.land.bubbles || g.bubbles.length) {
+    const rise = .06 * (1 - .35 * Math.min(1, gpow('sapphire')));
+    for (const o of g.bubbles) {
+      if (o.pop >= 0) continue;
+      o.fy -= dt * rise;
+      const p = bubblePos(o);
+      if (bird && !g.done && Math.hypot(p.x - g.px, p.y - g.py) < catchR()) popBubble(o);
+    }
+    g.bubbles = g.bubbles.filter(o => o.pop >= 0 ? g.t - o.pop < .35 : o.fy > -.06);
+    g.bubT += dt;
+    if (g.land.bubbles && !g.done && g.bubT > 1.4 && g.bubbles.filter(o => o.pop < 0).length < 4 + (gpow('sapphire') ? 1 : 0)) { spawnBubble(); g.bubT = 0; }
+  }
+  g.trees.forEach((tr, i) => {
+    tr.shake = Math.max(0, tr.shake - dt * 2.5);
+    tr.grow += dt;
+    if (tr.grow > 3.5 / (1 + gpow('emerald'))) { const j = tr.hang.indexOf(null); if (j >= 0) tr.hang[j] = pickGemType(g.land); tr.grow = 0; }
+    const top = treeTop(TREE_FX[i], W, GY, S);
+    if (bird && !g.done && Math.hypot(top.x - g.px, top.y - g.py) < top.r && g.t - tr.bump > 1.2) { tr.bump = g.t; shakeTree(i); }
+  });
+  if (g.birdGems) g.birdGems.forEach((k, i) => {
+    if (!k) { if ((g.birdGrow[i] += dt) > 6 / (1 + gpow('amethyst'))) g.birdGems[i] = pickGemType(g.land); return; }
+    const p = birdPos(DECO[g.land.id].birds[i], W, GY, g.t, S);
+    if (bird && !g.done && Math.hypot(p.x - g.px, p.y - g.py) < catchR()) birdDrop(i);
+  });
+  if (g.land.dark) {
+    // Light wakes sleeping gems: the phoenix glow, the unicorn's horn and the fireflies
+    const lights = darkLights();
+    for (const f of g.flies) {
+      if (f.tgt && (!f.tgt.alive || f.tgt.lit)) f.tgt = null;
+      let tx, ty, sp;
+      if (f.tgt) { tx = f.tgt.fx * W; ty = f.tgt.fy * H; sp = 300 * S; }
+      else {
+        if ((f.wt -= dt) <= 0) { f.wt = rnd(2, 4); f.wx = rnd(.08, .92) * W; f.wy = rnd(.15 * H, Math.max(.2 * H, GY - 150 * S)); }
+        tx = f.wx; ty = f.wy; sp = 50 * S;
+      }
+      const d = Math.hypot(tx - f.x, ty - f.y);
+      if (d > 2) { const st = Math.min(d, sp * dt); f.x += (tx - f.x) / d * st; f.y += (ty - f.y) / d * st; }
+      if (f.tgt && d < 14 * S) { wakeGem(f.tgt); f.tgt = null; f.wt = 1.5; f.wx = f.x; f.wy = f.y; }
+    }
+    if (!g.done) for (const o of g.gems) {
+      if (!o.alive || o.lit) continue;
+      const x = o.fx * W, y = o.fy * H;
+      if (lights.some(([lx, ly, r]) => Math.hypot(x - lx, y - ly) < r * .8)) {
+        wakeGem(o);
+        if (!g.saidWake) { g.saidWake = true; setTimeout(() => say('Your light woke up a gem! Now catch it!'), 300); }
+      }
+    }
+  }
+  if (g.land.slide) {
+    g.cloudPuff = Math.max(0, g.cloudPuff - dt * 2);
+    const rb = rainbowArc(W, H, GY);
+    for (const o of g.slides) {
+      o.k += dt * (.22 + o.k * .5) * (1 - .4 * Math.min(1, gpow('sapphire')));
+      const p = slidePos(o);
+      if (Math.random() < dt * 20) emit(p.x, p.y, 1, { cols: RAINBOW, min: 10, max: 40, g: 30, life: .6, size: 4 });
+      if (bird && !g.done && Math.hypot(p.x - g.px, p.y - g.py) < catchR()) { o.got = true; collect(o.type, p.x, p.y); continue; }
+      if (o.k >= 1) {
+        o.got = true; g.fallers.push({ x: clamp(p.x, 20 * S, W - 20 * S), y: GY - 20 * S, vy: -220 * S, type: o.type, landed: false, born: g.t });
+        emit(p.x, GY - 10 * S, 14, { cols: ['#ffffff', '#bff3ff', ...RAINBOW], max: 180, size: 4, g: 200 });
+      }
+    }
+    g.slides = g.slides.filter(o => !o.got);
+    g.slideT += dt;
+    if (!g.done && g.slideT > 5 && g.slides.length < 2) sendSlide();
+    if (bird && !g.done && Math.hypot(rb.cx - g.px, rb.top - g.py) < 60 * S && g.t - g.cloudT > 1.5) sendSlide();
+  }
+  g.buds.forEach((b, i) => {
+    if (b.open >= 0) { if (g.t - b.open > 1.8) { b.open = -1; b.grow = 0; b.type = pickGemType(g.land); } return; }
+    b.grow = Math.min(1, b.grow + dt / 5 * (1 + gpow('emerald')));
+    if (b.grow < 1 || g.done) return;
+    const p = budTop(BUD_FX[i], W, GY, S, 1);
+    if (g.form === 'ride' && Math.abs(p.x - g.ux) < 40 * S || bird && Math.hypot(p.x - g.px, p.y - g.py) < catchR()) bloomBud(i);
+  });
+  for (const f of g.fallers) {
+    if (!f.landed) {
+      f.vy += 700 * S * dt; f.y += f.vy * dt;
+      const floor = GY - 16 * S;
+      if (f.y >= floor) { f.y = floor; if (f.vy > 140 * S) f.vy = -f.vy * .35; else { f.vy = 0; f.landed = true; } tone(1200, .06, 'sine', .04); }
+    }
+    if (g.done) continue;
+    if (g.form === 'ride' && Math.abs(f.x - g.ux) < 50 * S && f.y > GY - 160 * S || bird && Math.hypot(f.x - g.px, f.y - g.py) < catchR()) { f.got = true; collect(f.type, f.x, f.y); }
+  }
+  g.fallers = g.fallers.filter(f => !f.got);
+  if (g.bells.length) {
+    for (const b of g.bells) b.ring = Math.max(0, b.ring - dt * 1.2);
+    if (g.bellOn < 0 && g.t > g.bellNext && !g.done) {
+      let i; do { i = Math.floor(Math.random() * g.bells.length); } while (i === g.bellLast);
+      g.bellOn = i; tone(GEMS[g.bells[i].type].note * 2, .3, 'sine', .04);
+    }
+    if (bird && !g.done && g.bellOn >= 0) {
+      const p = bellPos(BELL_FX[g.bellOn], W, H, S);
+      if (Math.hypot(p.x - g.px, p.y + 14 * S - g.py) < catchR()) ringBell(g.bellOn);
+    }
+  }
+}
+// Jewelry that helps on its own: the Locket's heart fetches gems, the Moon Charm calls shooting stars
+function jewelHelpers(dt) {
+  const g = game;
+  if (hasPower('locket') && (g.heartT += dt) > 8 - 3 * boost('locket')) {
+    const live = g.gems.filter(o => o.alive);
+    if (live.length) {
+      g.heartT = 0;
+      const o = live[Math.floor(Math.random() * live.length)], x = o.fx * W, y = o.fy * H;
+      o.alive = false;
+      emit(x, y, 18, { cols: ['#ff6fa5', '#ffb3d1', '#ffffff'], max: 200, size: 6, g: -20 });
+      collect(o.type, x, y);
+      if (!g.saidHeart) { g.saidHeart = true; setTimeout(() => say('Your Heart Helper brought you a gem!'), 400); }
+    }
+  }
+  if (hasPower('charm') && (g.showerT += dt) > 14 - 5 * boost('charm')) {
+    g.showerT = 0; spawnGem(); spawnGem();
+    for (let i = 0; i < 5; i++) emit(W * (.15 + i * .17), H * .07, 6, { kind: 'star', min: 40, max: 160, g: 80, life: 1 });
+    [1568, 1319, 1175, 1047].forEach((f, i) => tone(f, .3, 'sine', .06, i * .08));
+    if (!g.saidShower) { g.saidShower = true; say('Star Shower! More sky gems!'); }
+  }
+  // Gem powers that work on their own: Rain Cloud, Dream Bubbles, Friendly Hearts
+  if (g.rain) {
+    const tx = g.form === 'ride' ? g.ux : g.px;
+    g.rain.x += (tx - g.rain.x) * Math.min(1, dt * 1.5);
+    if ((g.rain.t += dt) > 9 - 3 * gpow('aquamarine')) {
+      g.rain.t = 0;
+      g.fallers.push({ x: clamp(g.rain.x, 20 * S, W - 20 * S), y: H * .16 + 24 * S, vy: 0, type: pickGemType(g.land), landed: false, born: g.t });
+      tone(1100, .2, 'sine', .05, 0, .7);
+      if (!g.saidRain) { g.saidRain = true; say('Your Rain Cloud dropped a gem!'); }
+    }
+  }
+  if (!g.land.bubbles && gpow('opal') && (g.dreamT += dt) > 10 - 4 * gpow('opal')) {
+    g.dreamT = 0;
+    if (g.bubbles.filter(o => o.pop < 0).length < 2) { spawnBubble(); if (!g.saidDream) { g.saidDream = true; say('A dream bubble! Tap it to pop it!'); } }
+  }
+  if (!g.land.critters && gpow('rosequartz') && (g.visitT += dt) > 12 - 5 * gpow('rosequartz')) {
+    g.visitT = 0;
+    if (!g.critters.some(o => !o.left)) {
+      const kind = Math.random() < .6 ? 'bunny' : 'butterfly'; spawnCritter(kind);
+      if (!g.saidVisit) { g.saidVisit = true; say(`A gem ${kind} came to visit! Touch it for a gem!`); }
+    }
+  }
+}
+function drawStage(c) {
+  const g = game, R = Math.max(24, 30 * S);
+  for (const o of g.bubbles) {
+    const p = bubblePos(o);
+    if (o.pop >= 0) {
+      const k = (g.t - o.pop) / .35;
+      c.save(); c.globalAlpha = Math.max(0, 1 - k); c.strokeStyle = '#ffffff'; c.lineWidth = 3; c.beginPath(); c.arc(p.x, p.y, R * (1 + k * .8), 0, TAU); c.stroke(); c.restore();
+      continue;
+    }
+    c.save(); c.globalAlpha = Math.min(1, (g.t - o.born) * 2);
+    drawGem(c, p.x, p.y, R * .5, o.type, g.t);
+    const bg = c.createRadialGradient(p.x - R * .3, p.y - R * .3, R * .1, p.x, p.y, R);
+    bg.addColorStop(0, 'rgba(255,255,255,.05)'); bg.addColorStop(.8, 'rgba(190,240,255,.18)'); bg.addColorStop(1, 'rgba(220,250,255,.55)');
+    c.fillStyle = bg; c.beginPath(); c.arc(p.x, p.y, R, 0, TAU); c.fill();
+    c.strokeStyle = 'rgba(255,255,255,.85)'; c.lineWidth = 2; c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.ellipse(p.x - R * .4, p.y - R * .45, R * .2, R * .1, -.6, 0, TAU); c.fill();
+    c.restore();
+  }
+  for (const f of g.fallers) {
+    if (f.landed) {
+      const halo = c.createRadialGradient(f.x, f.y, 2, f.x, f.y, 32 * S); halo.addColorStop(0, 'rgba(255,255,255,.6)'); halo.addColorStop(1, 'rgba(255,255,255,0)');
+      c.fillStyle = halo; c.beginPath(); c.arc(f.x, f.y, 32 * S, 0, TAU); c.fill();
+    }
+    drawGem(c, f.x, f.y + (f.landed ? Math.sin(g.t * 3 + f.born) * 2 * S : 0), 14 * S, f.type, g.t);
+  }
+  for (const o of g.slides) { const p = slidePos(o); drawGem(c, p.x, p.y, Math.max(14, 18 * S), o.type, g.t); }
+  if (g.rain) {
+    const x = g.rain.x, y = H * .16;
+    c.save(); c.globalAlpha = .9; puff(c, x - 26 * S * .8, y, S * .8, '#eaf6ff'); c.restore();
+    c.strokeStyle = 'rgba(140,210,255,.8)'; c.lineWidth = 2 * S;
+    for (let i = 0; i < 4; i++) { const dx = (i - 1.5) * 10 * S, dy = ((g.t * 60 * S + i * 9 * S) % (22 * S)); c.beginPath(); c.moveTo(x + dx, y + 18 * S + dy); c.lineTo(x + dx - 2 * S, y + 24 * S + dy); c.stroke(); }
+  }
+}
+
+/* ---------- Living gem animals (Crystal Garden) ---------- */
+// Little bunnies and butterflies made of gems. Touch one (or bump it) and it gives you a gem, then skips off happily.
+function critterPos(o) {
+  if (o.kind === 'bunny') return { x: o.fx * W, y: GY - Math.abs(Math.sin(o.ph)) * 18 * S };
+  return { x: o.fx * W, y: o.fy * H + Math.sin(o.ph * .5) * 14 * S };
+}
+function spawnCritter(kind) {
+  const g = game, side = Math.random() < .5 ? -1 : 1, ready = g.t < 1;
+  g.critters.push({ kind, type: pickGemType(g.land), fx: ready ? rnd(.15, .85) : (side < 0 ? -.05 : 1.05), dir: ready ? (Math.random() < .5 ? -1 : 1) : -side,
+    fy: rnd(.2, Math.max(.3, (GY - 220 * S) / H)), ph: rnd(0, TAU), left: false, happy: 0, born: g.t });
+}
+function touchCritter(o) {
+  const g = game; if (o.left || g.done) return;
+  const p = critterPos(o);
+  o.left = true; o.happy = g.t; o.dir = p.x < W / 2 ? -1 : 1;
+  tone(1320, .12, 'sine', .08, 0, 1.4); tone(1760, .16, 'sine', .07, .1, 1.3);
+  emit(p.x, p.y - 20 * S, 18, { cols: ['#ffb3d1', '#ffffff', GEMS[o.type].c1], max: 200, size: 5, g: 40 });
+  collect(o.type, p.x, p.y - 20 * S);
+  if (hasPower('earrings') && Math.random() < .5 + .3 * boost('earrings') &&!g.done) setTimeout(() => { if (game === g && !g.done) collect(o.type, p.x, p.y - 30 * S); }, 250);
+  if (!g.saidCritter) { g.saidCritter = true; setTimeout(() => say(`The gem ${o.kind} gave you a ${GEMS[o.type].name}!`), 400); }
+}
+function updateCritters(dt) {
+  const g = game;
+  for (const o of g.critters) {
+    const sp = o.left ? .32 : (o.kind === 'bunny' ? .05 : .04);
+    o.fx += o.dir * sp * dt * (900 / Math.max(400, W));
+    o.ph += dt * (o.kind === 'bunny' ? (o.left ? 9 : 5) : 3);
+    if (o.left) { if (o.kind === 'butterfly') o.fy -= dt * .12; continue; }
+    if (o.fx < .06 && o.dir < 0 || o.fx > .94 && o.dir > 0) { if (g.t - o.born > 2) o.dir *= -1; }
+    // Friendly Hearts: bunnies hop over to your unicorn
+    if (o.kind === 'bunny' && gpow('rosequartz') && g.form === 'ride') { if (Math.abs(g.ux / W - o.fx) > .03) o.dir = Math.sign(g.ux / W - o.fx); }
+    else if (o.kind === 'bunny' && Math.random() < dt * .25) o.dir *= -1;
+    const p = critterPos(o);
+    if (o.kind === 'bunny' && g.form === 'ride' && Math.abs(p.x - g.ux) < 44 * S) touchCritter(o);
+    if (o.kind === 'butterfly' && g.form === 'phoenix' && Math.hypot(p.x - g.px, p.y - g.py) < Math.max(36, 50 * S)) touchCritter(o);
+  }
+  g.critters = g.critters.filter(o => !o.left || (o.fx > -.15 && o.fx < 1.15 && o.fy > -.2));
+  if (!g.done && g.land.critters) {
+    g.critT = (g.critT || 0) + dt;
+    const bun = g.critters.filter(o => !o.left && o.kind === 'bunny').length, fly = g.critters.filter(o => !o.left && o.kind === 'butterfly').length;
+    if (g.critT > 1.5 && (bun < 2 || fly < 2)) { spawnCritter(bun < 2 ? 'bunny' : 'butterfly'); g.critT = 0; }
+  }
+}
+function drawCritter(c, o, t) {
+  const p = critterPos(o), G = GEMS[o.type], s = S * 1.15;
+  c.save(); c.translate(p.x, p.y); c.scale(s * (o.dir < 0 ? -1 : 1), s);
+  c.globalAlpha = Math.min(1, (t - o.born) * 2 + .3);
+  const glow = c.createRadialGradient(0, -18, 2, 0, -18, 46); glow.addColorStop(0, 'rgba(255,255,255,.35)'); glow.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = glow; c.beginPath(); c.arc(0, -18, 46, 0, TAU); c.fill();
+  const fill = c.createLinearGradient(-20, -60, 20, 10); fill.addColorStop(0, G.c1); fill.addColorStop(.65, G.c2); fill.addColorStop(1, G.c2);
+  c.lineJoin = 'round'; c.lineCap = 'round';
+  const face = (ex, ey, r) => {
+    c.fillStyle = '#2b1a3a'; c.beginPath(); c.ellipse(ex, ey, 2.4 * r, 3 * r, 0, 0, TAU); c.fill();
+    c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + .8 * r, ey - 1.2 * r, .9 * r, 0, TAU); c.fill();
+    c.fillStyle = 'rgba(255,130,170,.7)'; c.beginPath(); c.arc(ex + 3 * r, ey + 4 * r, 2.4 * r, 0, TAU); c.fill();
+    c.strokeStyle = '#2b1a3a'; c.lineWidth = 1.3 * r; c.beginPath(); c.arc(ex + 2.5 * r, ey + 3.5 * r, 2.4 * r, .2 * Math.PI, .8 * Math.PI); c.stroke();
+  };
+  if (o.kind === 'bunny') {
+    const hop = Math.abs(Math.sin(o.ph));
+    c.fillStyle = 'rgba(40,20,70,.2)'; c.beginPath(); c.ellipse(0, (GY - p.y) / s + 2, 22 - hop * 6, 5, 0, 0, TAU); c.fill();
+    c.fillStyle = fill; c.strokeStyle = G.c2; c.lineWidth = 2;
+    for (const [ex, ey, rot] of [[7, -54, -.25], [17, -55, .2]]) { c.beginPath(); c.ellipse(ex, ey, 5, 14, rot, 0, TAU); c.fill(); c.stroke(); }
+    c.fillStyle = 'rgba(255,255,255,.55)'; for (const [ex, ey, rot] of [[7, -54, -.25], [17, -55, .2]]) { c.beginPath(); c.ellipse(ex, ey + 2, 2, 8, rot, 0, TAU); c.fill(); }
+    c.fillStyle = '#ffffff'; c.beginPath(); c.arc(-21, -20, 7, 0, TAU); c.fill();
+    c.fillStyle = fill; c.beginPath(); c.ellipse(0, -18, 22, 17, 0, 0, TAU); c.fill(); c.stroke();
+    c.beginPath(); c.arc(14, -36, 13, 0, TAU); c.fill(); c.stroke();
+    c.strokeStyle = 'rgba(255,255,255,.6)'; c.lineWidth = 1.5;
+    c.beginPath(); c.moveTo(-12, -30); c.lineTo(-2, -18); c.lineTo(-14, -6); c.moveTo(-2, -18); c.lineTo(12, -24); c.stroke();
+    c.fillStyle = 'rgba(255,255,255,.75)'; c.beginPath(); c.ellipse(-8, -26, 6, 3, -.5, 0, TAU); c.fill();
+    face(19, -38, 1);
+    c.fillStyle = '#ff8fb1'; c.beginPath(); c.arc(26.5, -35, 1.8, 0, TAU); c.fill();
+    sparkle(c, -4, -34, 5 * Math.abs(Math.sin(t * 3 + o.fy * 9)));
+  } else {
+    const flap = .25 + .75 * Math.abs(Math.cos(o.ph * 3.3));
+    c.save(); c.scale(flap, 1);
+    c.fillStyle = fill; c.strokeStyle = G.c2; c.lineWidth = 2;
+    for (const sx of [-1, 1]) {
+      c.beginPath(); c.ellipse(sx * 15, -8, 15, 12, sx * -.4, 0, TAU); c.fill(); c.stroke();
+      c.beginPath(); c.ellipse(sx * 11, 9, 10, 8, sx * .4, 0, TAU); c.fill(); c.stroke();
+      c.fillStyle = 'rgba(255,255,255,.6)'; c.beginPath(); c.arc(sx * 17, -10, 4, 0, TAU); c.arc(sx * 11, 9, 2.6, 0, TAU); c.fill(); c.fillStyle = fill;
+    }
+    c.restore();
+    c.fillStyle = G.c2; c.beginPath(); c.ellipse(0, 2, 4, 13, 0, 0, TAU); c.fill();
+    c.strokeStyle = G.c2; c.lineWidth = 1.5; c.beginPath(); c.moveTo(-2, -16); c.quadraticCurveTo(-6, -26, -9, -28); c.moveTo(2, -16); c.quadraticCurveTo(6, -26, 9, -28); c.stroke();
+    c.fillStyle = G.c1; c.beginPath(); c.arc(-9, -28, 2.2, 0, TAU); c.arc(9, -28, 2.2, 0, TAU); c.fill();
+    c.fillStyle = fill; c.beginPath(); c.arc(0, -14, 6.5, 0, TAU); c.fill();
+    face(1.5, -15, .6);
+    sparkle(c, 18, -18, 5 * Math.abs(Math.sin(t * 3 + o.fy * 9)));
+  }
+  c.restore();
+  if (o.left) {
+    const k = Math.min(1, (t - o.happy) / 1.2);
+    if (k < 1) {
+      c.save(); c.globalAlpha = 1 - k; c.fillStyle = '#ff6fa5'; c.font = `${Math.round(20 * S)}px sans-serif`; c.textAlign = 'center';
+      c.fillText('♥', p.x - 12 * S, p.y - (60 + k * 40) * S); c.fillText('♥', p.x + 14 * S, p.y - (70 + k * 50) * S);
+      c.restore();
+    }
+  } else if (!game.done) {
+    // a little glowing gem above them shows what they'll give
+    c.save(); c.globalAlpha = .55 + .3 * Math.sin(t * 4 + o.ph); drawGem(c, p.x, p.y - (o.kind === 'bunny' ? 82 : 44) * S, 7 * S, o.type, t); c.restore();
+  }
+}
+/* ---------- Dotty the shy cheetah ---------- */
+// She peeks over her bush near the left edge. Come close without her wished jewelry and she ducks down.
+function cheetahX() { return Math.max(44, 46 * S); }
+function updateCheetah(dt) {
+  const g = game, o = g.cheetah; if (!o) return;
+  const x = cheetahX(), want = CHEETAH.wish[save.cheetah];
+  const near = g.form === 'ride' ? Math.abs(g.ux - x) < 170 * S : Math.hypot(g.px - x, g.py - (GY - 50 * S)) < 170 * S;
+  let tgt = g.t - o.happy < 2.5 ? 1 : !want || o.heart ? .95 : hasPower(want) ? .9 : near ? .3 : .66 + .06 * save.cheetah;
+  if (g.t - o.duck < .6) tgt = .2;
+  o.peek += (tgt - o.peek) * Math.min(1, dt * 5);
+}
+function purr() { [196, 185, 196, 175].forEach((f, i) => tone(f, .18, 'triangle', .07, i * .16)); tone(1320, .2, 'sine', .05, .7); }
+function tapCheetah() {
+  const g = game, o = g.cheetah, n = save.cheetah, want = CHEETAH.wish[n], N = CHEETAH.wish.length, D = CHEETAH.name;
+  const p = { x: cheetahX(), y: GY - 60 * S };
+  o.talk = g.t;
+  const hearts = () => emit(p.x, p.y - 20 * S, 24, { cols: ['#ff6fa5', '#ffb3d1', '#ffffff'], max: 200, size: 6, g: -30 });
+  if (!want) {
+    o.happy = g.t; purr(); hearts();
+    if (!o.gift) { o.gift = true; collect(pickGemType(g.land), p.x, p.y); setTimeout(() => say(`Prrr! ${D} is your best friend! She gave you a present!`), 400); }
+    else say(`Prrr! ${D} snuggles up to you. She loves you!`);
+  } else if (o.heart) {
+    o.happy = g.t; purr();
+    say(`${D} is smiling at you! Next time, she would love to see ${aJewel(want)}.`);
+  } else if (hasPower(want)) {
+    save.cheetah++; persist(); o.heart = true; o.gift = true; o.happy = g.t; purr(); hearts();
+    collect(pickGemType(g.land), p.x, p.y);
+    const k = save.cheetah;
+    setTimeout(() => say(`Oh! ${D} loves your ${JEWELS[want].name}! She is not so shy now. She gave you a heart and a present! `
+      + (k < N ? `That is ${k} of ${N} hearts!` : `That is all ${N} hearts! ${D} is your best friend now!`)), 400);
+  } else {
+    o.duck = g.t; tone(880, .12, 'sine', .05, 0, .8); tone(700, .15, 'sine', .04, .12, .8);
+    const tip = save.jewels.some(j => j.type === want) ? `You have ${aJewel(want)} in your Treasure Box. Put it on!` : `You can make ${aJewel(want)} in the Jewelry Workshop.`;
+    say(`${n ? `${D} hid, but she is peeking at you.` : `This is ${D}, a shy cheetah. She hid behind her bush!`} She whispers: I love sparkly ${JEWELS[want].name}. Wear ${aJewel(want)} and come see me! ${tip}`);
+  }
+}
+function drawCheetah(c, t) {
+  const g = game, o = g.cheetah, x = cheetahX(), s = S * 1.1, love = save.cheetah, want = CHEETAH.wish[love];
+  const happy = t - o.happy < 2.5, dip = (1 - o.peek) * 46, fur = '#f4c25a', dark = '#4a2e14';
+  c.save(); c.translate(x, GY); c.scale(s, s);
+  c.save(); c.translate(0, dip);
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  // spotty tail swishing behind
+  const sw = Math.sin(t * (happy ? 7 : 1.6)) * 6;
+  c.strokeStyle = fur; c.lineWidth = 7; c.beginPath(); c.moveTo(14, -24); c.quadraticCurveTo(36, -38, 30 + sw, -64); c.stroke();
+  c.strokeStyle = dark; c.setLineDash([3, 6]); c.beginPath(); c.moveTo(14, -24); c.quadraticCurveTo(36, -38, 30 + sw, -64); c.stroke(); c.setLineDash([]);
+  c.fillStyle = dark; c.beginPath(); c.arc(30 + sw, -64, 3.6, 0, TAU); c.fill();
+  // body and head
+  c.fillStyle = fur;
+  c.beginPath(); c.ellipse(0, -26, 22, 18, 0, 0, TAU); c.fill();
+  for (const ex of [-13, 13]) { c.fillStyle = fur; c.beginPath(); c.arc(ex, -67, 6.5, 0, TAU); c.fill(); c.fillStyle = '#ffb6a8'; c.beginPath(); c.arc(ex, -66, 3.4, 0, TAU); c.fill(); }
+  c.fillStyle = fur; c.beginPath(); c.ellipse(0, -54, 19, 16, 0, 0, TAU); c.fill();
+  c.fillStyle = dark;
+  for (const [sx, sy] of [[-11, -63], [9, -64], [-1, -67], [15, -56], [-16, -55], [-13, -30], [-5, -18], [9, -33], [15, -21], [-1, -38], [-17, -20], [4, -26]]) { c.beginPath(); c.arc(sx, sy, 1.9, 0, TAU); c.fill(); }
+  c.fillStyle = '#fff4dc'; c.beginPath(); c.ellipse(0, -46, 10, 7, 0, 0, TAU); c.fill();
+  // eyes: shy little glances, closed and smiling when happy
+  c.strokeStyle = dark; c.fillStyle = '#2b1a3a'; c.lineWidth = 1.8;
+  const look = happy ? 0 : Math.sin(t * .8) > .3 ? 1.5 : -1;
+  for (const ex of [-7, 7]) {
+    if (happy) { c.beginPath(); c.arc(ex, -56, 3.2, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); }
+    else { c.beginPath(); c.ellipse(ex + look, -57, 2.6, 3.3, 0, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + look + .9, -58.3, 1, 0, TAU); c.fill(); c.fillStyle = '#2b1a3a'; }
+  }
+  // cheetah tear stripes, nose, mouth and blushing cheeks
+  c.beginPath(); c.moveTo(-4.5, -53.5); c.quadraticCurveTo(-7, -49, -6, -45); c.moveTo(4.5, -53.5); c.quadraticCurveTo(7, -49, 6, -45); c.stroke();
+  c.fillStyle = '#c96a6a'; c.beginPath(); c.moveTo(-2.6, -50.5); c.lineTo(2.6, -50.5); c.lineTo(0, -48); c.closePath(); c.fill();
+  c.beginPath(); c.arc(-1.8, -46.5, 1.8, .1 * Math.PI, .9 * Math.PI); c.arc(1.8, -46.5, 1.8, .1 * Math.PI, .9 * Math.PI); c.stroke();
+  c.fillStyle = `rgba(255,120,150,${.35 + .08 * love + (happy ? .2 : 0)})`; c.beginPath(); c.arc(-12, -49, 3.6, 0, TAU); c.arc(12, -49, 3.6, 0, TAU); c.fill();
+  // a pink friendship bow once she has a heart for you
+  if (love) { c.fillStyle = '#ff6fa5'; c.beginPath(); c.ellipse(-16, -70, 4.5, 3, -.5, 0, TAU); c.ellipse(-9, -72, 4.5, 3, .5, 0, TAU); c.fill(); c.fillStyle = '#ffd1e4'; c.beginPath(); c.arc(-12.5, -71, 1.8, 0, TAU); c.fill(); }
+  // front paws resting on the bush
+  c.fillStyle = fur; c.beginPath(); c.ellipse(-10, -40, 6, 4.5, 0, 0, TAU); c.ellipse(10, -40, 6, 4.5, 0, 0, TAU); c.fill();
+  c.restore();
+  // her hiding bush with little flowers
+  c.fillStyle = '#3f9440';
+  for (const [bx, by, r] of [[-24, -14, 16], [0, -22, 19], [24, -14, 16], [-11, -6, 15], [12, -6, 15]]) { c.beginPath(); c.arc(bx, by, r, 0, TAU); c.fill(); }
+  c.fillStyle = '#5fb84f';
+  for (const [bx, by, r] of [[-24, -17, 12], [0, -26, 14], [24, -17, 12]]) { c.beginPath(); c.arc(bx, by, r, 0, TAU); c.fill(); }
+  for (const [fx, fy] of [[-26, -22], [-6, -30], [10, -14], [26, -20], [-14, -8]]) { c.fillStyle = '#ffb3d1'; c.beginPath(); c.arc(fx, fy, 3, 0, TAU); c.fill(); c.fillStyle = '#fff3a6'; c.beginPath(); c.arc(fx, fy, 1.2, 0, TAU); c.fill(); }
+  c.restore();
+  // a thought bubble shows the jewelry she wishes to see
+  if (want && !o.heart && !g.done) {
+    const bx = x + 66 * S, by = GY - 130 * S + Math.sin(t * 2) * 3 * S, r = Math.max(26, 30 * S);
+    c.save(); c.globalAlpha = .92; c.fillStyle = '#ffffff'; c.strokeStyle = 'rgba(180,140,220,.8)'; c.lineWidth = 2;
+    for (const [dx, dy, rr] of [[-34, 44, 4], [-26, 30, 6]]) { c.beginPath(); c.arc(bx + dx * S, by + dy * S, rr * S, 0, TAU); c.fill(); c.stroke(); }
+    c.beginPath(); c.arc(bx, by, r, 0, TAU); c.fill(); c.stroke();
+    c.globalAlpha = 1; drawJewel(c, bx, by + 2 * S, r * 1.45, want, [], t);
+    c.restore();
+  }
+  // her hearts for you, shown for a little while after you tap her
+  if (t - o.talk < 5) {
+    const hx = Math.max(x, 2 * 15 * S + 12), hy = GY - (100 - dip * .4) * S * 1.1;
+    c.save(); c.font = `${Math.round(Math.max(14, 16 * S))}px sans-serif`; c.textAlign = 'center';
+    CHEETAH.wish.forEach((_, i) => { c.fillStyle = i < love ? '#ff4f8f' : 'rgba(255,255,255,.75)'; c.fillText('♥', hx + (i - 2) * 15 * S, hy); });
+    c.restore();
+  }
+}
 function drawGame() {
   const g = game, c = ctx;
   drawLand(c, g.land, W, H, g.t, S);
@@ -1075,12 +2399,17 @@ function drawGame() {
     if (a > 0) drawRock(c, r.fx * W + near, GY, S * (r.broken ? 1 + (g.t - r.bt) : 1), r.type, g.t, a);
   }
   for (const o of g.gems) {
-    const x = o.fx * W, y = o.fy * H + Math.sin(g.t * 2 + o.ph) * 6 * S, a = Math.min(1, (g.t - o.born) * 2);
+    const x = o.fx * W, y = o.fy * H + Math.sin(g.t * 2 + o.ph) * 6 * S, a = Math.min(1, (g.t - o.born) * 2) * (o.lit ? 1 : .45);
     c.save(); c.globalAlpha = a;
     const halo = c.createRadialGradient(x, y, 2, x, y, 40 * S); halo.addColorStop(0, 'rgba(255,255,255,.55)'); halo.addColorStop(1, 'rgba(255,255,255,0)');
     c.fillStyle = halo; c.beginPath(); c.arc(x, y, 40 * S, 0, TAU); c.fill();
-    drawGem(c, x, y, Math.max(15, 22 * S) * a, o.type, g.t); c.restore();
+    drawGem(c, x, y, Math.max(15, 22 * S) * Math.min(1, (g.t - o.born) * 2), o.type, g.t); c.restore();
   }
+  drawStage(c);
+  if (g.cheetah) drawCheetah(c, g.t);
+  for (const o of g.critters) drawCritter(c, o, g.t);
+  if (g.land.dark) drawDark(c);
+  drawVault(c);
   drawOthers(c, frameDt);
   drawUnicorn(c, g.ux, GY, S, g.uface, { t: g.t, phase: g.uphase, moving: g.umoving, rider: g.form === 'ride' });
   if (g.form !== 'ride') drawPhoenix(c, g.px, g.py, S * 1.25, g.pface, g.t);
@@ -1134,13 +2463,15 @@ function pickType(k) {
   shop.type = k; shop.gems = new Array(JEWELS[k].slots).fill(null);
   buildTypes(); buildBag(); updEnchant(); SFX.tap();
   const j = JEWELS[k];
-  if (bagTotal() < j.slots) say(`A ${j.name.toLowerCase()} needs ${j.slots} gems. You have ${bagTotal()}. Let's find more on an adventure!`);
-  else say(`A ${j.name.toLowerCase()} needs ${j.slots} gems. Tap your gems to add them!`);
+  const opens = ULTRA.filter(u => u.jewel === k).map(u => ` Tip: put ${u.n} ${famNames(u.fam)[0]} gems in it to open the ${GEMS[u.gem].name} vault in ${LANDS.find(l => l.id === u.land).name}!`).join('');
+  const nm = j.pl ? j.name : 'A ' + j.name.toLowerCase(), needs = j.pl ? 'need' : 'needs';
+  if (bagTotal() < j.slots) say(`${nm} ${needs} ${j.slots} gems. You have ${bagTotal()}. Let's find more on an adventure!${opens}`);
+  else say(`${nm} ${needs} ${j.slots} gems. Tap your gems to add them!${opens}`);
 }
 function buildBag() {
   const box = $('#bag'); box.innerHTML = '';
   GEM_ORDER.forEach(k => {
-    if (!save.bag[k] && k === 'rainbow') return;
+    if (!save.bag[k] && (k === 'rainbow' || GEMS[k].like)) return;
     const b = document.createElement('button'); b.className = 'gembtn'; b.setAttribute('aria-label', GEMS[k].name);
     const em = document.createElement('em'); em.textContent = save.bag[k];
     b.append(img(gemIcon[k], GEMS[k].name), em);
@@ -1192,43 +2523,69 @@ $('#enchantBtn').addEventListener('click', () => {
   shop.busy = true; shop.fx = T; updEnchant(); SFX.magic(); say('Abracadabra!', true);
   setTimeout(finishJewel, 1900);
 });
-function jewelName(type, gems) {
-  const cnt = {}; gems.forEach(g => cnt[g] = (cnt[g] || 0) + 1);
-  let best = gems[0]; for (const g of gems) if (cnt[g] > cnt[best]) best = g;
-  return `${GEMS[best].word} ${JEWELS[type].name}`;
+function gemPowerWords(gems) {
+  const ps = [...new Set(GEM_ORDER.filter(k => gems.includes(k)).map(k => GEM_POWERS[k].power))];
+  return `Gem ${ps.length > 1 ? 'powers' : 'power'}: ${ps.join(', ')}!`;
+}
+function jewelName(type, gems) { return `${GEMS[gems.find(g => GEMS[g].ultra) || mainGem(gems)].word} ${JEWELS[type].name}`; }
+// How the gems changed the jewel's look (see METALS and drawJewelMagic)
+function lookWords(gems) {
+  const L = jewelLook(gems);
+  return `The gems made it glow and turn into ${METALS[L.fam] ? METALS[L.fam].look : 'shiny gold'}!${L.ultra ? ' The ultra gem makes it shine with rainbow light!' : ''}`;
 }
 function finishJewel() {
   const type = shop.type, gems = shop.gems.slice(), isNew = !hasPower(type);
-  const name = jewelName(type, gems);
-  save.jewels.push({ type, gems, name, at: Date.now() }); persist();
+  const name = jewelName(type, gems), pw = boostWords(gemBoost(gems));
+  const at = Math.max(Date.now(), ...save.jewels.map(j => (+j.at || 0) + 1));
+  save.jewels.push({ type, gems, name, at });
+  const wear = save.worn.length < WEAR; if (wear) save.worn.push(at);
+  persist();
   shop.busy = false;
   const c = $('#resultCv').getContext('2d'); c.clearRect(0, 0, 600, 400); drawJewel(c, 300, 210, 330, type, gems, 1.5);
+  const gw = gemPowerWords(gems), ww = wear ? 'You are wearing it!' : 'Put it on in your Treasure Box!', lw = lookWords(gems);
   $('#resultName').textContent = 'The ' + name + '!';
-  $('#resultPower').textContent = (isNew ? 'New power: ' : 'Power: ') + JEWELS[type].power + '. ' + JEWELS[type].desc;
+  $('#resultPower').textContent = lw + ' ' + (isNew ? 'New power: ' : 'Power: ') + JEWELS[type].power + '. ' + JEWELS[type].desc
+    + ' ' + pw + ' ' + gw + ' ' + ww;
   $('#result').hidden = false;
   SFX.win();
-  say(`You made the ${name}! ${isNew ? 'New power, ' : ''}${JEWELS[type].power}! ${JEWELS[type].desc}`);
+  say(`You made the ${name}! ${lw} ${isNew ? 'New power, ' : ''}${JEWELS[type].power}! ${JEWELS[type].desc} ${pw} ${gw} ${ww}`);
   shop.type = null; shop.gems = []; buildTypes(); buildBag(); updEnchant();
 }
 $('#resultOk').addEventListener('click', () => { $('#result').hidden = true; SFX.tap(); });
 
 /* ---------- Treasure box ---------- */
 function buildBox() {
-  const box = $('#box'); box.innerHTML = '';
   if (!save.jewels.length) {
+    const box = $('#box'); box.innerHTML = ''; $('#wearline').textContent = '';
     const p = document.createElement('p'); p.className = 'empty'; p.textContent = 'Your treasure box is empty. Make jewelry in the workshop!';
     box.append(p); say(p.textContent); return;
   }
+  renderBox();
+  say(`You have ${save.jewels.length} magic ${save.jewels.length === 1 ? 'treasure' : 'treasures'}! Tap one to put it on or take it off. You can wear ${WEAR}!`);
+}
+// Wearing jewelry: only the treasures you wear help on adventures, so each land plays differently
+function renderBox() {
+  const box = $('#box'); box.innerHTML = '';
+  save.worn = save.worn.filter(a => save.jewels.some(j => j.at === a));
+  $('#wearline').textContent = `Wearing ${save.worn.length} of ${WEAR}. Tap a treasure to put it on or take it off!`;
   save.jewels.slice().reverse().forEach(j => {
-    const b = document.createElement('button'); b.className = 'jcard';
+    const worn = isWorn(j);
+    const b = document.createElement('button'); b.className = 'jcard' + (worn ? ' worn' : '');
     const c = document.createElement('canvas'); c.width = 300; c.height = 200; drawJewel(c.getContext('2d'), 150, 106, 165, j.type, j.gems, 1.3);
     const n = document.createElement('b'); n.textContent = j.name;
-    const p = document.createElement('small'); p.textContent = JEWELS[j.type].power;
+    const jb = gemBoost(j.gems);
+    const p = document.createElement('small');
+    p.textContent = JEWELS[j.type].power + (jb >= 1 ? ' (super powered!)' : jb ? ' (powered up)' : '') + ' · ' + [...new Set(GEM_ORDER.filter(k => j.gems.includes(k)).map(k => GEM_POWERS[k].power))].join(', ');
     b.append(c, n, p);
-    b.addEventListener('click', () => say(`The ${j.name}. ${JEWELS[j.type].power}! ${JEWELS[j.type].desc}`));
+    if (worn) { const t = document.createElement('span'); t.className = 'wear'; t.textContent = 'Wearing'; b.append(t); }
+    b.addEventListener('click', () => {
+      if (isWorn(j)) { save.worn = save.worn.filter(a => a !== j.at); SFX.tap(); say(`You took off the ${j.name}.`); }
+      else if (save.worn.length >= WEAR) { SFX.nope(); say(`You can wear ${WEAR} treasures at once. Take one off first!`); return; }
+      else { save.worn.push(j.at); SFX.magic(); say(`You put on the ${j.name}! ${JEWELS[j.type].power}! ${JEWELS[j.type].desc} ${gemPowerWords(j.gems)}`); }
+      persist(); renderBox();
+    });
     box.append(b);
   });
-  say(`You have ${save.jewels.length} magic ${save.jewels.length === 1 ? 'treasure' : 'treasures'}!`);
 }
 
 /* ---------- Multiplayer (only when played through the local server) ---------- */
@@ -1257,7 +2614,7 @@ function mpTick(dt) {
   if (mpGap < (intent === mpLast ? 1 / 15 : 1 / 30)) return;
   mpGap = 0; mpLast = intent;
   const st = g ? { land: g.land.id, ux: r3(g.ux / W), uface: g.uface, mv: g.umoving, form: g.form, px: r3(g.px / W), py: r3(g.py / H), pface: g.pface,
-                   tx: r3(g.tx / W), ty: r3(g.ty / H), fast: hasPower('bracelet'), look: save.look }
+                   tx: r3(g.tx / W), ty: r3(g.ty / H), fast: hasPower('bracelet'), wing: hasPower('brooch'), look: save.look }
                : { land: null, look: save.look };
   mpSock.send(JSON.stringify({ t: 'state', s: st }));
 }
@@ -1274,7 +2631,7 @@ function drawOthers(c, dt) {
     const uSpeed = 300 * S * (s.fast ? 1.7 : 1);
     const ux = s.form === 'ride' ? glide(s.ux * W, 0, clamp(s.tx * W, 60 * S, W - 60 * S), 0, uSpeed * age)[0] : s.ux * W;
     let px = s.px * W, py = s.py * H;
-    if (s.form === 'phoenix') [px, py] = glide(px, py, clamp(s.tx * W, 30 * S, W - 30 * S), clamp(s.ty * H, 50 * S, GY - 70 * S), 420 * S * age);
+    if (s.form === 'phoenix') [px, py] = glide(px, py, clamp(s.tx * W, 30 * S, W - 30 * S), clamp(s.ty * H, 50 * S, GY - 70 * S), 420 * S * (s.wing ? 1.4 : 1) * age);
     else if (s.form === 'landing') [px, py] = glide(px, py, ux + (s.uface || 1) * -6 * S, GY - 120 * S, 520 * S * age);
     const k = Math.min(1, dt * 14), snap = o.ux === undefined || o.form !== s.form && s.form !== 'landing';
     o.ux = snap ? ux : o.ux + (ux - o.ux) * k;
@@ -1304,7 +2661,7 @@ function frame(now) {
   mpTick(dt);
   ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
   stepParts(dt);
-  if (screen === 's-play' && game) { updateGame(dt); drawGame(); } else drawAmbient();
+  if (screen === 's-play' && game) { if (!pz) updateGame(dt); drawGame(); } else drawAmbient(); // the world waits while a vault puzzle is open
   if (screen === 's-make') drawPreview();
   if (screen === 's-shop') drawBench();
   requestAnimationFrame(frame);
