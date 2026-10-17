@@ -111,6 +111,12 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
 .wish[hidden]{display:none}
 .wish img{width:30px;height:30px}
 .wish.done{border-color:#7ad38f;color:#2e8a5a}
+.shardchip{top:118px;gap:4px;padding:6px 10px;border-color:#c9a2ff}
+.shardchip i{width:14px;height:18px;background:rgba(120,90,160,.25);clip-path:polygon(50% 0,100% 45%,70% 100%,10% 70%)}
+.shardchip i.on{background:var(--c)}
+.shardchip.done{border-color:#ffd23f;color:#8a5a00}
+.land .shards{display:inline-flex;align-items:center;gap:4px;font-size:.85rem;color:#7a4ac0;font-family:var(--display)}
+.land .shards img{width:32px;height:32px}
 .powers{position:absolute;left:12px;bottom:16px;right:140px;display:flex;flex-wrap:wrap-reverse;gap:8px;pointer-events:none}
 .powers button{pointer-events:auto;width:58px;height:58px;border-radius:50%;border:3px solid var(--gold);background:rgba(255,248,255,.85);padding:0;display:grid;place-items:center}
 .powers img{width:46px;height:46px}
@@ -248,6 +254,7 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     <button class="breath beam" id="beamBtn" aria-label="Rainbow beam" hidden><svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M3 18a9 9 0 0 1 18 0" stroke="#ff6f91"/><path d="M6 18a6 6 0 0 1 12 0" stroke="#ffd23f"/><path d="M9 18a3 3 0 0 1 6 0" stroke="#4fa8ff"/></svg></button>
     <button class="breath a2 dash" id="dashBtn" aria-label="Gallop dash" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></button>
     <div class="wish" id="wishChip" hidden></div>
+    <div class="wish shardchip" id="shardChip" hidden></div>
     <div class="panel puzzle" id="puzzle" hidden>
       <h2><span id="pzGem"></span><span id="pzTitle"></span></h2>
       <p class="pzsub">Ultra shiny gem vault</p>
@@ -320,7 +327,7 @@ const DEF = { look: { hair: '#2a1a12', skin: '#f1c7a5', dress: '#ff6f91', mane: 
     lapis: 0, moonstone: 0, kunzite: 0, pearl: 0, fluorite: 0, snowquartz: 0, morganite: 0, coral: 0, turquoise: 0, seaglass: 0,
     sundiamond: 0, moondiamond: 0, dreamopal: 0, phoenixheart: 0, fairyprism: 0, mermaidstar: 0, forestheart: 0, frostdiamond: 0,
     fireflygem: 0, rainbowprism: 0, blossomgem: 0 },
-  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0, pets: {}, pet: null, wishes: 0, villain: { lvl: 0 } };
+  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0, pets: {}, pet: null, wishes: 0, villain: { lvl: 0 }, shards: {}, special: {} };
 const WEAR = 4; // how many treasures Lia can wear on an adventure at once
 function load() {
   const base = JSON.parse(JSON.stringify(DEF));
@@ -382,6 +389,19 @@ const GEMS = {
   fireflygem:   { name: 'Firefly Diamond', c1: '#ffffe0', c2: '#b8d000', shape: 'sparkstar', word: 'Ultra Glow',    note: 1568, like: 'topaz',      ultra: true },
   rainbowprism: { name: 'Rainbow Prism',   c1: '#ffffff', c2: '#c77dff', shape: 'sparkstar', word: 'Ultra Rainbow', note: 1661, like: 'rainbow',    ultra: true },
   blossomgem:   { name: 'Blossom Crystal', c1: '#fff5fa', c2: '#ff86b8', shape: 'flower',    word: 'Ultra Blossom', note: 1109, like: 'rosequartz', ultra: true },
+  // special: the big gem each land's 5 gem shards join into (see SHARDS). Collected, never set in jewelry.
+  big_meadow:  { name: 'Meadow Heart',      c1: '#eaffd8', c2: '#2fb37a', shape: 'heart',     word: 'Meadow',    note: 1047, ultra: true, special: true },
+  big_lake:    { name: 'Moonlight Pearl',   c1: '#ffffff', c2: '#8f7bff', shape: 'pearl',     word: 'Moonlight', note: 1175, ultra: true, special: true },
+  big_clouds:  { name: 'Cloud Crown Crystal', c1: '#fff6ff', c2: '#ff8fd8', shape: 'sparkstar', word: 'Cloud',   note: 1319, ultra: true, special: true },
+  big_volcano: { name: 'Ember Star',        c1: '#fff0c0', c2: '#ff5a2e', shape: 'star',      word: 'Ember',     note: 988,  ultra: true, special: true },
+  big_crystal: { name: 'Prism Heart',       c1: '#ffffff', c2: '#c77dff', shape: 'hex',       word: 'Prism',     note: 1397, ultra: true, special: true },
+  big_lagoon:  { name: 'Ocean Teardrop',    c1: '#e8fffd', c2: '#00b8d4', shape: 'drop',      word: 'Ocean',     note: 1245, ultra: true, special: true },
+  big_orchard: { name: 'Golden Apple Gem',  c1: '#fff6c8', c2: '#ffb300', shape: 'round',     word: 'Golden',    note: 880,  ultra: true, special: true },
+  big_peak:    { name: 'Snowflake Diamond', c1: '#ffffff', c2: '#6fb8ff', shape: 'diamond',   word: 'Snowflake', note: 1480, ultra: true, special: true },
+  big_forest:  { name: 'Firefly Lantern Gem', c1: '#ffffe0', c2: '#b8d000', shape: 'oval',    word: 'Lantern',   note: 1568, ultra: true, special: true },
+  big_falls:   { name: 'Rainbow Heart',     c1: '#ffffff', c2: '#ff7ad9', shape: 'heart',     word: 'Rainbow',   note: 1661, ultra: true, special: true },
+  big_blossom: { name: 'Blossom Star',      c1: '#fff5fa', c2: '#ff86b8', shape: 'flower',    word: 'Blossom',   note: 1109, ultra: true, special: true },
+  big_galaxy:  { name: 'Galaxy Star',       c1: '#ffffff', c2: '#6b3fc0', shape: 'sparkstar', word: 'Galaxy',    note: 1760, ultra: true, special: true },
 };
 // Gem powers: every gem set in the jewelry you wear adds its own little magic to your adventures
 const GEM_POWERS = {
@@ -1548,6 +1568,7 @@ function buildMap() {
     const st = document.createElement('div'); st.className = 'stars'; st.style.paddingInline = '4px';
     st.textContent = trips ? '★'.repeat(Math.min(trips, 5)) + (trips > 5 ? ' ×' + trips : '') : 'New!';
     b.append(c, row, st);
+    const sb = mapShardBadge(land); if (sb) row.append(sb);
     b.setAttribute('aria-label', land.name);
     if (landLocked(land)) {
       b.classList.add('locked'); st.textContent = '';
@@ -1815,7 +1836,7 @@ function updateGame(dt) {
   updateStage(dt);
   updateCheetah(dt);
   updateBreath(dt); updateWish(dt); updatePet(dt); updateGalaxy(dt);
-  updateAbilities(dt); updateBarriers(dt); updateCreatures(dt);
+  updateAbilities(dt); updateBarriers(dt); updateCreatures(dt); updateShards(dt);
   // keep the field stocked
   if (!g.done) {
     g.spawnT += dt;
@@ -2889,7 +2910,136 @@ function drawBarriers(c, layer) {
 function newGameMore() { // creature families, abilities and barriers for a fresh adventure
   const g = game;
   g.abil = { beam: 0, dash: 0, gust: 0 }; g.abilHits = { beam: new Set(), dash: new Set(), gust: new Set() }; g.prevUx = g.ux;
-  setupFamilies(); setupBarriers(); setAbilityBtns();
+  setupFamilies(); setupBarriers(); setupShards(); setAbilityBtns();
+}
+
+/* ---------- Gem shards: 5 hidden in each land join into one big special gem ---------- */
+// Shards hide in tricky places (high sky corners, inside fog, past the crystal wall). They're saved between
+// visits, so she can find them over several trips. The 5th shard makes them all fly together into the land's
+// special gem, which goes in her collection and shows on the map.
+const SHARDS_NEEDED = 5;
+const specialKey = landId => 'big_' + landId;
+function shardCount(landId) { return Math.min(SHARDS_NEEDED, (save.shards && save.shards[landId]) || 0); }
+function hasSpecial(landId) { return !!(save.special && save.special[landId]); }
+function setupShards() {
+  const g = game, id = g.land.id; g.shards = []; g.assemble = null;
+  if (!GEMS[specialKey(id)] || hasSpecial(id)) { showShardChip(); return; }
+  const need = SHARDS_NEEDED - shardCount(id);
+  const fog = (g.barriers || []).find(b => b.type === 'fog'), wall = (g.barriers || []).find(b => b.type === 'wall');
+  const spots = [
+    fog ? { x: fog.x, y: fog.y } : { x: W * .3, y: H * .18 },
+    wall ? { x: clamp(wall.x + (wall.x > g.ux ? 1 : -1) * (wall.w / 2 + 80 * S), 50 * S, W - 50 * S), y: GY - 34 * S, ground: true } : { x: W * .96, y: GY - 34 * S, ground: true },
+    { x: W * .05, y: H * .1 }, { x: W * .52, y: H * .07 }, { x: W * .95, y: H * .12 },
+  ];
+  // keep the two tricky ones first, then shuffle the sky corners
+  const order = [spots[0], spots[1], ...spots.slice(2).sort(() => Math.random() - .5)];
+  for (let i = 0; i < need; i++) g.shards.push({ ...order[i], got: 0, ph: rnd(0, TAU) });
+  showShardChip();
+}
+function showShardChip() {
+  const el = $('#shardChip'), g = game; if (!el || !g) return;
+  const id = g.land.id, key = specialKey(id);
+  if (!GEMS[key]) { el.hidden = true; return; }
+  el.hidden = false; el.innerHTML = '';
+  if (hasSpecial(id) && !(g.assemble && g.t - g.assemble.t < 5)) { el.append(img(specialIcon(key), GEMS[key].name)); const b = document.createElement('b'); b.textContent = GEMS[key].name; el.append(b); el.classList.add('done'); return; }
+  el.classList.remove('done');
+  const n = shardCount(id);
+  for (let i = 0; i < SHARDS_NEEDED; i++) { const s = document.createElement('i'); if (i < n) s.className = 'on'; s.style.setProperty('--c', GEMS[key].c2); el.append(s); }
+  el.setAttribute('aria-label', `Gem shards: ${n} of ${SHARDS_NEEDED}`);
+}
+const specialIcons = {};
+function specialIcon(key) {
+  if (!specialIcons[key]) { const c = document.createElement('canvas'); c.width = c.height = 96; drawGem(c.getContext('2d'), 48, 50, 30, key, 1.3); specialIcons[key] = c.toDataURL(); }
+  return specialIcons[key];
+}
+function grabShard(o) {
+  const g = game, id = g.land.id, key = specialKey(id);
+  o.got = g.t;
+  save.shards = save.shards || {}; save.shards[id] = shardCount(id) + 1; persist();
+  const n = shardCount(id);
+  [1047, 1319, 1568].forEach((f, i) => tone(f * (1 + n * .06), .25, 'sine', .07, i * .07));
+  emit(o.x, o.y, 18, { cols: ['#ffffff', GEMS[key].c1, GEMS[key].c2], max: 200, size: 5, g: 20 });
+  showShardChip(); g.idle = 0;
+  if (n >= SHARDS_NEEDED) assembleSpecial();
+  else say(n === 1 ? `A gem shard! It's a piece of a big special gem! Find all ${SHARDS_NEEDED} shards in ${g.land.name} to put it back together!` : `Gem shard! That's ${n} of ${SHARDS_NEEDED}!`);
+}
+function assembleSpecial() {
+  const g = game, id = g.land.id, key = specialKey(id);
+  const hx = g.form === 'ride' ? g.ux : g.px, hy = g.form === 'ride' ? GY - 260 * S : g.py - 150 * S;
+  g.assemble = { t: g.t, x: clamp(hx, 120 * S, W - 120 * S), y: Math.max(140 * S, hy), key };
+  save.special = save.special || {}; save.special[id] = true; persist();
+  showShardChip();
+  say(`You found all ${SHARDS_NEEDED} gem shards! Look! They're joining together!`);
+  setTimeout(() => { if (game === g) { SFX.magic(); say(`It's the ${GEMS[key].name}! A super special gem for your collection! And it brought you a present!`); } }, 2000);
+  [2600, 3000, 3400].forEach((ms, j) => setTimeout(() => { if (game === g && !g.done) collect(j === 1 ? 'rainbow' : pickGemType(g.land), g.assemble.x, g.assemble.y); }, ms));
+}
+function updateShards(dt) {
+  const g = game; if (!g.shards) return;
+  for (const o of g.shards) {
+    if (o.got) continue;
+    const y = o.y + Math.sin(g.t * 2 + o.ph) * 5 * S;
+    const bird = g.form === 'phoenix' && Math.hypot(o.x - g.px, y - g.py) < catchR();
+    const ride = o.ground && g.form === 'ride' && Math.abs(o.x - g.ux) < 46 * S;
+    if (bird || ride) grabShard(o);
+  }
+  if (g.assemble && g.t - g.assemble.t > 5 && !g.assemble.shown) { g.assemble.shown = true; showShardChip(); }
+}
+function drawShard(c, x, y, r, key, t, a = 1) {
+  const G = GEMS[key];
+  c.save(); c.globalAlpha = a; c.translate(x, y); c.rotate(Math.sin(t * 1.7) * .5);
+  const gl = c.createRadialGradient(0, 0, 1, 0, 0, r * 2.4); gl.addColorStop(0, 'rgba(255,255,255,.6)'); gl.addColorStop(1, 'rgba(255,255,255,0)');
+  c.fillStyle = gl; c.beginPath(); c.arc(0, 0, r * 2.4, 0, TAU); c.fill();
+  const fill = c.createLinearGradient(-r, -r, r, r); fill.addColorStop(0, G.c1); fill.addColorStop(1, G.c2);
+  c.fillStyle = fill; c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = Math.max(1.5, r * .12);
+  c.beginPath(); c.moveTo(0, -r * 1.2); c.lineTo(r * .7, -r * .1); c.lineTo(r * .25, r * 1.1); c.lineTo(-r * .6, r * .4); c.closePath(); c.fill(); c.stroke();
+  c.strokeStyle = 'rgba(255,255,255,.7)'; c.beginPath(); c.moveTo(0, -r * 1.2); c.lineTo(r * .05, r * .3); c.lineTo(r * .7, -r * .1); c.stroke();
+  c.restore();
+  sparkle(c, x + r * .8, y - r, r * .6 * Math.abs(Math.sin(t * 3)), a);
+}
+function drawShards(c) {
+  const g = game; if (!g.shards) return;
+  const key = specialKey(g.land.id), t = g.t;
+  for (const o of g.shards) {
+    if (o.got) { // a quick zip up and away
+      const k = (t - o.got) / .6; if (k > 1) continue;
+      drawShard(c, o.x, o.y - k * 80 * S, 12 * S, key, t, 1 - k); continue;
+    }
+    drawShard(c, o.x, o.y + Math.sin(t * 2 + o.ph) * 5 * S, 12 * S, key, t);
+  }
+  const A = g.assemble; if (!A) return;
+  const e = t - A.t; if (e > 6.5) return;
+  if (e < 1.8) { // five shards spin in and meet in the middle
+    const k = e / 1.8, r = (1 - k * k) * 160 * S;
+    for (let i = 0; i < SHARDS_NEEDED; i++) { const a = i / SHARDS_NEEDED * TAU + e * 4; drawShard(c, A.x + Math.cos(a) * r, A.y + Math.sin(a) * r * .7, 14 * S, A.key, t); }
+    if (Math.random() < .5) emit(A.x, A.y, 1, { kind: 'star', min: 20, max: 120, g: 0, life: .6 });
+  } else {
+    if (e < 2.1) { c.fillStyle = `rgba(255,255,255,${(2.1 - e) / .3 * .7})`; c.beginPath(); c.arc(A.x, A.y, 220 * S, 0, TAU); c.fill(); }
+    if (!A.boomed) { A.boomed = true; emit(A.x, A.y, 70, { cols: ['#ffffff', GEMS[A.key].c1, GEMS[A.key].c2, '#ffd23f'], max: 360, size: 7, g: 30, life: 1.5 }); }
+    const grow = Math.min(1, (e - 1.8) / .5), out = e > 5.5 ? (e - 5.5) : 0, r = (54 + 3 * Math.sin(e * 3)) * S * grow * (1 - out * .7);
+    c.save(); c.globalAlpha = 1 - out;
+    for (let i = 0; i < 12; i++) { const a = i / 12 * TAU + e; sparkle(c, A.x + Math.cos(a) * r * 2.2, A.y + Math.sin(a) * r * 2.2, 6 * S * Math.abs(Math.sin(e * 3 + i))); }
+    drawGem(c, A.x, A.y - out * 120 * S, r, A.key, t);
+    c.restore();
+  }
+}
+function drawShardMarkers(c) { // edge hints for shards out of view
+  const g = game; if (!g || !g.shards) return;
+  const key = specialKey(g.land.id), pad = Math.max(22, 26 * S);
+  for (const o of g.shards) {
+    if (o.got) continue;
+    const x = o.x - CX, y = o.y - CY;
+    if (x > -10 && x < VW + 10 && y > -10 && y < VH + 10) continue;
+    const ex = clamp(x, pad, VW - pad), ey = clamp(y, pad + 110, VH - pad - 60);
+    c.save(); c.fillStyle = 'rgba(255,255,255,.8)'; c.beginPath(); c.arc(ex, ey, 16 * S + 4, 0, TAU); c.fill(); c.restore();
+    drawShard(c, ex, ey, 7 * S + 2, key, g.t);
+  }
+}
+function mapShardBadge(land) { // the map card shows shard progress, or the finished special gem
+  const key = specialKey(land.id); if (!GEMS[key]) return null;
+  const span = document.createElement('span'); span.className = 'shards';
+  if (hasSpecial(land.id)) { span.append(img(specialIcon(key), GEMS[key].name)); span.title = GEMS[key].name; }
+  else { const n = shardCount(land.id); if (!n) return null; span.textContent = `${n}/${SHARDS_NEEDED} shards`; }
+  return span;
 }
 
 /* ---------- Ultra gem vaults: wear the right jewelry, then solve a pattern puzzle ---------- */
@@ -3442,6 +3592,7 @@ function drawGame() {
   drawGalaxy(c);
   drawBarriers(c, 'ground');
   drawCreatures(c);
+  drawShards(c);
   drawBarriers(c, 'fog');
   if (g.cheetah) drawCheetah(c, g.t);
   for (const o of g.critters) drawCritter(c, o, g.t);
@@ -3727,7 +3878,7 @@ function frame(now) {
       ctx.setTransform(DPR, 0, 0, DPR, -CX * DPR, -CY * DPR);
       drawGame();
       ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-      drawOffscreen(ctx);
+      drawOffscreen(ctx); drawShardMarkers(ctx);
     }
   } else drawAmbient();
   if (screen === 's-make') drawPreview();
