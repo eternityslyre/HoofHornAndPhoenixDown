@@ -102,6 +102,11 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
 .breath[hidden]{display:none}
 .breath svg{width:44px;height:44px}
 .breath:active{transform:scale(.92)}
+.breath.a2{right:132px;bottom:32px}
+.breath.gust{background:radial-gradient(circle at 40% 35%,#ffffff,#bfe8ff 60%,#6fb8f0);border-color:#ffffff;color:#2a6aa8}
+.breath.beam{background:radial-gradient(circle at 40% 35%,#ffffff,#f3e6ff 60%,#c9a2ff);border-color:#ffffff}
+.breath.dash{background:radial-gradient(circle at 40% 35%,#fff6c8,#ffd23f 60%,#e09a00);border-color:#ffffff;color:#fff}
+#app[data-s="s-play"] .powers{right:224px}
 .wish{position:absolute;left:12px;top:74px;display:flex;align-items:center;gap:6px;padding:4px 12px 4px 6px;border-radius:999px;background:rgba(255,248,255,.88);border:3px solid #ffd23f;font-family:var(--display);color:#5a2d82;font-size:1.05rem;pointer-events:none}
 .wish[hidden]{display:none}
 .wish img{width:30px;height:30px}
@@ -239,6 +244,9 @@ button:focus-visible{outline:4px solid var(--white);outline-offset:3px}
     <div class="powers" id="powers"></div>
     <button class="fire" id="fireBtn" aria-label="Turn into a phoenix"><span><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12.5 1.5c.8 4.2 6 6 6 11.5a6.5 6.5 0 0 1-13 0c0-2.8 1.4-4.6 2.8-5.8-.1 2.4 1 3.8 2.4 4.1-.6-3.8.3-6.8 1.8-9.8z"/></svg></span></button>
     <button class="breath" id="breathBtn" aria-label="Breathe warm phoenix fire" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 12c3-1 5-4 9-4 3 0 4 2 4 2s3-3 6-2c-2 1-3 3-3 4s1 3 3 4c-3 1-6-2-6-2s-1 2-4 2c-4 0-6-3-9-4z"/></svg></button>
+    <button class="breath a2 gust" id="gustBtn" aria-label="Wing gust" hidden><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M3 8h11a3 3 0 1 0-3-3M3 12h15a3 3 0 1 1-3 3M3 16h8"/></svg></button>
+    <button class="breath beam" id="beamBtn" aria-label="Rainbow beam" hidden><svg viewBox="0 0 24 24" fill="none" stroke-width="2.6" stroke-linecap="round"><path d="M3 18a9 9 0 0 1 18 0" stroke="#ff6f91"/><path d="M6 18a6 6 0 0 1 12 0" stroke="#ffd23f"/><path d="M9 18a3 3 0 0 1 6 0" stroke="#4fa8ff"/></svg></button>
+    <button class="breath a2 dash" id="dashBtn" aria-label="Gallop dash" hidden><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13 2 4 14h6l-1 8 9-12h-6z"/></svg></button>
     <div class="wish" id="wishChip" hidden></div>
     <div class="panel puzzle" id="puzzle" hidden>
       <h2><span id="pzGem"></span><span id="pzTitle"></span></h2>
@@ -1672,6 +1680,9 @@ function toRider() { const g = game; if (!g || g.form !== 'phoenix') return; g.f
 $('#fireBtn').addEventListener('click', e => { e.stopPropagation(); ac(); if (!game) return; if (game.form === 'ride') toPhoenix(); else toRider(); });
 $('#homeBtn').addEventListener('click', () => { SFX.tap(); show('s-map'); });
 $('#breathBtn').addEventListener('click', e => { e.stopPropagation(); ac(); breathe(); });
+$('#gustBtn').addEventListener('click', e => { e.stopPropagation(); ac(); wingGust(); });
+$('#beamBtn').addEventListener('click', e => { e.stopPropagation(); ac(); rainbowBeam(); });
+$('#dashBtn').addEventListener('click', e => { e.stopPropagation(); ac(); gallopDash(); });
 $('#pzCloseBtn').addEventListener('click', e => { e.stopPropagation(); SFX.tap(); pzClose(); });
 $('#winShop').addEventListener('click', () => { SFX.tap(); show('s-shop'); });
 $('#winMap').addEventListener('click', () => { SFX.tap(); show('s-map'); });
@@ -1692,7 +1703,7 @@ cv.addEventListener('pointerdown', e => {
   if (!game) return; ac();
   if (!game.done) {
     const p = worldPt(e);
-    if (fairyTap(p.x, p.y) || petTap(p.x, p.y) || eggTap(p.x, p.y) || villainTap(p.x, p.y)) return;
+    if (fairyTap(p.x, p.y) || petTap(p.x, p.y) || eggTap(p.x, p.y) || villainTap(p.x, p.y) || creatureTap(p.x, p.y) || barrierTap(p.x, p.y)) return;
     if (stageTap(p.x, p.y)) return;
   }
   if (game.critters.length && !game.done) {
@@ -1711,7 +1722,8 @@ window.addEventListener('keydown', e => {
   if (!game || pz) return;
   const k = e.key;
   if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'].includes(k)) { keys.add(k); e.preventDefault(); ac(); if ((k === 'ArrowUp' || k === 'w') && game.form === 'ride') toPhoenix(); }
-  if (k === 'f' || k === 'F') { e.preventDefault(); ac(); breathe(); }
+  if (k === 'f' || k === 'F') { e.preventDefault(); ac(); if (game.form === 'ride') rainbowBeam(); else breathe(); }
+  if (k === 'g' || k === 'G') { e.preventDefault(); ac(); if (game.form === 'ride') gallopDash(); else wingGust(); }
   if ((k === ' ' || k === 'Enter') && document.activeElement === document.body) { e.preventDefault(); ac(); if (game.form === 'ride') toPhoenix(); else toRider(); }
 });
 const MOVE_KEYS = ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'a', 'd', 'w', 's'];
@@ -1802,6 +1814,7 @@ function updateGame(dt) {
   updateStage(dt);
   updateCheetah(dt);
   updateBreath(dt); updateWish(dt); updatePet(dt); updateGalaxy(dt);
+  updateAbilities(dt); updateBarriers(dt); updateCreatures(dt);
   // keep the field stocked
   if (!g.done) {
     g.spawnT += dt;
@@ -1931,6 +1944,7 @@ function bloomBud(i) {
 function setBreathBtn() {
   const b = $('#breathBtn'); if (!b || !game) return;
   b.hidden = game.form !== 'phoenix' || game.done;
+  if (game.abil) setAbilityBtns();
 }
 function breathe() {
   const g = game; if (!g || g.form !== 'phoenix' || g.done || pz) return;
@@ -2141,12 +2155,13 @@ function drawPetBody(c, kind, gem, t, hop, happy) {
   c.translate(0, bounce); c.lineJoin = 'round'; c.lineCap = 'round';
   c.fillStyle = 'rgba(40,20,70,.15)'; c.beginPath(); c.ellipse(0, -bounce + 1, 16, 4, 0, 0, TAU); c.fill();
   c.fillStyle = fill; c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2;
-  if (kind === 'owl' || kind === 'dragon') { // little wings
+  const winged = kind === 'owl' || kind === 'dragon' || kind === 'pegasus' || kind === 'griffin' || kind === 'chick';
+  if (winged) { // little wings
     c.fillStyle = 'rgba(255,255,255,.75)';
     for (const sd of [-1, 1]) { c.save(); c.translate(sd * 14, -20); c.rotate(sd * (.5 + wing * .4)); c.beginPath(); c.ellipse(sd * 8, 0, 11, 6, 0, 0, TAU); c.fill(); c.restore(); }
     c.fillStyle = fill;
   }
-  if (kind === 'fox' || kind === 'kitten' || kind === 'dragon') { // tail
+  if (kind === 'fox' || kind === 'kitten' || kind === 'dragon' || kind === 'griffin' || kind === 'unicorn' || kind === 'pegasus') { // tail
     c.beginPath(); c.moveTo(-14, -8); c.quadraticCurveTo(-30, -14 + Math.sin(t * 4) * 4, -26, -30); c.quadraticCurveTo(-20, -18, -10, -14); c.fill();
   }
   c.beginPath(); c.ellipse(0, -16, 17, 15, 0, 0, TAU); c.fill(); // body
@@ -2157,13 +2172,27 @@ function drawPetBody(c, kind, gem, t, hop, happy) {
   else if (kind === 'bear' || kind === 'seal' || kind === 'lamb') { if (kind !== 'seal') for (const ex of [-9, 13]) { c.beginPath(); c.arc(ex, -45, 5, 0, TAU); c.fill(); } }
   else if (kind === 'owl') { ear([-10, -42, -12, -52, -3, -46]); ear([14, -42, 16, -52, 7, -46]); }
   else if (kind === 'dragon') { c.fillStyle = '#fff3b0'; ear([-6, -45, -9, -56, -1, -47]); ear([10, -45, 13, -56, 5, -47]); c.fillStyle = fill; }
+  if (kind === 'deer' || kind === 'fawn') { for (const sd of [-1, 1]) { c.beginPath(); c.ellipse(2 + sd * 15, -42, 7, 3.5, sd * .5, 0, TAU); c.fill(); } }
+  if (kind === 'deer') { c.strokeStyle = '#a5765a'; c.lineWidth = 2.5; for (const sd of [-1, 1]) { c.beginPath(); c.moveTo(2 + sd * 6, -46); c.lineTo(2 + sd * 10, -60); c.moveTo(2 + sd * 8, -53); c.lineTo(2 + sd * 15, -57); c.stroke(); } c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2; }
+  if (kind === 'fawn') { c.fillStyle = 'rgba(255,255,255,.8)'; for (const [sx, sy] of [[-8, -20], [0, -12], [7, -22], [-3, -26]]) { c.beginPath(); c.arc(sx, sy, 2.2, 0, TAU); c.fill(); } c.fillStyle = fill; }
+  if (kind === 'unicorn' || kind === 'pegasus') {
+    ear([-6, -44, -4, -56, 1, -46]); ear([10, -44, 12, -56, 6, -46]);
+    RAINBOW.forEach((col, i) => { if (i > 4) return; c.fillStyle = col; c.beginPath(); c.arc(-10 + i * 1.5, -44 + i * 5, 5, 0, TAU); c.fill(); });
+    if (kind === 'unicorn') { c.fillStyle = '#ffd23f'; c.strokeStyle = '#d99a00'; c.lineWidth = 1; ear([-1, -46, 5, -46, 2, -64]); c.stroke(); c.strokeStyle = 'rgba(255,255,255,.9)'; c.lineWidth = 2; }
+    c.fillStyle = fill;
+  }
+  if (kind === 'griffin') { ear([-10, -42, -12, -52, -3, -46]); ear([14, -42, 16, -52, 7, -46]); }
+  if (kind === 'chick') { for (const [fx, fh, col] of [[-4, 12, '#ff9a2e'], [2, 16, '#ffd23f'], [8, 11, '#ff5a2e']]) { c.fillStyle = col; c.beginPath(); c.moveTo(fx - 4, -46); c.quadraticCurveTo(fx - 2, -46 - fh, fx + 2 + Math.sin(t * 8 + fx) * 2, -46 - fh); c.quadraticCurveTo(fx + 1, -50, fx + 4, -46); c.fill(); } c.fillStyle = fill; }
+  if (kind === 'duck') { c.beginPath(); c.arc(0, -49, 4, 0, TAU); c.fill(); }
+  if (kind === 'hedgehog') { c.fillStyle = 'rgba(90,60,40,.75)'; for (let i = 0; i < 11; i++) { const a = Math.PI * .75 + i / 10 * Math.PI * .95, r = 15 + (i % 2) * 2; const bx = Math.cos(a) * r - 2, by = -24 + Math.sin(a) * r; c.beginPath(); c.moveTo(bx, by); c.lineTo(bx + Math.cos(a) * 9, by + Math.sin(a) * 9); c.lineTo(bx + Math.cos(a + .5) * 4, by + Math.sin(a + .5) * 4); c.closePath(); c.fill(); } c.fillStyle = fill; }
   if (kind === 'lamb') { c.fillStyle = 'rgba(255,255,255,.85)'; for (let i = 0; i < 7; i++) { c.beginPath(); c.arc(Math.cos(i) * 12, -16 + Math.sin(i * 1.7) * 9, 6, 0, TAU); c.fill(); } }
   // face
   c.fillStyle = 'rgba(255,255,255,.55)'; c.beginPath(); c.ellipse(4, -30, 8, 6, 0, 0, TAU); c.fill();
   c.fillStyle = '#2b1a3a';
   const blink = (t % 4) < .12;
   for (const ex of [-2, 8]) { if (blink) c.fillRect(ex - 2, -36, 4, 1.4); else { c.beginPath(); c.arc(ex, -36, 2.2, 0, TAU); c.fill(); c.fillStyle = '#fff'; c.beginPath(); c.arc(ex + .7, -36.8, .8, 0, TAU); c.fill(); c.fillStyle = '#2b1a3a'; } }
-  if (kind === 'owl') { c.fillStyle = '#ffb13d'; ear([1, -32, 5, -32, 3, -28]); }
+  if (kind === 'owl' || kind === 'griffin' || kind === 'chick') { c.fillStyle = '#ffb13d'; ear([1, -32, 5, -32, 3, -28]); }
+  else if (kind === 'duck') { c.fillStyle = '#ffa63d'; c.beginPath(); c.ellipse(9, -31, 7, 3.2, 0, 0, TAU); c.fill(); }
   else { c.strokeStyle = '#7a3a5a'; c.lineWidth = 1.3; c.beginPath(); c.arc(3, -31, happy ? 3.2 : 2.2, .15 * Math.PI, .85 * Math.PI); c.stroke(); }
   c.fillStyle = 'rgba(255,140,170,.55)'; c.beginPath(); c.arc(-6, -31, 2.3, 0, TAU); c.arc(12, -31, 2.3, 0, TAU); c.fill();
   drawGem(c, 2, -45, 4.5, gem, t, false);
@@ -2197,6 +2226,7 @@ function newGameExtras() { // set up breath, wish and pet for a fresh adventure
   g.breath = 0; g.wish = null; g.wishNext = 7; showWishChip();
   g.comets = []; g.pic = null; g.picNext = 1.5; g.cometT = 3;
   g.villain = null; if (land.stars) newVillain();
+  newGameMore();
   const own = petFor(land.id);
   g.pet = own ? { ...own, x: g.ux - 85 * S, y: GY, face: 1, hop: 0, findT: 4, happy: -9 } : null;
   g.egg = PETS[land.id] && !(save.pets && save.pets[land.id]) && (save.trips[land.id] || 0) >= EGG_TRIPS ? { fx: .62, warm: 0, wob: 0, hatched: 0 } : null;
@@ -2493,6 +2523,371 @@ function drawVillain(c) {
     const k = (g.t - v.poof) / 1.2;
     for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + k * 2; sparkle(c, v.x + Math.cos(a) * 110 * s * k, v.y - 70 * s + Math.sin(a) * 80 * s * k, 8 * s * (1 - k)); }
   }
+}
+
+/* ---------- Creature families: tiny grown-up animals and their babies in every land ---------- */
+// Each family is one mini grown-up and one or two babies who follow it around. Saying hello (tap, or ride or
+// fly up to one) makes them happy, and the first hello from each family brings a gem. Some babies get stuck
+// behind thorny bushes and need rescuing.
+const CREATURE_INFO = {
+  bunny:    { name: 'bunny',    baby: 'bunny',      say: 'Hop hop!',        notes: [1175, 1568], fly: false },
+  duck:     { name: 'duck',     baby: 'duckling',   say: 'Quack quack!',    notes: [523, 494], fly: false },
+  deer:     { name: 'deer',     baby: 'fawn',       say: 'Hello, friend!',  notes: [784, 988], fly: false },
+  lamb:     { name: 'sheep',    baby: 'lamb',       say: 'Baa baa!',        notes: [440, 415], fly: false },
+  hedgehog: { name: 'hedgehog', baby: 'hoglet',     say: 'Snuffle snuffle!', notes: [988, 1175], fly: false },
+  bear:     { name: 'bear',     baby: 'bear cub',   say: 'Big bear hug!',   notes: [262, 330], fly: false },
+  fox:      { name: 'fox',      baby: 'fox kit',    say: 'Yip yip!',        notes: [1047, 1319], fly: false },
+  kitten:   { name: 'cat',      baby: 'kitten',     say: 'Mew mew!',        notes: [1319, 1175], fly: false },
+  seal:     { name: 'seal',     baby: 'seal pup',   say: 'Arf arf!',        notes: [392, 523], fly: false },
+  unicorn:  { name: 'unicorn',  baby: 'unicorn foal', say: 'Neigh! Sparkle sparkle!', notes: [1047, 1568], fly: false },
+  owl:      { name: 'owl',      baby: 'owlet',      say: 'Hoo hoo!',        notes: [392, 330], fly: true },
+  pegasus:  { name: 'pegasus',  baby: 'pegasus foal', say: 'Neigh! Whoosh!', notes: [880, 1319], fly: true },
+  griffin:  { name: 'griffin',  baby: 'baby griffin', say: 'Squawk! Roar!',  notes: [659, 523], fly: true },
+  chick:    { name: 'phoenix',  baby: 'phoenix chick', say: 'Cheep cheep!',  notes: [1568, 1760], fly: true },
+  dragon:   { name: 'dragon',   baby: 'baby dragon', say: 'Puff puff! Rawr!', notes: [330, 440], fly: true },
+};
+const LAND_FAMILIES = {
+  meadow:  [['bunny', 'emerald'], ['duck', 'aquamarine'], ['deer', 'topaz']],
+  lake:    [['duck', 'sapphire'], ['owl', 'amethyst'], ['unicorn', 'opal']],
+  clouds:  [['lamb', 'opal'], ['pegasus', 'rosequartz'], ['chick', 'topaz']],
+  volcano: [['dragon', 'ruby'], ['chick', 'ruby'], ['hedgehog', 'topaz']],
+  crystal: [['unicorn', 'rosequartz'], ['kitten', 'amethyst']],
+  lagoon:  [['seal', 'aquamarine'], ['duck', 'aquamarine'], ['pegasus', 'sapphire']],
+  orchard: [['bear', 'topaz'], ['hedgehog', 'emerald'], ['deer', 'ruby']],
+  peak:    [['fox', 'sapphire'], ['lamb', 'opal'], ['griffin', 'sapphire']],
+  forest:  [['owl', 'topaz'], ['hedgehog', 'emerald'], ['deer', 'emerald']],
+  falls:   [['pegasus', 'aquamarine'], ['unicorn', 'sapphire'], ['duck', 'rosequartz']],
+  blossom: [['bunny', 'rosequartz'], ['deer', 'rosequartz'], ['chick', 'rosequartz']],
+  galaxy:  [['griffin', 'amethyst'], ['dragon', 'sapphire'], ['kitten', 'opal']],
+};
+const aAn = w => (/^[aeiou]/i.test(w) ? 'an ' : 'a ') + w;
+function critName(o) { const I = CREATURE_INFO[o.kind]; return o.baby ? I.baby : I.name; }
+function setupFamilies() {
+  const g = game, list = LAND_FAMILIES[g.land.id] || [];
+  g.fams = []; g.creatures = [];
+  const homes = [.14, .47, .8].sort(() => Math.random() - .5);
+  list.forEach(([kind, gem], i) => {
+    const I = CREATURE_INFO[kind], hx = (homes[i % 3] + rnd(-.04, .04)) * W;
+    const hy = I.fly ? rnd(H * .3, Math.max(H * .32, GY - 240 * S)) : GY;
+    const fam = { kind, gem, gave: false, rescued: false };
+    g.fams.push(fam);
+    const adult = { fam, kind, gem, baby: false, x: hx, y: hy, hx, hy, tx: hx, ty: hy, dir: 1, hop: 0, happy: -9, t: rnd(0, 9), next: rnd(1, 4) };
+    g.creatures.push(adult);
+    const n = Math.random() < .5 ? 1 : 2;
+    for (let k = 0; k < n; k++) g.creatures.push({ fam, kind, gem, baby: true, mom: adult, idx: k, x: hx - (40 + 28 * k) * S, y: hy, dir: 1, hop: 0, happy: -9, t: rnd(0, 9) });
+  });
+}
+function greet(o, tapped) {
+  const g = game, I = CREATURE_INFO[o.kind];
+  const again = g.t - o.happy < 2;
+  o.happy = g.t;
+  I.notes.forEach((f, i) => tone(o.baby ? f * 1.5 : f, .14, 'triangle', .06, i * .12));
+  emit(o.x, o.y - 34 * S, 6, { cols: ['#ff8fb1', '#ffc2d8'], min: 30, max: 90, angle: -Math.PI / 2, spread: .8, g: -40, life: .9, size: 4 });
+  if (!o.fam.gave && !g.done) {
+    o.fam.gave = true;
+    say(`${aAn(critName(o))[0].toUpperCase() + aAn(critName(o)).slice(1)} says hello! ${I.say} Here's a gem for you!`);
+    const type = Math.random() < .5 ? o.gem : pickGemType(g.land);
+    setTimeout(() => { if (game === g && !g.done) collect(type, o.x, o.y - 40 * S); }, 350);
+  } else if (tapped && !again) say(`${o.baby ? 'The baby' : 'The'} ${critName(o)} loves you! ${I.say}`, true);
+}
+function creatureTap(x, y) {
+  const g = game; if (!g.creatures) return false;
+  const hit = g.creatures.find(o => !o.stuck && Math.hypot(x - o.x, y - (o.y - (o.baby ? 16 : 24) * S)) < Math.max(36, (o.baby ? 30 : 40) * S));
+  if (!hit) return false;
+  greet(hit, true); return true;
+}
+function updateCreatures(dt) {
+  const g = game; if (!g.creatures) return;
+  for (const o of g.creatures) {
+    const I = CREATURE_INFO[o.kind]; o.t += dt;
+    if (o.stuck) { o.hop = 0; continue; } // trapped behind thorns, waiting for help
+    let tx, ty, sp;
+    if (!o.baby) {
+      if ((o.next -= dt) <= 0) { o.next = rnd(2, 5); o.tx = clamp(o.hx + rnd(-.07, .07) * W, 40 * S, W - 40 * S); o.ty = I.fly ? o.hy + rnd(-60, 60) * S : GY; }
+      tx = o.tx; ty = o.ty; sp = (I.fly ? 60 : 45) * S;
+    } else {
+      const m = o.mom; tx = m.x - m.dir * (38 + 26 * o.idx) * S; ty = I.fly ? m.y + 14 * S + Math.sin(o.t * 3) * 6 * S : GY;
+      sp = (o.running ? 240 : I.fly ? 90 : 70) * S;
+      if (o.running && Math.hypot(tx - o.x, ty - o.y) < 10 * S) { o.running = false; o.happy = g.t; o.mom.happy = g.t; }
+    }
+    const dx = tx - o.x, dy = ty - o.y, d = Math.hypot(dx, dy);
+    if (d > 2) { const st = Math.min(d, sp * dt); o.x += dx / d * st; o.y += dy / d * st; if (Math.abs(dx) > 2) o.dir = Math.sign(dx); o.hop += dt * (o.baby ? 14 : 10); }
+    // ride or fly up to say hello
+    const near = I.fly ? g.form === 'phoenix' && Math.hypot(g.px - o.x, g.py - (o.y - 20 * S)) < 60 * S : g.form === 'ride' && Math.abs(g.ux - o.x) < 50 * S;
+    if (near && g.t - o.happy > 4) greet(o, false);
+  }
+}
+function drawCreature(c, o) {
+  const g = game, I = CREATURE_INFO[o.kind], happy = g.t - o.happy < 1.2, sc = S * (o.baby ? .62 : .95);
+  const fly = I.fly, bob = fly ? Math.sin(o.t * 2.4) * 4 * S : 0;
+  c.save(); c.translate(o.x, o.y + bob); c.scale(sc * (o.dir < 0 ? -1 : 1), sc);
+  if (happy) c.translate(0, -Math.abs(Math.sin(o.t * 10)) * 10);
+  if (o.stuck) c.rotate(Math.sin(o.t * 3) * .05);
+  drawPetBody(c, o.kind === 'deer' && o.baby ? 'fawn' : o.kind, o.gem, o.t, fly ? o.t * 3 : o.hop, happy);
+  c.restore();
+  if (o.stuck && Math.sin(o.t * 4) > 0) { // a little call for help
+    c.save(); c.fillStyle = 'rgba(255,255,255,.9)'; c.beginPath(); c.arc(o.x + 16 * S, o.y - 52 * S, 11 * S, 0, TAU); c.fill();
+    c.fillStyle = '#ff5c8a'; c.font = `bold ${Math.round(15 * S)}px system-ui,sans-serif`; c.textAlign = 'center'; c.fillText('!', o.x + 16 * S, o.y - 47 * S); c.restore();
+  }
+}
+function drawCreatures(c) { const g = game; if (!g.creatures) return; for (const o of g.creatures) drawCreature(c, o); }
+
+/* ---------- More active abilities, each made stronger by jewelry and gem powers ---------- */
+// Riding: Rainbow Beam (F) and Gallop Dash (G). Flying: Fire Breath (F) and Wing Gust (G).
+const ABIL = {
+  beam: { cost: .08, time: .6 },
+  dash: { cost: .1, time: .35 },
+  gust: { cost: .06, time: .5 },
+};
+function abilityReady(kind, form) {
+  const g = game; if (!g || g.done || pz || g.form !== form) return false;
+  if (g.abil[kind] > 0) return false;
+  const cost = hasPower('wings') && form === 'phoenix' ? 0 : ABIL[kind].cost;
+  if (g.energy < cost + .02) { SFX.nope(); if (g.t - g.tiredT > 4) { g.tiredT = g.t; say(form === 'ride' ? `Your magic is tired! Wait a moment and it will charge up.` : `Your fire is tired! Ride ${save.look.uname} to charge it up.`); } return false; }
+  g.energy -= cost; g.abil[kind] = ABIL[kind].time; g.abilHits[kind] = new Set(); g.idle = 0;
+  return true;
+}
+const beamLen = () => (320 + (hasPower('crown') ? 200 : 0)) * S;
+const beamTall = () => (110 + 50 * gpow('topaz')) * S;
+function rainbowBeam() {
+  if (!abilityReady('beam', 'ride')) return;
+  [784, 988, 1175, 1568].forEach((f, i) => tone(f, .2, 'sine', .05, i * .05));
+  if (!game.saidBeam) { game.saidBeam = true; say('Rainbow beam! It turns thorny bushes into flowers and cracks crystal rocks from far away!'); }
+}
+function gallopDash() {
+  if (!abilityReady('dash', 'ride')) return;
+  const g = game; g.dashDir = g.uface || 1;
+  noise(.3, .06); tone(330, .3, 'sawtooth', .04, 0, 2);
+  if (!g.saidDash) { g.saidDash = true; say(`Gallop dash! ${save.look.uname} can crash through crystal walls!`); }
+}
+const gustReach = () => (240 + (hasPower('brooch') ? 140 : 0)) * S;
+function wingGust() {
+  if (!abilityReady('gust', 'phoenix')) return;
+  noise(.5, .05); tone(900, .4, 'sine', .03, 0, .5);
+  if (!game.saidGust) { game.saidGust = true; say('Wing gust! Whoosh! It blows away fog and pulls gems to you!'); }
+}
+function setAbilityBtns() {
+  const g = game, show = (id, on) => { const b = $(id); if (b) b.hidden = !on; };
+  const ride = !!g && !g.done && g.form === 'ride', bird = !!g && !g.done && g.form === 'phoenix';
+  show('#breathBtn', bird); show('#gustBtn', bird); show('#beamBtn', ride); show('#dashBtn', ride);
+}
+function updateAbilities(dt) {
+  const g = game;
+  for (const k in g.abil) if (g.abil[k] > 0) g.abil[k] = Math.max(0, g.abil[k] - dt);
+  if (g.form !== 'ride') { g.abil.beam = 0; g.abil.dash = 0; }
+  if (g.form !== 'phoenix') g.abil.gust = 0;
+  const once = (k, o) => { if (g.abilHits[k].has(o)) return false; g.abilHits[k].add(o); return true; };
+  // Rainbow beam: a band along the ground in front of the unicorn
+  if (g.abil.beam > 0) {
+    const x0 = g.ux + g.uface * 60 * S, x1 = x0 + g.uface * beamLen(), lo = Math.min(x0, x1), hi = Math.max(x0, x1), top = GY - beamTall();
+    const inBeam = (x, y) => x > lo && x < hi && y > top - 20 * S && y < GY + 20 * S;
+    for (const b of g.barriers) if (b.type === 'bramble' && !b.cleared && Math.max(lo, b.x - b.w / 2) < Math.min(hi, b.x + b.w / 2) && once('beam', b)) hitBarrier(b);
+    for (const r of g.rocks) if (!r.broken && inBeam(r.fx * W, GY - 30 * S) && once('beam', r)) {
+      r.broken = true; r.bt = g.t; SFX.crack(); emit(r.fx * W, GY - 30 * S, 22, { cols: ['#efe4ff', '#d6c2ff', '#ffffff'], min: 80, max: 260, size: 6, g: 400 }); collect(r.type, r.fx * W, GY - 50 * S);
+    }
+    for (const o of g.creatures || []) if (!o.stuck && inBeam(o.x, o.y - 10 * S) && once('beam', o)) { o.happy = g.t; emit(o.x, o.y - 30 * S, 8, { kind: 'star', max: 100, g: 0 }); }
+    if (Math.random() < dt * 40) emit(lo + Math.random() * (hi - lo), top + Math.random() * (GY - top), 1, { cols: RAINBOW, min: 10, max: 40, g: -20, life: .5, size: 4 });
+  }
+  // Gallop dash: a quick burst forward; crashes through crystal walls
+  if (g.abil.dash > 0 && g.form === 'ride') {
+    const dist = (260 + (hasPower('bracelet') ? 180 : 0)) * S;
+    g.ux = clamp(g.ux + g.dashDir * dist / ABIL.dash.time * dt, 60 * S, W - 60 * S); g.tx = g.ux; g.uface = g.dashDir; g.umoving = true; g.uphase += dt * 30;
+    if (Math.random() < dt * 60) emit(g.ux - g.dashDir * 50 * S, GY - 10 * S, 1, { cols: ['#ffffff', '#cfe8ff'], min: 40, max: 120, angle: g.dashDir > 0 ? Math.PI : 0, spread: .4, g: 0, life: .4, size: 5 });
+    for (const o of g.creatures || []) if (!o.stuck && !CREATURE_INFO[o.kind].fly && Math.abs(o.x - g.ux) < 50 * S && once('dash', o)) greet(o, false);
+  }
+  // Wing gust: a whoosh in front of the phoenix; blows fog away and tugs gems over
+  if (g.abil.gust > 0 && g.form === 'phoenix') {
+    const R = gustReach(), cx = g.px + g.pface * R * .5, cy = g.py, inG = (x, y) => Math.hypot(x - cx, y - cy) < R * .6;
+    for (const b of g.barriers) if (b.type === 'fog' && !b.cleared && Math.hypot(b.x - cx, b.y - cy) < R * .6 + b.r * .6 && once('gust', b)) hitBarrier(b);
+    for (const o of g.gems) if (o.alive && o.lit && inG(o.fx * W, o.fy * H) && !inFog(o)) { const k = Math.min(1, dt * 4); o.fx += (g.px - o.fx * W) / W * k; o.fy += (g.py - o.fy * H) / H * k; }
+    for (const o of g.creatures || []) if (CREATURE_INFO[o.kind].fly && inG(o.x, o.y) && once('gust', o)) { o.happy = g.t; }
+    if (Math.random() < dt * 30) emit(g.px + g.pface * 30 * S, g.py + rnd(-20, 20) * S, 1, { cols: ['rgba(255,255,255,.9)', '#dff4ff'], min: 200, max: 360, angle: g.pface > 0 ? 0 : Math.PI, spread: .25, g: 0, life: .5, size: 3 });
+  }
+}
+function drawAbilityFx(c) {
+  const g = game;
+  if (g.abil.beam > 0 && g.form === 'ride') {
+    const k = g.abil.beam / ABIL.beam.time, x0 = g.ux + g.uface * 60 * S, L = beamLen() * Math.min(1, (1 - k) * 4), tall = beamTall();
+    c.save(); c.globalAlpha = Math.min(1, k * 2.5) * .8;
+    RAINBOW.forEach((col, i) => { c.fillStyle = col; c.fillRect(Math.min(x0, x0 + g.uface * L), GY - tall + i * tall / 6, L, tall / 6 + 1); });
+    c.globalAlpha *= .6; c.fillStyle = '#ffffff'; c.fillRect(Math.min(x0, x0 + g.uface * L), GY - tall * .58, L, tall * .12);
+    c.restore();
+  }
+  if (g.abil.gust > 0 && g.form === 'phoenix') {
+    const k = g.abil.gust / ABIL.gust.time, R = gustReach();
+    c.save(); c.strokeStyle = `rgba(255,255,255,${k * .8})`; c.lineWidth = 4 * S; c.lineCap = 'round';
+    for (let i = 0; i < 4; i++) { const r = R * (.25 + .18 * i) * (1.2 - k * .5); c.beginPath(); c.arc(g.px, g.py, r, g.pface > 0 ? -.5 : Math.PI - .5, g.pface > 0 ? .5 : Math.PI + .5); c.stroke(); }
+    c.restore();
+  }
+}
+
+/* ---------- Barriers: fog, thorny bushes, crystal walls and ice, cleared with abilities + gem powers ---------- */
+// The "strong" kind only gives way when the right jewelry or gem power is worn, so jewelry has a job in every land.
+const BARRIER_NEEDS = {
+  bramble: { ok: () => gpow('emerald') > 0, tip: 'These thorns are super thick! Wear jewelry with an Emerald for Green Thumb, then use your rainbow beam again!' },
+  wall:    { ok: () => hasPower('bracelet'), tip: 'This crystal wall is super strong! Wear a Bracelet for Swift Hooves, then gallop dash into it!' },
+  ice:     { ok: () => gpow('ruby') > 0, tip: 'This ice is super thick! Wear jewelry with a Ruby for Warm Fire, then breathe on it again!' },
+  fog:     { ok: () => hasPower('brooch'), tip: 'This fog is super big! Wear a Butterfly Brooch for Flutter Wings, then use your wing gust!' },
+};
+const BARRIER_HOW = {
+  bramble: 'Thorny bushes are in the way! Ride up close and use your rainbow beam to turn them into flowers!',
+  wall: `A crystal wall blocks the path! Use ${'gallop dash'} to crash right through it!`,
+  ice: 'A gem is frozen in ice! Fly close as the phoenix and breathe warm fire on it!',
+  fog: 'Something is hiding in that fog! Fly close as the phoenix and use your wing gust to blow it away!',
+};
+function setupBarriers() {
+  const g = game; g.barriers = [];
+  const slots = [.42, .54, .74, .88].filter(f => !g.egg || Math.abs(f - g.egg.fx) > .07).sort(() => Math.random() - .5);
+  const strongOne = Math.floor(Math.random() * 4); // one barrier in each trip is the strong kind
+  const mk = (type, i, extra) => Object.assign({ type, strong: i === strongOne, cleared: 0, hp: 1, born: g.t, said: false }, extra);
+  const bx = slots[0] * W, wx = slots[1] * W;
+  const bramble = mk('bramble', 0, { x: bx, w: 140 * S, h: 84 * S });
+  if (bramble.strong) { bramble.w = 170 * S; bramble.h = 104 * S; }
+  // a baby animal might be stuck behind the thorns
+  const kid = (g.creatures || []).find(o => o.baby && !CREATURE_INFO[o.kind].fly);
+  if (kid && Math.random() < .7) { kid.stuck = true; kid.x = bx; kid.y = GY; bramble.trapped = kid; }
+  g.barriers.push(bramble);
+  const wall = mk('wall', 1, { x: wx, w: 54 * S, h: 160 * S });
+  if (wall.strong) { wall.w = 72 * S; wall.h = 210 * S; }
+  g.barriers.push(wall);
+  const iceSky = Math.random() < .5;
+  const ice = mk('ice', 2, { x: iceSky ? rnd(.25, .75) * W : (slots[2] || .3) * W, y: iceSky ? rnd(H * .3, GY - 260 * S) : GY, r: 40 * S, hp: 2, gems: [pickGemType(g.land), pickGemType(g.land)] });
+  if (ice.strong) { ice.r = 54 * S; ice.hp = 3; ice.gems.push('rainbow'); }
+  g.barriers.push(ice);
+  const fog = mk('fog', 3, { x: rnd(.2, .8) * W, y: rnd(H * .22, Math.max(H * .24, GY - 330 * S)), r: 150 * S });
+  if (fog.strong) fog.r = 200 * S;
+  g.barriers.push(fog);
+  for (let i = 0; i < (fog.strong ? 4 : 3); i++) { // gems hiding in the fog
+    const a = rnd(0, TAU), d = rnd(0, fog.r * .5);
+    g.gems.push({ fx: (fog.x + Math.cos(a) * d) / W, fy: (fog.y + Math.sin(a) * d * .6) / H, type: pickGemType(g.land), ph: rnd(0, TAU), alive: true, born: g.t, lit: true, fog: true });
+  }
+}
+function inFog(o) { const g = game; return g.barriers && g.barriers.some(b => b.type === 'fog' && !b.cleared && Math.hypot(o.fx * W - b.x, (o.fy * H - b.y) / .7) < b.r * .75); }
+function hitBarrier(b) {
+  const g = game;
+  if (b.strong && !BARRIER_NEEDS[b.type].ok()) { SFX.nope(); b.wob = g.t; say(BARRIER_NEEDS[b.type].tip); return false; }
+  if (--b.hp > 0) { b.wob = g.t; tone(600, .15, 'triangle', .06); emit(b.x, (b.y || GY) - 20 * S, 10, { cols: ['#ffffff', '#cfefff'], max: 120, size: 4, g: 60 }); if (b.type === 'ice' && !b.saidMore) { b.saidMore = true; say('It is melting! Breathe again!'); } return false; }
+  b.cleared = g.t;
+  if (b.type === 'bramble') {
+    [523, 659, 784, 1047].forEach((f, i) => tone(f, .3, 'triangle', .06, i * .08));
+    emit(b.x, GY - 40 * S, 30, { cols: ['#ff9cc9', '#ffe36e', '#ffffff', '#9ae6a0'], max: 240, size: 5, g: 80 });
+    g.fallers.push({ x: b.x, y: GY - 60 * S, vy: -360 * S, type: pickGemType(g.land), landed: false, born: g.t });
+    if (b.trapped) rescue(b.trapped); else say('The thorns turned into flowers!');
+  } else if (b.type === 'wall') {
+    SFX.crack(); noise(.4, .12);
+    emit(b.x, GY - b.h / 2, 40, { cols: ['#efe4ff', '#c9b2ff', '#ffffff', '#ffd23f'], min: 100, max: 360, size: 7, g: 500 });
+    for (let i = 0; i < (b.strong ? 4 : 3); i++) g.fallers.push({ x: b.x + (i - 1) * 30 * S, y: GY - b.h * .6, vy: -300 * S - i * 60 * S, type: i === 3 ? 'rainbow' : pickGemType(g.land), landed: false, born: g.t });
+    say('Crash! You broke the crystal wall! There were gems inside!');
+  } else if (b.type === 'ice') {
+    [1319, 1175, 1047, 880].forEach((f, i) => tone(f, .2, 'sine', .05, i * .06));
+    emit(b.x, b.y - b.r, 30, { cols: ['#ffffff', '#bfe8ff', '#8fd3ff'], max: 220, size: 5, g: 120 });
+    b.gems.forEach((type, i) => g.fallers.push({ x: b.x + (i - (b.gems.length - 1) / 2) * 26 * S, y: b.y - b.r, vy: -240 * S, type, landed: false, born: g.t }));
+    say('The ice melted! Catch the gems!');
+  } else if (b.type === 'fog') {
+    tone(700, .5, 'sine', .04, 0, 1.6);
+    for (let i = 0; i < 16; i++) emit(b.x + rnd(-b.r, b.r) * .6, b.y + rnd(-b.r, b.r) * .4, 1, { cols: ['rgba(230,225,245,.9)'], min: 120, max: 260, angle: game.pface > 0 ? 0 : Math.PI, spread: .5, g: 0, life: .9, size: 18 });
+    say('Whoosh! The fog blew away! Look at all the gems!');
+  }
+  return true;
+}
+function rescue(o) {
+  const g = game; o.stuck = false; o.running = true; o.fam.rescued = true;
+  SFX.magic();
+  say(`You rescued the baby ${critName(o)}! It's running back to its family! They gave you gems to say thank you!`);
+  [0, 400].forEach(ms => setTimeout(() => { if (game === g && !g.done) collect(o.gem, o.x, o.y - 30 * S); }, 900 + ms));
+}
+function barrierTap(x, y) {
+  const g = game; if (!g.barriers) return false;
+  const b = g.barriers.find(b => !b.cleared && (b.type === 'fog' ? Math.hypot(x - b.x, (y - b.y) / .6) < b.r * .7
+    : b.type === 'ice' ? Math.hypot(x - b.x, y - (b.y - b.r)) < b.r * 1.3 : Math.abs(x - b.x) < b.w / 2 + 10 * S && y > GY - b.h - 20 * S && y < GY + 20 * S));
+  if (!b) return false;
+  b.wob = g.t; tone(500, .1, 'triangle', .05);
+  say(b.strong && !BARRIER_NEEDS[b.type].ok() ? BARRIER_NEEDS[b.type].tip : BARRIER_HOW[b.type]);
+  return true;
+}
+function updateBarriers(dt) {
+  const g = game; if (!g.barriers) return;
+  // Thorns and crystal walls block the unicorn (the phoenix can fly over them)
+  if (g.form === 'ride' && g.prevUx != null) {
+    for (const b of g.barriers) {
+      if (b.cleared || (b.type !== 'bramble' && b.type !== 'wall')) continue;
+      const lo = b.x - b.w / 2 - 44 * S, hi = b.x + b.w / 2 + 44 * S;
+      const crossing = g.prevUx <= lo && g.ux > lo ? lo : g.prevUx >= hi && g.ux < hi ? hi : null;
+      if (crossing == null) continue;
+      if (b.type === 'wall' && g.abil.dash > 0 && hitBarrier(b)) continue;
+      g.ux = crossing; g.tx = crossing; g.abil.dash = 0; b.wob = g.t;
+      if (!b.said) { b.said = true; say(b.strong && !BARRIER_NEEDS[b.type].ok() ? BARRIER_NEEDS[b.type].tip : BARRIER_HOW[b.type]); }
+    }
+  }
+  g.prevUx = g.ux;
+  // Fire breath melts ice
+  if (g.breath > 0 && g.form === 'phoenix') {
+    const sp = breathSpot();
+    for (const b of g.barriers) if (b.type === 'ice' && !b.cleared && Math.hypot(sp.x - b.x, sp.y - (b.y - b.r)) < sp.r + b.r && !(g.breathHits && g.breathHits.has(b))) { g.breathHits && g.breathHits.add(b); hitBarrier(b); }
+  }
+  // Hints the first time she comes close to each kind
+  const hx = g.form === 'ride' ? g.ux : g.px, hy = g.form === 'ride' ? GY - 80 * S : g.py;
+  for (const b of g.barriers) if (!b.cleared && !b.said && Math.hypot(hx - b.x, hy - ((b.y || GY) - 40 * S)) < 200 * S) {
+    b.said = true; say(b.strong && !BARRIER_NEEDS[b.type].ok() ? BARRIER_NEEDS[b.type].tip : BARRIER_HOW[b.type]);
+  }
+}
+function drawBarriers(c, layer) {
+  const g = game; if (!g.barriers) return;
+  const t = g.t;
+  for (const b of g.barriers) {
+    const fade = b.cleared ? Math.max(0, 1 - (t - b.cleared) / .8) : 1;
+    const wob = b.wob && t - b.wob < .4 ? Math.sin((t - b.wob) * 50) * 3 * S : 0;
+    if (layer === 'fog') { if (b.type !== 'fog' || fade <= 0) continue; }
+    else if (b.type === 'fog') continue;
+    if (b.type === 'bramble') {
+      if (b.cleared) { // flowers where the thorns were
+        for (let i = 0; i < 7; i++) { const fx = b.x + (i - 3) * b.w / 7, fy = GY - 6 * S - (i % 2) * 8 * S, s = S * Math.min(1, (t - b.cleared) * 2);
+          c.fillStyle = ['#ff9cc9', '#ffd23f', '#c9a2ff', '#8ec5ff'][i % 4]; for (let k = 0; k < 5; k++) { const a = k / 5 * TAU; c.beginPath(); c.arc(fx + Math.cos(a) * 5 * s, fy + Math.sin(a) * 5 * s, 4 * s, 0, TAU); c.fill(); }
+          c.fillStyle = '#fff3b0'; c.beginPath(); c.arc(fx, fy, 3 * s, 0, TAU); c.fill(); }
+        continue;
+      }
+      c.save(); c.translate(b.x + wob, GY);
+      const dark = b.strong ? '#2f4a3a' : '#3f7a4a', mid = b.strong ? '#405e48' : '#58a05e';
+      c.fillStyle = dark; c.beginPath(); c.ellipse(0, 0, b.w / 2, b.h, 0, Math.PI, TAU); c.fill();
+      c.strokeStyle = mid; c.lineWidth = 5 * S; c.lineCap = 'round';
+      for (let i = 0; i < 9; i++) { const a = Math.PI + (i + .5) / 9 * Math.PI; c.beginPath(); c.moveTo(Math.cos(a) * b.w * .1, 0); c.quadraticCurveTo(Math.cos(a + .6) * b.w * .4, Math.sin(a + .6) * b.h * .8, Math.cos(a) * b.w * .48, Math.sin(a) * b.h * .95); c.stroke(); }
+      c.fillStyle = b.strong ? '#c06ad8' : '#ff8fb1';
+      for (let i = 0; i < 16; i++) { const a = Math.PI + (i + .5) / 16 * Math.PI, rr = .7 + .25 * ((i * 7) % 3) / 2, x = Math.cos(a) * b.w * .5 * rr, y = Math.sin(a) * b.h * rr;
+        c.beginPath(); c.moveTo(x, y); c.lineTo(x + Math.cos(a) * 9 * S + 3 * S, y + Math.sin(a) * 9 * S); c.lineTo(x + Math.cos(a) * 9 * S - 3 * S, y + Math.sin(a) * 9 * S); c.closePath(); c.fill(); }
+      c.restore();
+      if (b.strong) sparkle(c, b.x, GY - b.h - 14 * S, 6 * S);
+    } else if (b.type === 'wall') {
+      if (fade <= 0) continue;
+      c.save(); c.globalAlpha = fade; c.translate(b.x + wob, GY);
+      const gr = c.createLinearGradient(-b.w / 2, 0, b.w / 2, 0); gr.addColorStop(0, 'rgba(255,255,255,.95)'); gr.addColorStop(.5, b.strong ? '#c7a5ff' : '#dccbff'); gr.addColorStop(1, b.strong ? '#9a6ae0' : '#b9a0f0');
+      c.fillStyle = gr; c.strokeStyle = b.strong ? '#7a4ac0' : '#a084d6'; c.lineWidth = 3 * S;
+      const shard = (dx, w, h) => { c.beginPath(); c.moveTo(dx - w / 2, 0); c.lineTo(dx - w / 2, -h + w * .4); c.lineTo(dx, -h); c.lineTo(dx + w / 2, -h + w * .4); c.lineTo(dx + w / 2, 0); c.closePath(); c.fill(); c.stroke(); };
+      shard(-b.w * .3, b.w * .5, b.h * .7); shard(b.w * .3, b.w * .5, b.h * .8); shard(0, b.w * .7, b.h);
+      if (b.strong) { c.fillStyle = '#ffd23f'; c.fillRect(-b.w * .4, -b.h * .45, b.w * .8, 6 * S); }
+      c.restore();
+    } else if (b.type === 'ice') {
+      if (fade <= 0) continue;
+      const y = b.y - b.r + (b.y < GY ? Math.sin(t * 1.5) * 5 * S : 0), r = b.r * (1 - (b.hp < (b.strong ? 3 : 2) ? .15 : 0));
+      c.save(); c.globalAlpha = fade;
+      b.gems.forEach((type, i) => drawGem(c, b.x + wob + (i - (b.gems.length - 1) / 2) * r * .5, y, r * .32, type, t, false));
+      c.fillStyle = 'rgba(200,235,255,.55)'; c.strokeStyle = 'rgba(255,255,255,.95)'; c.lineWidth = 3 * S;
+      c.beginPath(); c.roundRect ? c.roundRect(b.x + wob - r, y - r, r * 2, r * 2, 10 * S) : c.rect(b.x + wob - r, y - r, r * 2, r * 2); c.fill(); c.stroke();
+      c.strokeStyle = 'rgba(255,255,255,.7)'; c.lineWidth = 2 * S; c.beginPath(); c.moveTo(b.x + wob - r * .6, y - r * .7); c.lineTo(b.x + wob - r * .2, y - r * .3); c.moveTo(b.x + wob + r * .3, y + r * .2); c.lineTo(b.x + wob + r * .6, y + r * .6); c.stroke();
+      if (b.strong) for (let i = 0; i < 6; i++) sparkle(c, b.x + Math.cos(i) * r, y + Math.sin(i * 2) * r, 4 * S);
+      c.restore();
+    } else if (b.type === 'fog') {
+      c.save(); c.globalAlpha = fade * .94;
+      for (let i = 0; i < 9; i++) { const a = i / 9 * TAU + t * .1, d = b.r * (.25 + .3 * ((i * 5) % 3) / 2); puff(c, b.x + Math.cos(a) * d * 1.2, b.y + Math.sin(a) * d * .5, b.r / 70, b.strong ? '#b7aecb' : '#d8d2e6'); }
+      puff(c, b.x, b.y, b.r / 55, b.strong ? '#c2bad3' : '#e4def0');
+      c.restore();
+      if (!b.cleared && Math.sin(t * 2) > .3) sparkle(c, b.x + Math.sin(t) * b.r * .3, b.y - b.r * .2, 6 * S); // a peek of something shiny inside
+    }
+  }
+}
+function newGameMore() { // creature families, abilities and barriers for a fresh adventure
+  const g = game;
+  g.abil = { beam: 0, dash: 0, gust: 0 }; g.abilHits = { beam: new Set(), dash: new Set(), gust: new Set() }; g.prevUx = g.ux;
+  setupFamilies(); setupBarriers(); setAbilityBtns();
 }
 
 /* ---------- Ultra gem vaults: wear the right jewelry, then solve a pattern puzzle ---------- */
@@ -3043,6 +3438,9 @@ function drawGame() {
   }
   drawStage(c);
   drawGalaxy(c);
+  drawBarriers(c, 'ground');
+  drawCreatures(c);
+  drawBarriers(c, 'fog');
   if (g.cheetah) drawCheetah(c, g.t);
   for (const o of g.critters) drawCritter(c, o, g.t);
   if (g.land.dark) drawDark(c);
@@ -3052,6 +3450,7 @@ function drawGame() {
   drawUnicorn(c, g.ux, GY, S, g.uface, { t: g.t, phase: g.uphase, moving: g.umoving, rider: g.form === 'ride' });
   if (g.form !== 'ride') drawPhoenix(c, g.px, g.py, S * 1.25, g.pface, g.t);
   drawBreathReach(c);
+  drawAbilityFx(c);
   drawFairy(c);
   drawParts(c);
   for (const f of g.fly) {
@@ -3066,7 +3465,7 @@ function drawGame() {
 function drawOffscreen(c) {
   const g = game, pad = Math.max(22, 26 * S);
   for (const o of g.gems) {
-    if (!o.alive || !o.lit) continue;
+    if (!o.alive || !o.lit || inFog(o)) continue;
     const x = o.fx * W - CX, y = o.fy * H - CY;
     if (x > -10 && x < VW + 10 && y > -10 && y < VH + 10) continue;
     const ex = clamp(x, pad, VW - pad), ey = clamp(y, pad + 60, VH - pad - 60), a = Math.atan2(y - ey, x - ex);
