@@ -312,7 +312,7 @@ const DEF = { look: { hair: '#2a1a12', skin: '#f1c7a5', dress: '#ff6f91', mane: 
     lapis: 0, moonstone: 0, kunzite: 0, pearl: 0, fluorite: 0, snowquartz: 0, morganite: 0, coral: 0, turquoise: 0, seaglass: 0,
     sundiamond: 0, moondiamond: 0, dreamopal: 0, phoenixheart: 0, fairyprism: 0, mermaidstar: 0, forestheart: 0, frostdiamond: 0,
     fireflygem: 0, rainbowprism: 0, blossomgem: 0 },
-  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0, pets: {}, pet: null, wishes: 0 };
+  jewels: [], worn: [], trips: {}, ultra: {}, made: false, snd: true, voice: true, cheetah: 0, pets: {}, pet: null, wishes: 0, villain: { lvl: 0 } };
 const WEAR = 4; // how many treasures Lia can wear on an adventure at once
 function load() {
   const base = JSON.parse(JSON.stringify(DEF));
@@ -691,10 +691,10 @@ function drawGirl(c, t) {
   c.fillStyle = 'rgba(255,140,170,.55)'; c.beginPath(); c.arc(14.5, -41.5, 2.6, 0, TAU); c.fill();
 }
 function drawUnicorn(c, x, y, s, face, o) {
-  const t = o.t, ph = o.phase || 0, mv = o.moving ? 1 : 0, mane = MANES[save.look.mane] || MANES.rainbow;
+  const t = o.t, ph = o.phase || 0, mv = o.moving ? 1 : 0, mane = o.mane || MANES[save.look.mane] || MANES.rainbow;
   c.save(); c.translate(x, y); c.scale(s * face, s);
   const bob = mv ? -Math.abs(Math.sin(ph)) * 6 : Math.sin(t * 2) * 1.2;
-  const body = '#fffafd', line = '#cbb3ee', far = '#ece0fa';
+  const body = o.body || '#fffafd', line = o.line || '#cbb3ee', far = o.far || '#ece0fa';
   c.fillStyle = 'rgba(40,20,70,.18)'; c.beginPath(); c.ellipse(0, 2, 54, 8, 0, 0, TAU); c.fill();
   c.lineCap = 'round'; c.lineJoin = 'round';
   const A = k => Math.sin(ph + k) * .6 * mv;
@@ -1692,7 +1692,7 @@ cv.addEventListener('pointerdown', e => {
   if (!game) return; ac();
   if (!game.done) {
     const p = worldPt(e);
-    if (fairyTap(p.x, p.y) || petTap(p.x, p.y) || eggTap(p.x, p.y)) return;
+    if (fairyTap(p.x, p.y) || petTap(p.x, p.y) || eggTap(p.x, p.y) || villainTap(p.x, p.y)) return;
     if (stageTap(p.x, p.y)) return;
   }
   if (game.critters.length && !game.done) {
@@ -2196,6 +2196,7 @@ function newGameExtras() { // set up breath, wish and pet for a fresh adventure
   const g = game, land = g.land;
   g.breath = 0; g.wish = null; g.wishNext = 7; showWishChip();
   g.comets = []; g.pic = null; g.picNext = 1.5; g.cometT = 3;
+  g.villain = null; if (land.stars) newVillain();
   const own = petFor(land.id);
   g.pet = own ? { ...own, x: g.ux - 85 * S, y: GY, face: 1, hop: 0, findT: 4, happy: -9 } : null;
   g.egg = PETS[land.id] && !(save.pets && save.pets[land.id]) && (save.trips[land.id] || 0) >= EGG_TRIPS ? { fx: .62, warm: 0, wob: 0, hatched: 0 } : null;
@@ -2205,6 +2206,8 @@ function extrasWords() {
   const g = game; let w = '';
   if (g.egg) w += ' Look! A sparkly gem egg is in a nest! Keep it warm to help it hatch!';
   if (g.pet) w += ` ${g.pet.name} came along to help!`;
+  if (g.villain) w += villainLvl() || save.villain.necklaces ? ` Oh no, ${VILLAIN} is back! ${villainLvl() ? `His unicorn has ${VILLAIN_LOOKS[villainLvl()].name}!` : "He wants your gems for his necklaces!"} Catch the gems before he does, and tickle him to make him drop his!`
+    : ` Uh oh! That's ${VILLAIN}! He wants to take over the galaxy, but he can only make necklaces. Every necklace he makes upgrades his unicorn. Catch the gems before he grabs them, and fly into him or breathe warm fire to tickle him so he drops his gems!`;
   return w;
 }
 
@@ -2242,6 +2245,7 @@ function finishStarPic() {
   const c = p.pts.reduce((a, s) => ({ x: a.x + s.x / p.pts.length, y: a.y + s.y / p.pts.length }), { x: 0, y: 0 });
   emit(c.x, c.y, 60, { cols: [...MAGIC, '#9fd8ff', '#ffd23f'], max: 320, size: 6, g: 30, life: 1.4 });
   say(`You drew a ${p.name} in the stars! It's raining star gems!`);
+  setTimeout(() => { if (game === g) villainSulk(); }, 3500);
   [0, 350, 700].forEach((ms, j) => setTimeout(() => { if (game === g && !g.done) collect(j === 2 ? 'rainbow' : pickGemType(g.land), c.x + (j - 1) * 50 * S, c.y); }, ms));
   g.picNext = g.t + 5;
 }
@@ -2253,6 +2257,7 @@ function spawnComet() {
 }
 function updateGalaxy(dt) {
   const g = game; if (!g.land.stars) return;
+  updateVillain(dt);
   if (!g.pic) { if (!g.done && g.t > (g.picNext || 1.5)) newStarPic(); }
   else if (g.pic.done) { if (g.t - g.pic.done > 3) g.pic = null; }
   else if (!g.done) {
@@ -2295,6 +2300,7 @@ function drawGalaxy(c) {
     });
     c.restore();
   }
+  drawVillain(c);
   for (const o of g.comets) {
     const tail = c.createLinearGradient(o.x, o.y, o.x - o.vx * .35, o.y - o.vy * .35);
     tail.addColorStop(0, 'rgba(255,255,255,.9)'); tail.addColorStop(1, 'rgba(160,200,255,0)');
@@ -2309,6 +2315,184 @@ function lockedWords(land) {
   const J = JEWELS[land.needs];
   if (save.jewels.some(j => j.type === land.needs)) return `${land.name} is far up in the stars! Put on your ${J.name} in the Treasure Box to fly there!`;
   return `${land.name} is far up in the stars! Only a ${J.name} can take you there. Make one in the Jewelry Workshop. It needs ${J.slots} gems!`;
+}
+
+/* ---------- Count Clasp: a silly villain who wants the galaxy, but can only make necklaces ---------- */
+// He floats around Starlight Galaxy on his unicorn grabbing sky gems. Every 5 gems he makes a necklace and
+// upgrades his unicorn, which changes how it looks (saved, so it stays upgraded next time).
+// Lia stops him by catching gems first, or tickling him (phoenix touch or fire breath) so he drops his gems.
+const VILLAIN = 'Count Clasp', VILLAIN_MAX = 4, BEADS_PER_NECKLACE = 5;
+const VILLAIN_LOOKS = [ // what each upgrade does to his unicorn
+  { name: 'nothing fancy yet', mane: ['#b9b3c9', '#9a93ad', '#d6d1e2', '#a8a1bb', '#c8c3d6'], body: '#eeeaf3', line: '#a9a1bd', far: '#dcd6e6' },
+  { name: 'a fancy purple saddle', mane: MANES.violet },
+  { name: 'shiny gold armor', mane: MANES.violet },
+  { name: 'rocket hooves', mane: MANES.gold },
+  { name: 'galaxy wings', mane: ['#3a1d6e', '#6b3fc0', '#9f7aff', '#2a1a5a', '#c9a2ff'], body: '#f1e8ff', line: '#9f7aff', far: '#ddd0f7' },
+];
+const VILLAIN_UPGRADE_WORDS = [
+  '',
+  `Mwahaha! A new necklace! My unicorn gets a fancy purple saddle! Soon the galaxy will be mine!`,
+  `Another necklace! Shiny gold armor for my unicorn! The galaxy is almost mine!`,
+  `Necklace number four! Rocket hooves! Zoom zoom! Catch me if you can!`,
+  `My best necklace yet! Galaxy wings for my unicorn! Now I am the king of the galaxy! Well... almost.`,
+];
+function villainLvl() { return Math.min(VILLAIN_MAX, (save.villain && save.villain.lvl) || 0); }
+function newVillain() {
+  const g = game;
+  g.villain = { x: W * .8, y: GY - 260 * S, face: -1, beads: [], tgt: null, phase: 0, moving: false, bonk: -9, laugh: -9, said: -9, poof: -9, leave: 0, t: rnd(0, 9) };
+}
+function villainSay(text) { const v = game.villain; if (game.t - v.said < 4) return; v.said = game.t; say(`${VILLAIN}: ${text}`); }
+function makeNecklace() {
+  const g = game, v = g.villain;
+  v.beads = []; v.poof = g.t;
+  save.villain = save.villain || { lvl: 0 };
+  const up = save.villain.lvl < VILLAIN_MAX;
+  if (up) save.villain.lvl++;
+  save.villain.necklaces = (save.villain.necklaces || 0) + 1; persist();
+  emit(v.x, v.y - 60 * S, 50, { cols: ['#b98aff', '#ffd23f', '#ffffff', '#6b3fc0'], max: 260, size: 6, g: 30 });
+  [392, 330, 262, 392, 523].forEach((f, i) => tone(f, .25, 'square', .03, i * .1));
+  v.said = -9;
+  villainSay(up ? VILLAIN_UPGRADE_WORDS[save.villain.lvl] : 'Another necklace! I only know how to make necklaces... but they are SO shiny!');
+}
+function tickleVillain() {
+  const g = game, v = g.villain; if (g.t - v.bonk < 2.5) return;
+  v.bonk = g.t; v.laugh = g.t;
+  const drop = v.beads.splice(0);
+  [1568, 1319, 1175, 1568].forEach((f, i) => tone(f, .12, 'triangle', .05, i * .08));
+  emit(v.x, v.y - 70 * S, 14, { kind: 'star', max: 140, g: 0 });
+  v.said = -9;
+  villainSay(drop.length ? `Hee hee hee! That tickles! Oh no, my gems!` : 'Hee hee! Stop it! I don\'t even have any gems right now!');
+  drop.slice(0, 3).forEach((type, i) => setTimeout(() => { if (game === g && !g.done) collect(type, v.x, v.y - 60 * S); }, 200 + i * 250));
+  // bounce away from the phoenix
+  v.x = clamp(v.x + (v.x < g.px ? -1 : 1) * 140 * S, 80 * S, W - 80 * S); v.tgt = null;
+}
+function villainSulk() { // Lia finished a star picture
+  const v = game.villain; if (!v) return;
+  v.said = -9; villainSay('Hmph! Pretty star pictures! I can only make necklaces...');
+  const drop = v.beads.pop(); if (drop) setTimeout(() => { if (game && !game.done) collect(drop, v.x, v.y - 60 * S); }, 1200);
+}
+function updateVillain(dt) {
+  const g = game, v = g.villain; if (!v) return;
+  v.t += dt;
+  if (g.done) { // Lia found all her gems: he flies off grumbling
+    if (!v.leave) { v.leave = g.t; setTimeout(() => { if (game === g) { v.said = -9; villainSay('You win this time, Lia! But I will be back with even more necklaces!'); } }, 3500); }
+    v.y -= 160 * S * dt; v.x += v.face * 60 * S * dt; v.moving = true; v.phase += dt * 10;
+    return;
+  }
+  const lvl = villainLvl(), sp = (100 + 25 * lvl) * S;
+  if (g.t - v.bonk < 1 || g.t < v.rest) { v.moving = false; return; } // still giggling, or admiring his new gem
+  if (!v.tgt || !v.tgt.alive) v.tgt = g.gems.filter(o => o.alive && o.lit && g.t - o.born > 1).sort((a, b) => Math.hypot(a.fx * W - v.x, a.fy * H - v.y) - Math.hypot(b.fx * W - v.x, b.fy * H - v.y))[0] || null;
+  // steer so his necklace hook (ahead of and above the unicorn) lands right on the gem
+  let tx = v.tgt ? v.tgt.fx * W - v.face * 40 * S : W * .5 + Math.sin(v.t * .3) * W * .3, ty = v.tgt ? v.tgt.fy * H + 90 * S : GY - 260 * S;
+  ty = clamp(ty, 100 * S, GY - 40 * S);
+  const dx = tx - v.x, dy = ty - v.y, d = Math.hypot(dx, dy);
+  v.moving = d > 6;
+  if (v.moving) { const st = Math.min(d, sp * dt); v.x += dx / d * st; v.y += dy / d * st; if (Math.abs(dx) > 4) v.face = Math.sign(dx); v.phase += dt * 11; }
+  if (lvl >= 3 && v.moving && Math.random() < dt * 30) emit(v.x - v.face * 10 * S, v.y + 2 * S, 1, { cols: FIRE, min: 20, max: 80, angle: Math.PI / 2, spread: .4, g: 40, life: .4, size: 4 });
+  // He grabs a gem with his necklace hook (just above his unicorn's head)
+  if (v.tgt && v.tgt.alive) {
+    const gx = v.tgt.fx * W, gy = v.tgt.fy * H;
+    if (Math.hypot(gx - (v.x + v.face * 40 * S), gy - (v.y - 90 * S)) < 60 * S) {
+      v.tgt.alive = false; v.beads.push(v.tgt.type); v.tgt = null; v.rest = g.t + 2;
+      tone(300, .15, 'square', .03); tone(250, .2, 'square', .03, .1);
+      emit(gx, gy, 10, { cols: ['#b98aff', '#ffffff'], max: 120, size: 4, g: 20 });
+      if (v.beads.length >= BEADS_PER_NECKLACE) makeNecklace();
+      else if (v.beads.length === 1 && !g.saidVillainGrab) { g.saidVillainGrab = true; v.said = -9; villainSay('Mine! Every gem for my necklaces! Mwahaha!'); }
+    }
+  }
+  // Tickles: the phoenix bumping him, or a puff of fire breath
+  if (g.form === 'phoenix') {
+    const hit = Math.hypot(g.px - v.x, g.py - (v.y - 60 * S)) < 70 * S;
+    const puff = g.breath > 0 && (() => { const s = breathSpot(); return Math.hypot(s.x - v.x, s.y - (v.y - 60 * S)) < s.r + 30 * S; })();
+    if (hit || puff) tickleVillain();
+  }
+}
+function villainTap(x, y) {
+  const g = game, v = g.villain; if (!v || Math.hypot(x - v.x, y - (v.y - 70 * S)) > 80 * S) return false;
+  v.said = -9;
+  villainSay(`I am ${VILLAIN}! I will take over the galaxy with my necklaces! I can only make necklaces, but every one makes my unicorn better!`);
+  if (!g.saidHowToStop) { g.saidHowToStop = true; setTimeout(() => say('Fly into him as the phoenix, or breathe warm fire on him, to tickle him! He will drop his gems!'), 4500); }
+  return true;
+}
+// Count Clasp himself: round, short, purple cape, tall hat with a necklace for a hat band, a very curly mustache
+function drawClasp(c, t, v) {
+  const laugh = game.t - v.laugh < 1.5, sw = Math.sin(t * 5) * .1;
+  c.lineCap = 'round'; c.lineJoin = 'round';
+  c.fillStyle = '#5b2a86'; c.beginPath(); c.moveTo(-6, -36); c.quadraticCurveTo(-30, -16 + sw * 20, -26, 8); c.lineTo(4, 2); c.closePath(); c.fill(); // cape
+  c.fillStyle = '#2a1a3a'; c.beginPath(); c.moveTo(4, -6); c.lineTo(10, 20); c.lineTo(16, 20); c.lineTo(12, -6); c.fill(); // leg
+  c.fillStyle = '#1a1024'; c.beginPath(); c.ellipse(15, 21, 6, 3.5, 0, 0, TAU); c.fill(); // boot
+  c.fillStyle = '#3d2257'; c.beginPath(); c.moveTo(-10, -36); c.lineTo(10, -36); c.lineTo(15, 2); c.quadraticCurveTo(0, 7, -15, 2); c.closePath(); c.fill(); // coat
+  c.fillStyle = '#ffd23f'; for (const by of [-28, -18, -8]) { c.beginPath(); c.arc(1, by, 1.8, 0, TAU); c.fill(); } // buttons
+  // arm holding his necklace out, with the gems he's grabbed so far as beads
+  c.strokeStyle = '#3d2257'; c.lineWidth = 5; c.beginPath(); c.moveTo(6, -30); c.lineTo(20, laugh ? -40 : -20); c.stroke();
+  const nx = 24, ny = laugh ? -48 : -12;
+  c.strokeStyle = '#d4af37'; c.lineWidth = 1.5; c.beginPath(); c.ellipse(nx, ny + 8, 7, 9, 0, 0, TAU); c.stroke();
+  v.beads.forEach((b, i) => { const a = Math.PI / 2 + (i - (v.beads.length - 1) / 2) * .7; drawGem(c, nx + Math.cos(a) * 7, ny + 8 + Math.sin(a) * 9, 3.5, b, t, false); });
+  // head
+  c.fillStyle = '#f3d9c8'; c.beginPath(); c.arc(2, -46, 12, 0, TAU); c.fill();
+  c.fillStyle = '#e8a5a0'; c.beginPath(); c.arc(9, -44, 2.6, 0, TAU); c.fill(); // nose
+  if (laugh) { c.strokeStyle = '#2b1a3a'; c.lineWidth = 1.5; for (const ex of [-1, 7]) { c.beginPath(); c.arc(ex, -49, 2.2, Math.PI * 1.1, Math.PI * 1.9); c.stroke(); } c.fillStyle = '#7a2a4a'; c.beginPath(); c.arc(5, -39, 3.5, 0, Math.PI); c.fill(); }
+  else {
+    c.fillStyle = '#2b1a3a'; for (const ex of [-1, 7]) { c.beginPath(); c.arc(ex, -49, 1.6, 0, TAU); c.fill(); }
+    c.strokeStyle = '#2b1a3a'; c.lineWidth = 1.8; c.beginPath(); c.moveTo(-4, -54); c.lineTo(1, -52); c.moveTo(4, -52); c.lineTo(10, -55); c.stroke(); // grumpy brows
+    c.strokeStyle = '#d4af37'; c.lineWidth = 1.2; c.beginPath(); c.arc(7, -49, 4, 0, TAU); c.stroke(); c.beginPath(); c.moveTo(7, -45); c.quadraticCurveTo(10, -36, 6, -32); c.stroke(); // monocle
+  }
+  c.strokeStyle = '#1a1024'; c.lineWidth = 2.4; // very curly mustache
+  c.beginPath(); c.moveTo(8, -41); c.quadraticCurveTo(2, -38, -2, -41); c.arc(-3, -43, 2.2, 0, Math.PI * 1.6, true); c.stroke();
+  c.beginPath(); c.moveTo(8, -41); c.quadraticCurveTo(14, -38, 17, -41); c.arc(17.5, -43.5, 2.2, Math.PI, Math.PI * 2.6); c.stroke();
+  // tall hat with a necklace hat band
+  c.fillStyle = '#1a1024'; c.fillRect(-15, -60, 32, 4); c.fillRect(-9, -80, 20, 21);
+  for (let i = 0; i < 5; i++) { c.fillStyle = ['#ff5c8a', '#4fa8ff', '#ffd23f', '#3fc28c', '#b98aff'][i]; c.beginPath(); c.arc(-6 + i * 3.5, -63, 1.7, 0, TAU); c.fill(); }
+}
+// His unicorn, with the parts each upgrade adds drawn on top
+function drawVillain(c) {
+  const g = game, v = g.villain; if (!v) return;
+  const lvl = villainLvl(), L = VILLAIN_LOOKS[lvl], t = v.t, s = S, face = v.face, mv = v.moving;
+  const bob = mv ? -Math.abs(Math.sin(v.phase)) * 6 : Math.sin(t * 2) * 1.2;
+  const hover = Math.sin(t * 1.6) * 6 * S;
+  if (lvl >= 4) { // galaxy wings and a soft glow, behind everything
+    const gl = c.createRadialGradient(v.x, v.y - 70 * s, 10, v.x, v.y - 70 * s, 130 * s); gl.addColorStop(0, 'rgba(185,138,255,.35)'); gl.addColorStop(1, 'rgba(185,138,255,0)');
+    c.fillStyle = gl; c.beginPath(); c.arc(v.x, v.y - 70 * s, 130 * s, 0, TAU); c.fill();
+    c.save(); c.translate(v.x, v.y + hover + bob * s); c.scale(s * face, s);
+    const flap = Math.sin(t * 6) * .25;
+    for (const [sd, a] of [[1, .9], [.8, .6]]) {
+      c.save(); c.translate(-6, -82); c.rotate(-.6 - flap * sd); c.globalAlpha = a;
+      const wg = c.createLinearGradient(0, 0, -90, -60); wg.addColorStop(0, '#9f7aff'); wg.addColorStop(1, 'rgba(60,30,140,.6)');
+      c.fillStyle = wg; c.beginPath(); c.moveTo(0, 0); c.quadraticCurveTo(-40, -90, -100, -60); c.quadraticCurveTo(-70, -40, -80, -20); c.quadraticCurveTo(-50, -20, 0, 0); c.fill();
+      for (let i = 0; i < 4; i++) sparkle(c, -30 - i * 16, -30 - i * 6, 3);
+      c.restore();
+    }
+    c.restore();
+  }
+  drawUnicorn(c, v.x, v.y + hover, s, face, { t, phase: v.phase, moving: mv, rider: false, mane: L.mane, body: L.body, line: L.line, far: L.far });
+  c.save(); c.translate(v.x, v.y + hover); c.scale(s * face, s); c.translate(0, bob);
+  if (lvl >= 1) { // saddle
+    c.fillStyle = '#7a3fc0'; c.beginPath(); c.ellipse(-6, -78, 24, 9, 0, Math.PI, TAU); c.fill();
+    c.strokeStyle = '#ffd23f'; c.lineWidth = 2.5; c.beginPath(); c.ellipse(-6, -78, 24, 9, 0, Math.PI, TAU); c.stroke();
+    c.fillStyle = '#ffd23f'; for (const tx of [-24, 12]) { c.beginPath(); c.moveTo(tx, -78); c.lineTo(tx - 3, -64); c.lineTo(tx + 3, -64); c.closePath(); c.fill(); }
+  }
+  if (lvl >= 2) { // gold armor on the chest and face, and a glowing horn
+    const ag = c.createLinearGradient(20, -80, 50, -40); ag.addColorStop(0, '#fff1a8'); ag.addColorStop(1, '#d4a017');
+    c.fillStyle = ag; c.beginPath(); c.ellipse(34, -60, 13, 16, -.3, 0, TAU); c.fill();
+    c.beginPath(); c.moveTo(48, -126); c.lineTo(66, -118); c.lineTo(60, -106); c.lineTo(46, -112); c.closePath(); c.fill();
+    c.fillStyle = '#ff5c8a'; c.beginPath(); c.arc(34, -60, 3.5, 0, TAU); c.fill();
+    const hg = c.createRadialGradient(70, -146, 2, 70, -146, 26); hg.addColorStop(0, 'rgba(255,240,150,.7)'); hg.addColorStop(1, 'rgba(255,240,150,0)');
+    c.fillStyle = hg; c.beginPath(); c.arc(70, -146, 26, 0, TAU); c.fill();
+  }
+  if (lvl >= 3) { // rocket hooves and a star on the horn tip
+    for (const hx of [-26, 24, -20, 30]) {
+      const fl = 10 + Math.random() * 8;
+      c.fillStyle = 'rgba(255,170,60,.9)'; c.beginPath(); c.moveTo(hx - 5, 2); c.lineTo(hx + 5, 2); c.lineTo(hx, 2 + fl); c.closePath(); c.fill();
+      c.fillStyle = '#9aa0b5'; c.fillRect(hx - 6, -4, 12, 6);
+    }
+    sparkle(c, 75, -161, 9 + 2 * Math.sin(t * 5));
+  }
+  c.save(); c.translate(-6, -76); drawClasp(c, t, v); c.restore();
+  c.restore();
+  if (g.t - v.poof < 1.2) { // a ring of sparkles when he upgrades
+    const k = (g.t - v.poof) / 1.2;
+    for (let i = 0; i < 10; i++) { const a = i / 10 * TAU + k * 2; sparkle(c, v.x + Math.cos(a) * 110 * s * k, v.y - 70 * s + Math.sin(a) * 80 * s * k, 8 * s * (1 - k)); }
+  }
 }
 
 /* ---------- Ultra gem vaults: wear the right jewelry, then solve a pattern puzzle ---------- */
