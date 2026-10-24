@@ -1,0 +1,66 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Lia's Games</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@600;800&display=swap">
+<style>
+  :root { --bg1: #2a1a5e; --bg2: #ff9fb2; --ink: #2b1a3a; --card: #fffaff; --display: 'Grandstander', 'Trebuchet MS', system-ui, sans-serif; --body: 'Andika', system-ui, sans-serif; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; min-height: 100%; }
+  body { background: linear-gradient(180deg, var(--bg1), #6a3fa0 55%, var(--bg2)); background-attachment: fixed; color: var(--ink); font-family: var(--body); }
+  main { max-width: 980px; margin: 0 auto; padding: 28px 16px 120px; }
+  h1 { font-family: var(--display); color: #fff; text-align: center; font-size: clamp(2rem, 7vw, 3.4rem); margin: 8px 0 4px; text-shadow: 0 4px 0 rgba(58,29,92,.6); }
+  .sub { color: #fde9ff; text-align: center; margin: 0 0 26px; font-size: 1.15rem; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 18px; }
+  .card { display: flex; flex-direction: column; text-decoration: none; color: inherit; background: var(--card); border: 4px solid #fff; border-radius: 26px; overflow: hidden; box-shadow: 0 8px 0 rgba(58,29,92,.35); transition: transform .12s; }
+  .card:hover, .card:focus-visible { transform: translateY(-4px); outline: none; }
+  .art { height: 140px; position: relative; display: grid; place-items: center; }
+  .art svg { width: 84px; height: 84px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.2)); }
+  .body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
+  .card h2 { font-family: var(--display); font-size: 1.45rem; margin: 0; line-height: 1.1; }
+  .card p { margin: 0; color: #5a4a6a; flex: 1; }
+  .play { align-self: flex-start; margin-top: 8px; font-family: var(--display); font-size: 1.15rem; color: #fff; background: #ff6f3d; padding: 6px 20px; border-radius: 999px; box-shadow: 0 4px 0 #c94a1e; }
+  .card.building { opacity: .9; border-style: dashed; }
+  .card.building .play { background: #b9a7cf; box-shadow: 0 4px 0 #8f7bab; }
+  .card.building .art svg { animation: spin 3s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .new { margin-top: 26px; text-align: center; color: #fff; font-size: 1.05rem; }
+  @media (max-width: 1110px) { main { padding-left: 66px; } } /* room for the chat buttons on the left edge */
+  @media (prefers-reduced-motion: reduce) { .card { transition: none; } .card.building .art svg { animation: none; } }
+</style>
+</head>
+<body>
+<main>
+  <h1>Lia's Games</h1>
+  <p class="sub">Pick a game to play!</p>
+  <div class="grid" id="grid"></div>
+  <p class="new">Grown-ups: tap the ✨ button to ask for a brand-new game.</p>
+</main>
+<script>
+const STAR = '<svg viewBox="0 0 24 24" fill="#fff"><path d="M12 1.8l2.9 6.6 7.1.6-5.4 4.7 1.6 7-6.2-3.7-6.2 3.7 1.6-7L2 9l7.1-.6z"/></svg>';
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const safeColor = c => /^#[0-9a-f]{3,8}$/i.test(c || '') ? c : '#b44fd1';
+async function render() {
+  let games = [], building = 0;
+  try { games = await (await fetch('/games.json', { cache: 'no-store' })).json(); } catch (e) {}
+  try { building = (await (await fetch('/building', { cache: 'no-store' })).json()).count || 0; } catch (e) {}
+  const grid = document.getElementById('grid');
+  grid.innerHTML = games.filter(g => g && g.slug).map(g => {
+    const c = safeColor(g.color);
+    return `<a class="card" href="/games/${encodeURIComponent(g.slug)}/">
+      <div class="art" style="background:linear-gradient(135deg, ${c}, ${c}99)">${STAR}</div>
+      <div class="body"><h2>${esc(g.title || g.slug)}</h2><p>${esc(g.blurb || '')}</p><span class="play">Play!</span></div></a>`;
+  }).join('') + Array.from({ length: building }, () => `<div class="card building" aria-label="A new game is being made">
+      <div class="art" style="background:linear-gradient(135deg, #c9b8e8, #f3d6ff)">${STAR}</div>
+      <div class="body"><h2>A new game is coming!</h2><p>Claude is making it right now. It will show up here when it's ready.</p><span class="play">Making…</span></div></div>`).join('');
+}
+render();
+setInterval(render, 5000);
+// the server pokes every page when the list of games changes
+window.addEventListener('games-changed', render);
+</script>
+</body>
+</html>

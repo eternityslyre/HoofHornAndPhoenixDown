@@ -12,7 +12,8 @@
   main { max-width: 760px; margin: 0 auto; padding: 20px 16px 40px; }
   h1 { font-size: 22px; margin: 0 0 4px; }
   .sub { color: var(--muted); margin: 0 0 18px; font-size: 14px; }
-  form { display: flex; gap: 8px; }
+  form { display: flex; gap: 8px; flex-wrap: wrap; }
+  select { flex-basis: 100%; padding: 8px; font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
   textarea { flex: 1; min-height: 70px; resize: vertical; padding: 10px; font: inherit; color: inherit; background: var(--panel); border: 1px solid var(--line); border-radius: 10px; }
   button { padding: 0 18px; font: inherit; font-weight: 600; color: #fff; background: var(--accent); border: 0; border-radius: 10px; cursor: pointer; }
   .status { margin: 14px 0 8px; font-size: 14px; color: var(--muted); }
@@ -31,8 +32,9 @@
 <body>
 <main>
   <h1>Game Host</h1>
-  <p class="sub">Type a change for the game. Claude Code edits it, then every player's screen reloads by itself. <a href="/" target="_blank">Open the game</a></p>
+  <p class="sub">Pick a game to change, or make a new one. Claude Code does it, and the people playing that game see it reload by itself. <a href="/" target="_blank">Open the games page</a></p>
   <form id="f">
+    <select id="target" aria-label="Which game"><option value="">Make a new game</option></select>
     <textarea id="t" placeholder="e.g. Add a purple butterfly that flutters around the sky gems"></textarea>
     <button>Send</button>
   </form>
@@ -65,7 +67,10 @@ async function connect() {
       log.append(d); if (stick) log.scrollTop = log.scrollHeight;
     } else if (m.t === 'status') {
       const who = `<b>${m.players}</b> player${m.players === 1 ? '' : 's'} connected.`;
-      st.innerHTML = who + ' ' + (m.busy ? 'Claude is working on a change' + (m.queued.length ? `, ${m.queued.length} more waiting.` : '.') : 'Ready for a request.');
+      st.innerHTML = who + ' ' + (m.busy ? 'Claude is working on ' + m.current.length + (m.current.length === 1 ? ' request' : ' requests') + (m.queued.length ? `, ${m.queued.length} more waiting.` : '.') : 'Ready for a request.');
+      const sel = document.getElementById('target'), keep = sel.value;
+      sel.innerHTML = '<option value="">Make a new game</option>' + (m.games || []).map(g => `<option value="${g.slug}">Change ${g.title.replace(/[<&"]/g, '')}</option>`).join('');
+      sel.value = keep;
     }
   };
   ws.onclose = () => { st.textContent = 'Disconnected from the server. Retrying…'; setTimeout(connect, 1500); };
@@ -74,7 +79,8 @@ connect();
 document.getElementById('f').addEventListener('submit', e => {
   e.preventDefault();
   if (!t.value.trim() || ws.readyState !== 1) return;
-  ws.send(JSON.stringify({ t: 'request', text: t.value })); t.value = '';
+  const game = document.getElementById('target').value;
+  ws.send(JSON.stringify({ t: 'request', text: t.value, mode: game ? 'change' : 'new', game })); t.value = '';
 });
 t.addEventListener('keydown', e => { if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) document.getElementById('f').requestSubmit(); });
 </script>

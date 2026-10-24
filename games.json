@@ -1,0 +1,26 @@
+[
+  {
+    "slug": "phoenix-jewels",
+    "title": "Lia's Phoenix Jewels",
+    "blurb": "Fly as a phoenix, ride your unicorn, find gems and make magic jewelry.",
+    "dir": ".",
+    "file": "index.html",
+    "color": "#ff6f91"
+  },
+  {
+    "slug": "liakratts",
+    "title": "Emilia's Super Speedy Hide and Seek",
+    "blurb": "Emilia the shy phoenix zooms from tree to tree while Martin and Chris look for her.",
+    "dir": "liakratts",
+    "file": "index.html",
+    "color": "#3fc28c"
+  },
+  {
+    "slug": "bunny-bakery",
+    "title": "Bunny Bakery",
+    "blurb": "Make yummy cupcakes with frosting, sprinkles and strawberries for a happy dancing bunny!",
+    "dir": "games/bunny-bakery",
+    "file": "index.html",
+    "color": "#ff7eb6"
+  }
+]

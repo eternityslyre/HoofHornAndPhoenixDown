@@ -1,0 +1,718 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>Bunny Bakery</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --pink: #e2558f;
+    --btn: min(13vw, 10.5vh, 84px);
+    --gap: min(2vw, 1.4vh, 12px);
+  }
+  * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden; overscroll-behavior: none;
+    touch-action: manipulation; user-select: none; -webkit-user-select: none; -webkit-touch-callout: none;
+  }
+  body {
+    font-family: 'Fredoka', 'Comic Sans MS', system-ui, sans-serif;
+    background: repeating-linear-gradient(90deg, #ffe4ef 0 44px, #fff6fa 44px 88px);
+    color: var(--pink);
+  }
+  #app { height: 100vh; height: 100dvh; display: flex; flex-direction: column; }
+
+  /* garland + header */
+  #garland { display: flex; justify-content: space-between; height: 22px; padding: 0 4px; flex: none; }
+  #garland span { width: 26px; height: 22px; clip-path: polygon(0 0, 100% 0, 50% 100%); }
+  header {
+    flex: none; display: flex; align-items: center; justify-content: space-between;
+    padding: 2px 14px 0; gap: 10px;
+  }
+  h1 {
+    margin: 0; font-size: clamp(22px, 5.5vmin, 44px); font-weight: 700; letter-spacing: 1px;
+    text-shadow: 3px 3px 0 #fff, -2px -2px 0 #fff, 2px -2px 0 #fff, -2px 2px 0 #fff;
+    white-space: nowrap;
+  }
+  .hud { display: flex; gap: 10px; align-items: center; }
+  #count {
+    background: #fff; border-radius: 999px; padding: 4px 14px; font-size: clamp(18px, 4vmin, 30px);
+    font-weight: 700; box-shadow: 0 4px 0 #f6c3d8; white-space: nowrap;
+  }
+  #count.bump { animation: bump .5s cubic-bezier(.3,1.8,.5,1); }
+  #sound {
+    width: clamp(44px, 9vmin, 60px); height: clamp(44px, 9vmin, 60px); border-radius: 50%;
+    border: none; background: #fff; font-size: clamp(20px, 4.5vmin, 30px); box-shadow: 0 4px 0 #f6c3d8; cursor: pointer;
+  }
+
+  main { flex: 1; min-height: 0; display: flex; flex-direction: column; }
+  #stageWrap { flex: 1; min-height: 0; position: relative; overflow: hidden; }
+  #stage { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+
+  /* tools */
+  #tools {
+    flex: none; margin: 0 auto calc(10px + env(safe-area-inset-bottom)); padding: var(--gap) calc(var(--gap) * 1.5);
+    background: rgba(255,255,255,.92); border-radius: 28px; box-shadow: 0 6px 0 #f6c3d8, 0 10px 30px rgba(226,85,143,.15);
+    display: flex; flex-direction: column; align-items: center; gap: var(--gap); max-width: calc(100vw - 16px);
+  }
+  .row { display: flex; flex-wrap: wrap; justify-content: center; gap: var(--gap); border-radius: 22px; padding: 2px; }
+  .tool {
+    width: var(--btn); height: var(--btn); border-radius: 50%; border: 4px solid #fff; padding: 0;
+    background: #fff4f8; box-shadow: 0 4px 0 #f3bcd2; cursor: pointer; display: grid; place-items: center;
+    font-size: calc(var(--btn) * .55); line-height: 1; transition: transform .15s;
+  }
+  .tool svg { width: 82%; height: 82%; display: block; pointer-events: none; }
+  .tool:active { transform: scale(.9); }
+  .topping { border-radius: 26%; }
+  .tool.on { border-color: #ff7eb6; transform: scale(1.1); box-shadow: 0 4px 0 #e2558f, 0 0 0 4px #ffd6e8; }
+  .big {
+    border: none; border-radius: 999px; cursor: pointer; font-family: inherit; font-weight: 700; color: #fff;
+    font-size: calc(var(--btn) * .42); padding: 0 calc(var(--btn) * .4); height: var(--btn);
+    background: linear-gradient(#ff8cc0, #ff5fa2); box-shadow: 0 6px 0 #d43f80; white-space: nowrap;
+    display: flex; align-items: center; justify-content: center; gap: .3em;
+  }
+  .big:active { transform: translateY(4px); box-shadow: 0 2px 0 #d43f80; }
+  #feedBtn.ready { animation: pulse 1.3s ease-in-out infinite; }
+  #againBtn { display: none; background: linear-gradient(#7fd8ff, #47b6f0); box-shadow: 0 6px 0 #2b8fc4; font-size: calc(var(--btn) * .5); height: calc(var(--btn) * 1.3); animation: pulse 1.3s ease-in-out infinite; }
+  #tools.done > :not(#againBtn) { display: none; }
+  #tools.done #againBtn { display: flex; }
+  body.busy #tools { pointer-events: none; opacity: .55; }
+  body.busy #tools.done { pointer-events: auto; opacity: 1; }
+  .hint { animation: hint 1.4s ease-in-out infinite; }
+
+  /* short landscape screens: tools go to the side */
+  @media (orientation: landscape) and (max-height: 620px) {
+    :root { --btn: min(15vh, 9vw, 72px); }
+    main { flex-direction: row; }
+    #tools { margin: 4px calc(10px + env(safe-area-inset-right)) 10px 0; align-self: center; width: calc(var(--btn) * 3 + var(--gap) * 5 + 20px); max-height: 100%; }
+    .big { width: 100%; }
+  }
+
+  /* svg animation */
+  .anim { transform-box: fill-box; }
+  #bunny { transform-box: fill-box; transform-origin: 50% 100%; }
+  #bunny.idle { animation: bob 2.4s ease-in-out infinite; }
+  #bunny.hop { animation: hop .5s cubic-bezier(.3,.6,.4,1); }
+  #bunny.chew { animation: chew .22s ease-in-out infinite alternate; }
+  #bunny.dance { animation: dance .4s ease-in-out infinite alternate; }
+  .ear { transform-box: fill-box; transform-origin: 50% 95%; }
+  #earL { animation: earL 5s ease-in-out infinite; }
+  #earR { animation: earR 6s ease-in-out infinite; }
+  #bunny.dance #earL { animation: earDance .4s ease-in-out infinite alternate; }
+  #bunny.dance #earR { animation: earDance .4s ease-in-out infinite alternate-reverse; }
+  .eye { transform-box: fill-box; transform-origin: center; animation: blink 4.5s infinite; }
+  .paw { transform-box: fill-box; transform-origin: 50% 80%; }
+  #bunny.dance #pawL { animation: wave .4s ease-in-out infinite alternate; }
+  #bunny.dance #pawR { animation: wave .4s ease-in-out infinite alternate-reverse; }
+  .pop { transform-box: fill-box; transform-origin: center; animation: pop .4s cubic-bezier(.3,1.7,.5,1) both; }
+  #frost { transform-box: fill-box; transform-origin: 50% 100%; }
+  #frost.squeeze { animation: squeeze .65s cubic-bezier(.3,1.5,.5,1) both; }
+  #frost.jiggle { animation: jiggle .5s ease-in-out; }
+  #cup { transform-box: fill-box; transform-origin: 50% 100%; }
+  #cup.appear { animation: appear .7s cubic-bezier(.3,1.4,.5,1) both; }
+  #cup.wiggle { animation: jiggle .4s ease-in-out; }
+  .floaty { transform-box: fill-box; transform-origin: center; animation: floatUp 1.8s ease-out forwards; }
+  .crumb { transform-box: fill-box; animation: crumb .9s ease-in forwards; }
+
+  @keyframes bob { 50% { transform: translateY(5px) scale(1.02, .98); } }
+  @keyframes hop { 40% { transform: translateY(-50px) scale(.95, 1.06); } 80% { transform: translateY(0) scale(1.06, .94); } }
+  @keyframes chew { to { transform: scale(1.04, .96); } }
+  @keyframes dance {
+    from { transform: translateY(0) rotate(-9deg) scale(1.04, .96); }
+    to { transform: translateY(-34px) rotate(9deg) scale(.97, 1.03); }
+  }
+  @keyframes earL { 0%, 80%, 100% { transform: rotate(0); } 85% { transform: rotate(-10deg); } 92% { transform: rotate(6deg); } }
+  @keyframes earR { 0%, 60%, 100% { transform: rotate(0); } 66% { transform: rotate(10deg); } 72% { transform: rotate(-5deg); } }
+  @keyframes earDance { from { transform: rotate(-14deg); } to { transform: rotate(14deg); } }
+  @keyframes blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(.1); } }
+  @keyframes wave { from { transform: translateY(0) rotate(-20deg); } to { transform: translateY(-40px) rotate(20deg); } }
+  @keyframes pop { from { transform: scale(0); } to { transform: scale(1); } }
+  @keyframes squeeze { from { transform: scale(.5, 0); } to { transform: none; } }
+  @keyframes jiggle { 30% { transform: scale(1.07, .93); } 60% { transform: scale(.96, 1.04); } 100% { transform: none; } }
+  @keyframes appear { from { transform: translateY(-120%) scale(.6); opacity: 0; } 40% { opacity: 1; } to { transform: none; } }
+  @keyframes floatUp {
+    0% { transform: translateY(0) scale(.2); opacity: 0; }
+    15% { transform: translateY(-20px) scale(1.1); opacity: 1; }
+    100% { transform: translateY(-220px) scale(1); opacity: 0; }
+  }
+  @keyframes crumb { to { transform: translate(var(--dx), 140px) rotate(200deg); opacity: 0; } }
+  @keyframes pulse { 50% { transform: scale(1.07); } }
+  @keyframes bump { 40% { transform: scale(1.35); } }
+  @keyframes hint { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,126,182,0); } 50% { box-shadow: 0 0 0 6px rgba(255,126,182,.55); } }
+
+  #fx { position: fixed; inset: 0; pointer-events: none; overflow: hidden; }
+  .confetti { position: absolute; top: -30px; width: 14px; height: 10px; border-radius: 3px; animation: fall linear forwards; }
+  @keyframes fall { to { transform: translate(var(--dx), 110vh) rotate(720deg); } }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="garland"></div>
+  <header>
+    <h1>🐰 Bunny Bakery</h1>
+    <div class="hud">
+      <div id="count">🧁 0</div>
+      <button id="sound" aria-label="Sound on or off">🔊</button>
+    </div>
+  </header>
+  <main>
+    <div id="stageWrap">
+      <svg id="stage" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1000 640" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <mask id="biteMask" maskUnits="userSpaceOnUse" x="-80" y="-80" width="460" height="520">
+            <rect x="-80" y="-80" width="460" height="520" fill="#fff"/>
+            <g id="bites"></g>
+          </mask>
+        </defs>
+
+        <!-- bunny -->
+        <g id="bunnyPos">
+          <ellipse cx="150" cy="436" rx="115" ry="14" fill="#e2558f" opacity=".12"/>
+          <g id="bunny" class="idle">
+            <!-- tail -->
+            <circle cx="248" cy="385" r="26" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+            <!-- ears -->
+            <g id="earL" class="ear"><g transform="rotate(-12 112 170)">
+              <ellipse cx="112" cy="92" rx="31" ry="88" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+              <ellipse cx="112" cy="98" rx="15" ry="64" fill="#ffc2d6"/>
+            </g></g>
+            <g id="earR" class="ear"><g transform="rotate(12 188 170)">
+              <ellipse cx="188" cy="92" rx="31" ry="88" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+              <ellipse cx="188" cy="98" rx="15" ry="64" fill="#ffc2d6"/>
+              <path d="M188 52 L160 36 L162 70 Z M188 52 L216 36 L214 70 Z" fill="#ff7eb6" stroke="#e2558f" stroke-width="3" stroke-linejoin="round"/>
+              <circle cx="188" cy="53" r="9" fill="#ff9cc7" stroke="#e2558f" stroke-width="3"/>
+            </g></g>
+            <!-- body -->
+            <ellipse cx="150" cy="345" rx="106" ry="86" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+            <!-- apron -->
+            <path d="M92 296 Q150 284 208 296 L220 398 Q150 424 80 398 Z" fill="#ffd1e3" stroke="#ff9cc7" stroke-width="4" stroke-linejoin="round"/>
+            <path d="M84 396 Q150 420 216 396" fill="none" stroke="#fff" stroke-width="4" stroke-dasharray="3 9" stroke-linecap="round"/>
+            <path d="M150 372 C134 360 136 344 150 352 C164 344 166 360 150 372 Z" fill="#ff7eb6"/>
+            <!-- feet -->
+            <ellipse cx="96" cy="420" rx="42" ry="20" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+            <ellipse cx="204" cy="420" rx="42" ry="20" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+            <ellipse cx="96" cy="421" rx="13" ry="8" fill="#ffc2d6"/>
+            <ellipse cx="204" cy="421" rx="13" ry="8" fill="#ffc2d6"/>
+            <!-- head -->
+            <circle cx="150" cy="200" r="98" fill="#fff" stroke="#f2d3df" stroke-width="5"/>
+            <ellipse cx="94" cy="230" rx="20" ry="12" fill="#ff9cc7" opacity=".55"/>
+            <ellipse cx="206" cy="230" rx="20" ry="12" fill="#ff9cc7" opacity=".55"/>
+            <g id="eyesOpen">
+              <g class="eye"><ellipse cx="115" cy="195" rx="13" ry="16" fill="#3b2a3a"/><circle cx="120" cy="188" r="5" fill="#fff"/><circle cx="111" cy="202" r="2.5" fill="#fff"/></g>
+              <g class="eye"><ellipse cx="185" cy="195" rx="13" ry="16" fill="#3b2a3a"/><circle cx="190" cy="188" r="5" fill="#fff"/><circle cx="181" cy="202" r="2.5" fill="#fff"/></g>
+            </g>
+            <g id="eyesHappy" style="display:none" fill="none" stroke="#3b2a3a" stroke-width="6" stroke-linecap="round">
+              <path d="M101 200 Q115 182 129 200"/><path d="M171 200 Q185 182 199 200"/>
+            </g>
+            <g stroke="#ecc9d7" stroke-width="3" stroke-linecap="round">
+              <path d="M98 226 L58 218"/><path d="M98 234 L60 240"/><path d="M202 226 L242 218"/><path d="M202 234 L240 240"/>
+            </g>
+            <path d="M140 220 Q150 213 160 220 Q150 233 140 220 Z" fill="#ff8fb5"/>
+            <path id="mouthSmile" d="M150 228 L150 236 M136 234 Q143 245 150 236 Q157 245 164 234" fill="none" stroke="#7a4a5a" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/>
+            <g id="mouthOpen" style="display:none">
+              <ellipse cx="150" cy="246" rx="16" ry="14" fill="#a8445f"/>
+              <ellipse cx="150" cy="253" rx="9" ry="5" fill="#ff8fb5"/>
+              <rect x="143" y="232" width="14" height="8" rx="2" fill="#fff"/>
+            </g>
+            <!-- paws -->
+            <g id="pawL" class="paw"><ellipse cx="98" cy="318" rx="25" ry="19" fill="#fff" stroke="#f2d3df" stroke-width="5"/></g>
+            <g id="pawR" class="paw"><ellipse cx="202" cy="318" rx="25" ry="19" fill="#fff" stroke="#f2d3df" stroke-width="5"/></g>
+          </g>
+          <g id="bubble" transform="translate(300 10)" style="display:none">
+            <g class="pop">
+              <path d="M-50 30 L-80 62 L-26 34 Z" fill="#fff" stroke="#ff9cc7" stroke-width="4" stroke-linejoin="round"/>
+              <rect x="-75" y="-38" width="150" height="76" rx="38" fill="#fff" stroke="#ff9cc7" stroke-width="4"/>
+              <rect x="-60" y="22" width="40" height="14" fill="#fff"/>
+              <text x="0" y="13" text-anchor="middle" font-family="Fredoka, sans-serif" font-weight="700" font-size="36" fill="#e2558f">Yum!</text>
+            </g>
+          </g>
+        </g>
+
+        <!-- cupcake -->
+        <g id="cupPos">
+          <ellipse id="cupShadow" cx="150" cy="346" rx="112" ry="12" fill="#e2558f" opacity=".12"/>
+          <g id="cup">
+            <g id="cupBody" mask="url(#biteMask)">
+              <path d="M44 206 Q44 140 150 137 Q256 140 256 206 Z" fill="#f7cf8f" stroke="#dba765" stroke-width="4"/>
+              <g id="liner">
+                <path id="linerShape" d="M38 200 L262 200 L236 342 Q150 352 64 342 Z" stroke-width="4" stroke-linejoin="round"/>
+                <g id="linerStripes" stroke-width="5" stroke-linecap="round" opacity=".5"></g>
+                <rect id="linerRim" x="32" y="193" width="236" height="16" rx="8"/>
+              </g>
+              <g id="frost" style="display:none">
+                <path class="tier" d="M25 212 Q8 176 45 160 Q60 124 150 127 Q240 124 255 160 Q292 176 275 212 Q150 234 25 212 Z"/>
+                <path class="hl" d="M48 192 Q80 166 122 165"/>
+                <path class="tier" d="M55 166 Q44 130 80 118 Q100 84 150 87 Q200 84 220 118 Q256 130 245 166 Q150 184 55 166 Z"/>
+                <path class="hl" d="M78 148 Q98 122 134 120"/>
+                <path class="tier" d="M90 121 Q84 90 115 80 Q130 56 150 36 Q170 56 185 80 Q216 90 210 121 Q150 136 90 121 Z"/>
+                <path class="hl" d="M110 104 Q118 86 138 76"/>
+              </g>
+              <g id="toppings"></g>
+            </g>
+            <rect id="cupHit" x="10" y="20" width="280" height="335" fill="#fff" fill-opacity="0" pointer-events="all" style="cursor:pointer"/>
+          </g>
+        </g>
+
+        <g id="effects"></g>
+      </svg>
+    </div>
+
+    <div id="tools">
+      <div class="row" id="frostRow"></div>
+      <div class="row" id="topRow"></div>
+      <button class="big" id="feedBtn">🐰 Feed Bunny!</button>
+      <button class="big" id="againBtn">🧁 Bake another!</button>
+    </div>
+  </main>
+</div>
+<div id="fx"></div>
+
+<script>
+(() => {
+  const NS = 'http://www.w3.org/2000/svg';
+  const $ = id => document.getElementById(id);
+  const stage = $('stage'), bunnyPos = $('bunnyPos'), bunny = $('bunny'), cupPos = $('cupPos'), cup = $('cup');
+  const cupBody = $('cupBody'), frost = $('frost'), toppings = $('toppings'), bites = $('bites'), effects = $('effects');
+  const tools = $('tools'), feedBtn = $('feedBtn'), againBtn = $('againBtn');
+
+  const FROSTINGS = [
+    { c: '#ff9ec7', d: '#e5679e', h: '#ffd6e8' },
+    { c: '#fff3d6', d: '#e0bf86', h: '#ffffff' },
+    { c: '#9a6440', d: '#66402a', h: '#c08a64' },
+    { c: '#a6ecd0', d: '#4fbf94', h: '#dcfbee' },
+    { c: '#c3b6ff', d: '#8a78e6', h: '#ebe6ff' },
+    { c: '#fff09a', d: '#d8bb3c', h: '#fffbdc' },
+  ];
+  const LINERS = [
+    { c: '#8fdcff', d: '#3fb0e8' }, { c: '#ffb8d4', d: '#f0679e' }, { c: '#bff0a8', d: '#6cc650' },
+    { c: '#ffd88a', d: '#f0a830' }, { c: '#d8c2ff', d: '#9a76f0' },
+  ];
+  const SPRINKLES = ['#ff6b8b', '#ffb84d', '#ffe14d', '#6fdc8c', '#5ec8ff', '#a98bff', '#ffffff'];
+  const TOPPINGS = [
+    { id: 'sprinkles', icon: null },
+    { id: 'strawberry', icon: '🍓' },
+    { id: 'heart', icon: '💗' },
+    { id: 'star', icon: '⭐' },
+  ];
+
+  let tool = 'sprinkles', frosted = false, toppingCount = 0, busy = false, linerIdx = 0;
+  let eaten = 0;
+  try { eaten = parseInt(localStorage.getItem('bunnyBakeryEaten'), 10) || 0; } catch (e) {}
+
+  // ---------- helpers ----------
+  function el(tag, attrs, parent) {
+    const e = document.createElementNS(NS, tag);
+    for (const k in attrs) e.setAttribute(k, attrs[k]);
+    if (parent) parent.appendChild(e);
+    return e;
+  }
+  const sleep = ms => new Promise(r => setTimeout(r, ms));
+  const rand = (a, b) => a + Math.random() * (b - a);
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+  function restartClass(node, cls) {
+    node.classList.remove(cls);
+    void node.getBoundingClientRect();
+    node.classList.add(cls);
+  }
+  function tween(ms, fn) {
+    return new Promise(res => {
+      const t0 = performance.now();
+      const step = now => {
+        const t = Math.min(1, (now - t0) / ms);
+        fn(t < .5 ? 2 * t * t : 1 - Math.pow(-2 * t + 2, 2) / 2);
+        if (t < 1) requestAnimationFrame(step); else res();
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  const setPos = (node, p) => node.setAttribute('transform', `translate(${p.x} ${p.y}) scale(${p.s})`);
+
+  // ---------- sound ----------
+  let ac = null, muted = false;
+  function audio() {
+    if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { return null; } }
+    if (ac.state === 'suspended') ac.resume();
+    return ac;
+  }
+  function tone(f1, f2, dur, type = 'sine', vol = .12, delay = 0) {
+    if (muted) return;
+    const a = audio(); if (!a) return;
+    const t = a.currentTime + delay;
+    const o = a.createOscillator(), g = a.createGain();
+    o.type = type;
+    o.frequency.setValueAtTime(f1, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(.0001, t);
+    g.gain.exponentialRampToValueAtTime(vol, t + .015);
+    g.gain.exponentialRampToValueAtTime(.0001, t + dur);
+    o.connect(g).connect(a.destination);
+    o.start(t); o.stop(t + dur + .05);
+  }
+  const sndPop = () => tone(rand(600, 750), rand(950, 1150), .14, 'sine', .14);
+  const sndSprinkle = () => { for (let i = 0; i < 4; i++) tone(rand(1400, 2200), null, .07, 'sine', .05, i * .04); };
+  const sndSquish = () => { tone(420, 200, .28, 'triangle', .14); tone(300, 520, .2, 'sine', .06, .12); };
+  const sndChomp = () => { tone(220, 90, .12, 'square', .045); tone(160, 80, .1, 'triangle', .1, .05); };
+  const sndYum = () => { [784, 988, 1175].forEach((f, i) => tone(f, null, .25, 'sine', .1, i * .1)); };
+  const sndBoing = () => tone(300, 900, .3, 'sine', .1);
+  function playDance() {
+    const mel = [523, 659, 784, 659, 698, 880, 784, 659, 523, 659, 784, 1047, 988, 784, 880, 1047];
+    mel.forEach((f, i) => tone(f, null, .18, 'triangle', .09, i * .2));
+    for (let i = 0; i < 8; i++) tone(i % 2 ? 196 : 262, null, .2, 'sine', .1, i * .4);
+  }
+  document.addEventListener('pointerdown', () => audio(), { once: true });
+  $('sound').addEventListener('click', () => {
+    muted = !muted;
+    $('sound').textContent = muted ? '🔈' : '🔊';
+  });
+
+  // ---------- garland ----------
+  const flagColors = ['#ff9ec7', '#ffd88a', '#8fdcff', '#bff0a8', '#d8c2ff'];
+  for (let i = 0; i < 24; i++) {
+    const s = document.createElement('span');
+    s.style.background = flagColors[i % flagColors.length];
+    $('garland').appendChild(s);
+  }
+
+  // ---------- layout ----------
+  let B = { x: 110, y: 110, s: 1.1 }, C = { x: 560, y: 150, s: 1.3 };
+  function layout() {
+    const r = $('stageWrap').getBoundingClientRect();
+    if (r.width >= r.height * 1.2) {
+      stage.setAttribute('viewBox', '0 0 1000 640');
+      B = { x: 110, y: 120, s: 1.1 }; C = { x: 560, y: 150, s: 1.3 };
+    } else {
+      stage.setAttribute('viewBox', '0 0 600 880');
+      B = { x: 172, y: 50, s: .85 }; C = { x: 120, y: 440, s: 1.2 };
+    }
+    setPos(bunnyPos, B);
+    if (!busy) setPos(cupPos, C);
+  }
+  new ResizeObserver(layout).observe($('stageWrap'));
+  layout();
+
+  // ---------- cupcake drawing ----------
+  function setLiner(i) {
+    const L = LINERS[i % LINERS.length];
+    $('linerShape').setAttribute('fill', L.c);
+    $('linerShape').setAttribute('stroke', L.d);
+    $('linerRim').setAttribute('fill', L.d);
+    const st = $('linerStripes');
+    st.innerHTML = '';
+    for (let k = 1; k < 8; k++) {
+      el('line', { x1: 38 + k * 28, y1: 210, x2: 64 + k * 21.5, y2: 340, stroke: L.d }, st);
+    }
+  }
+  function setFrost(i) {
+    const F = FROSTINGS[i];
+    frost.querySelectorAll('.tier').forEach(p => {
+      p.setAttribute('fill', F.c); p.setAttribute('stroke', F.d); p.setAttribute('stroke-width', '4');
+    });
+    frost.querySelectorAll('.hl').forEach(p => {
+      p.setAttribute('fill', 'none'); p.setAttribute('stroke', F.h);
+      p.setAttribute('stroke-width', '7'); p.setAttribute('stroke-linecap', 'round'); p.setAttribute('opacity', '.85');
+    });
+    if (!frosted) {
+      frosted = true;
+      frost.style.display = '';
+      restartClass(frost, 'squeeze');
+    } else {
+      frost.classList.remove('squeeze');
+      restartClass(frost, 'jiggle');
+    }
+    sndSquish();
+    updateFeed();
+  }
+
+  // ---------- toppings ----------
+  function region() {
+    return frosted ? { cx: 150, cy: 150, rx: 110, ry: 70 } : { cx: 150, cy: 182, rx: 96, ry: 21 };
+  }
+  function clampIn(x, y, r, k = .95) {
+    const dx = (x - r.cx) / r.rx, dy = (y - r.cy) / r.ry, d = Math.hypot(dx, dy);
+    if (d <= k) return { x, y };
+    return { x: r.cx + dx / d * k * r.rx, y: r.cy + dy / d * k * r.ry };
+  }
+  function randomIn(r) {
+    const a = rand(0, Math.PI * 2), d = Math.sqrt(Math.random()) * .9;
+    return { x: r.cx + Math.cos(a) * d * r.rx, y: r.cy + Math.sin(a) * d * r.ry };
+  }
+  function holder(x, y, rot, scale) {
+    const g = el('g', { transform: `translate(${x.toFixed(1)} ${y.toFixed(1)}) rotate(${rot.toFixed(0)}) scale(${scale})` }, toppings);
+    return el('g', { class: 'pop' }, g);
+  }
+  function addSprinkles(x, y) {
+    const r = region();
+    for (let i = 0; i < 9; i++) {
+      const p = clampIn(x + rand(-38, 38), y + rand(-26, 26), r, .98);
+      const g = holder(p.x, p.y, rand(0, 180), 1);
+      g.style.animationDelay = (i * 25) + 'ms';
+      el('rect', { x: -8, y: -2.8, width: 16, height: 5.6, rx: 2.8, fill: pick(SPRINKLES), stroke: 'rgba(0,0,0,.08)', 'stroke-width': 1 }, g);
+    }
+    sndSprinkle();
+  }
+  function addStrawberry(x, y) {
+    const g = holder(x, y, rand(-20, 20), 1.45);
+    el('path', { d: 'M0 20 C-8 16 -18 4 -17 -4 C-16 -12 -8 -14 0 -11 C8 -14 16 -12 17 -4 C18 4 8 16 0 20 Z', fill: '#ff4d6d', stroke: '#d93356', 'stroke-width': 1.5 }, g);
+    [[-8, -3], [0, -4], [8, -3], [-5, 5], [5, 5], [0, 12], [-11, 3], [11, 3]].forEach(([sx, sy]) =>
+      el('ellipse', { cx: sx, cy: sy, rx: 1.3, ry: 2, fill: '#ffe58a' }, g));
+    el('ellipse', { cx: -9, cy: -5, rx: 2.5, ry: 4.5, fill: '#fff', opacity: .5, transform: 'rotate(20 -9 -5)' }, g);
+    el('path', { d: 'M-12 -12 Q-6 -8 0 -11 Q6 -8 12 -12 Q8 -18 3 -15 Q0 -22 -3 -15 Q-8 -18 -12 -12 Z', fill: '#4cc46a', stroke: '#2f9a4a', 'stroke-width': 1 }, g);
+    sndPop();
+  }
+  function addHeart(x, y) {
+    const g = holder(x, y, rand(-20, 20), 1.15);
+    el('path', { d: 'M0 14 C-20 2 -16 -16 0 -7 C16 -16 20 2 0 14 Z', fill: pick(['#ff6fae', '#ff8fb5', '#ff5c8a']), stroke: '#e04c90', 'stroke-width': 1.5 }, g);
+    el('circle', { cx: -7, cy: -5, r: 3, fill: '#fff', opacity: .65 }, g);
+    sndPop();
+  }
+  function addStar(x, y) {
+    const g = holder(x, y, rand(-25, 25), 1.05);
+    const pts = [];
+    for (let i = 0; i < 10; i++) {
+      const a = -Math.PI / 2 + i * Math.PI / 5, rr = i % 2 ? 7 : 16;
+      pts.push((Math.cos(a) * rr).toFixed(1) + ',' + (Math.sin(a) * rr).toFixed(1));
+    }
+    el('polygon', { points: pts.join(' '), fill: '#ffd84d', stroke: '#eab308', 'stroke-width': 2.5, 'stroke-linejoin': 'round' }, g);
+    el('circle', { cx: -4, cy: -4, r: 2.5, fill: '#fff', opacity: .7 }, g);
+    sndPop();
+  }
+  const ADDERS = { sprinkles: addSprinkles, strawberry: addStrawberry, heart: addHeart, star: addStar };
+  function addTopping(x, y) {
+    ADDERS[tool](x, y);
+    toppingCount++;
+    while (toppings.childNodes.length > 220) toppings.removeChild(toppings.firstChild);
+    hintStep(2);
+    updateFeed();
+  }
+
+  // ---------- tool buttons ----------
+  function swirlIcon(F) {
+    return `<svg viewBox="0 0 60 60"><path d="M8 46 Q4 36 14 33 Q16 24 30 24 Q44 24 46 33 Q56 36 52 46 Q30 52 8 46Z" fill="${F.c}" stroke="${F.d}" stroke-width="3"/>
+      <path d="M15 34 Q13 25 22 22 Q24 14 30 8 Q36 14 38 22 Q47 25 45 34 Q30 39 15 34Z" fill="${F.c}" stroke="${F.d}" stroke-width="3"/>
+      <path d="M22 20 Q25 15 29 13" stroke="${F.h}" stroke-width="3.5" fill="none" stroke-linecap="round"/></svg>`;
+  }
+  function sprinkleIcon() {
+    let s = '<svg viewBox="0 0 60 60">';
+    [[14, 16, 30], [34, 12, -40], [46, 26, 70], [22, 32, -20], [40, 42, 20], [14, 46, 60], [30, 24, 100]].forEach(([x, y, r], i) => {
+      s += `<rect x="${x - 7}" y="${y - 3}" width="14" height="6" rx="3" fill="${SPRINKLES[i % 6]}" transform="rotate(${r} ${x} ${y})"/>`;
+    });
+    return s + '</svg>';
+  }
+  FROSTINGS.forEach((F, i) => {
+    const b = document.createElement('button');
+    b.className = 'tool';
+    b.setAttribute('aria-label', 'Frosting');
+    b.innerHTML = swirlIcon(F);
+    b.addEventListener('click', () => {
+      if (busy) return;
+      document.querySelectorAll('#frostRow .tool').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      setFrost(i);
+      hintStep(1);
+    });
+    $('frostRow').appendChild(b);
+  });
+  TOPPINGS.forEach(T => {
+    const b = document.createElement('button');
+    b.className = 'tool topping' + (T.id === tool ? ' on' : '');
+    b.setAttribute('aria-label', T.id);
+    b.innerHTML = T.icon || sprinkleIcon();
+    b.addEventListener('click', () => {
+      if (busy) return;
+      tool = T.id;
+      document.querySelectorAll('#topRow .tool').forEach(x => x.classList.remove('on'));
+      b.classList.add('on');
+      const p = randomIn(region());
+      addTopping(p.x, p.y);
+    });
+    $('topRow').appendChild(b);
+  });
+
+  // tapping the cupcake places the chosen topping right there
+  $('cupHit').addEventListener('pointerdown', e => {
+    if (busy) return;
+    e.preventDefault();
+    const pt = stage.createSVGPoint();
+    pt.x = e.clientX; pt.y = e.clientY;
+    const p = pt.matrixTransform(cupBody.getScreenCTM().inverse());
+    if (p.y > 222) {
+      // tapped the paper cup: new paper color
+      linerIdx++;
+      setLiner(linerIdx);
+      restartClass(cup, 'wiggle');
+      sndBoing();
+      return;
+    }
+    const q = clampIn(p.x, p.y, region());
+    addTopping(q.x, q.y);
+  });
+
+  // tapping the bunny makes it giggle and hop
+  bunny.addEventListener('pointerdown', () => {
+    if (busy) return;
+    bunny.className.baseVal = 'hop';
+    sndBoing();
+    heartsAt(B.x + B.s * 150, B.y + B.s * 100, 2);
+    setTimeout(() => { if (!busy) bunny.className.baseVal = 'idle'; }, 520);
+  });
+
+  // ---------- hints ----------
+  let hint = 0;
+  function hintStep(n) {
+    if (n <= hint) return;
+    hint = n;
+    $('frostRow').classList.toggle('hint', hint === 0);
+    $('topRow').classList.toggle('hint', hint === 1);
+  }
+  $('frostRow').classList.add('hint');
+  function updateFeed() {
+    feedBtn.classList.toggle('ready', !busy && (frosted || toppingCount > 0));
+  }
+
+  // ---------- effects ----------
+  function heartsAt(x, y, n = 6, chars = ['💗', '💖', '💕', '✨']) {
+    for (let i = 0; i < n; i++) {
+      const g = el('g', { transform: `translate(${(x + rand(-70, 70)).toFixed(0)} ${(y + rand(-20, 30)).toFixed(0)})` }, effects);
+      const t = el('text', { class: 'floaty', 'font-size': rand(30, 48).toFixed(0), 'text-anchor': 'middle' }, g);
+      t.textContent = pick(chars);
+      t.style.animationDelay = (i * 90) + 'ms';
+      setTimeout(() => g.remove(), 2200 + i * 90);
+    }
+  }
+  function crumbsAt(x, y) {
+    const F = frosted ? FROSTINGS[[...document.querySelectorAll('#frostRow .tool')].findIndex(b => b.classList.contains('on'))] : null;
+    for (let i = 0; i < 7; i++) {
+      const c = el('circle', {
+        class: 'crumb', cx: (x + rand(-30, 30)).toFixed(0), cy: (y + rand(-10, 10)).toFixed(0), r: rand(3, 7).toFixed(1),
+        fill: Math.random() < .5 && F ? F.c : '#f7cf8f', stroke: 'rgba(0,0,0,.08)',
+      }, effects);
+      c.style.setProperty('--dx', rand(-60, 60).toFixed(0) + 'px');
+      setTimeout(() => c.remove(), 1000);
+    }
+  }
+  function confetti() {
+    const fx = $('fx');
+    const colors = ['#ff9ec7', '#ffd84d', '#8fdcff', '#a6ecd0', '#c3b6ff', '#ff6b8b'];
+    for (let i = 0; i < 70; i++) {
+      const d = document.createElement('div');
+      d.className = 'confetti';
+      d.style.left = rand(0, 100) + 'vw';
+      d.style.background = pick(colors);
+      d.style.setProperty('--dx', rand(-80, 80).toFixed(0) + 'px');
+      d.style.animationDuration = rand(2.2, 3.8) + 's';
+      d.style.animationDelay = rand(0, 1.2) + 's';
+      if (Math.random() < .4) d.style.borderRadius = '50%';
+      fx.appendChild(d);
+      setTimeout(() => d.remove(), 5200);
+    }
+  }
+  function showCount(bump) {
+    $('count').textContent = '🧁 ' + eaten;
+    if (bump) restartClass($('count'), 'bump');
+  }
+  showCount(false);
+
+  // ---------- feeding ----------
+  function mouth(open) {
+    $('mouthOpen').style.display = open ? '' : 'none';
+    $('mouthSmile').style.display = open ? 'none' : '';
+  }
+  async function feed() {
+    if (busy) return;
+    busy = true;
+    hintStep(3);
+    updateFeed();
+    document.body.classList.add('busy');
+    audio();
+
+    bunny.className.baseVal = 'hop';
+    sndBoing();
+    await sleep(450);
+
+    // cupcake floats to the bunny's paws
+    $('cupShadow').style.opacity = 0;
+    const from = { ...C };
+    const s2 = B.s * .55;
+    const mx = B.x + B.s * 150, my = B.y + B.s * 246;
+    const to = { x: mx - s2 * 150, y: my - s2 * 70, s: s2 };
+    await tween(900, t => setPos(cupPos, {
+      x: from.x + (to.x - from.x) * t,
+      y: from.y + (to.y - from.y) * t - Math.sin(t * Math.PI) * 60,
+      s: from.s + (to.s - from.s) * t,
+    }));
+
+    // nom nom nom
+    bunny.className.baseVal = 'chew';
+    const biteSpots = [[150, 40, 70], [95, 120, 80], [205, 140, 80], [150, 210, 105], [150, 200, 400]];
+    for (let i = 0; i < biteSpots.length; i++) {
+      mouth(true);
+      await sleep(170);
+      const [bx, by, br] = biteSpots[i];
+      el('circle', { cx: bx, cy: by, r: br, fill: '#000' }, bites);
+      sndChomp();
+      crumbsAt(mx, my + B.s * 20);
+      mouth(false);
+      await sleep(i === biteSpots.length - 1 ? 200 : 330);
+    }
+
+    // yum!
+    bunny.className.baseVal = 'idle';
+    $('eyesOpen').style.display = 'none';
+    $('eyesHappy').style.display = '';
+    $('bubble').style.display = '';
+    restartClass($('bubble').firstElementChild, 'pop');
+    sndYum();
+    heartsAt(mx, B.y + B.s * 120, 7);
+    eaten++;
+    try { localStorage.setItem('bunnyBakeryEaten', eaten); } catch (e) {}
+    showCount(true);
+    await sleep(1100);
+
+    // happy dance
+    $('bubble').style.display = 'none';
+    bunny.className.baseVal = 'dance';
+    playDance();
+    confetti();
+    const noteTimer = setInterval(() => heartsAt(mx, B.y + B.s * 60, 1, ['🎵', '🎶', '💗', '⭐', '🌸']), 300);
+    await sleep(3400);
+    clearInterval(noteTimer);
+    bunny.className.baseVal = 'idle';
+    $('eyesHappy').style.display = 'none';
+    $('eyesOpen').style.display = '';
+
+    tools.classList.add('done');
+  }
+  feedBtn.addEventListener('click', feed);
+
+  function newCupcake() {
+    toppings.innerHTML = '';
+    bites.innerHTML = '';
+    frost.style.display = 'none';
+    frost.classList.remove('squeeze', 'jiggle');
+    frosted = false;
+    toppingCount = 0;
+    document.querySelectorAll('#frostRow .tool').forEach(x => x.classList.remove('on'));
+    linerIdx = Math.floor(Math.random() * LINERS.length);
+    setLiner(linerIdx);
+    setPos(cupPos, C);
+    $('cupShadow').style.opacity = '';
+    restartClass(cup, 'appear');
+  }
+  againBtn.addEventListener('click', () => {
+    newCupcake();
+    sndPop();
+    tools.classList.remove('done');
+    document.body.classList.remove('busy');
+    busy = false;
+    updateFeed();
+  });
+
+  setLiner(0);
+  restartClass(cup, 'appear');
+})();
+</script>
+</body>
+</html>
