@@ -73,9 +73,8 @@ const INJECT = `<script>window.__LIVE__ = true;
 })();</script><script src="/__chat.js" defer></script>`;
 const inject = html => { const i = html.search(/<head[^>]*>/i); return i < 0 ? INJECT + html : html.replace(/<head[^>]*>/i, m => m + INJECT); };
 
-const hostPage = fs.readFileSync(path.join(__dirname, 'host.html'), 'utf8');
-const hubPage = fs.readFileSync(path.join(__dirname, 'hub.html'), 'utf8');
-const chatJs = fs.readFileSync(path.join(__dirname, 'chat.js'), 'utf8');
+// Read fresh on every request, so changes to these pages don't need a server restart
+const page = name => fs.readFileSync(path.join(__dirname, name), 'utf8');
 
 function sendFile(res, file) {
   fs.readFile(file, (err, data) => {
@@ -94,11 +93,11 @@ const server = http.createServer((req, res) => {
     const r = checkPassword(url.searchParams.get('pw'), req);
     res.writeHead(r === 'ok' ? 204 : r === 'locked' ? 429 : 403, { 'Cache-Control': 'no-store' }); return res.end();
   }
-  if (p === '/host') { res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' }); return res.end(hostPage); }
-  if (p === '/__chat.js') { res.writeHead(200, { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' }); return res.end(chatJs); }
-  if (p === '/' || p === '/hub') { res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' }); return res.end(inject(hubPage)); }
+  if (p === '/host') { res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' }); return res.end(page('host.html')); }
+  if (p === '/__chat.js') { res.writeHead(200, { 'Content-Type': TYPES['.js'], 'Cache-Control': 'no-store' }); return res.end(page('chat.js')); }
+  if (p === '/' || p === '/hub') { res.writeHead(200, { 'Content-Type': TYPES['.html'], 'Cache-Control': 'no-store' }); return res.end(inject(page('hub.html'))); }
   if (p === '/games.json') {
-    const list = loadGames().map(({ slug, title, blurb, color }) => ({ slug, title, blurb, color }));
+    const list = loadGames().map(({ slug, title, blurb, color }) => ({ slug, title, blurb, color, thumb: thumbUrl(slug) }));
     res.writeHead(200, { 'Content-Type': TYPES['.json'], 'Cache-Control': 'no-store' }); return res.end(JSON.stringify(list));
   }
   if (p === '/building') {
@@ -174,10 +173,10 @@ function reloadGame(slug, why) {
 fs.watch(ROOT, { recursive: true }, (ev, name) => {
   if (!name) return;
   const rel = name.replace(/\\/g, '/');
-  if (/(^|\/)(\.git|node_modules)(\/|$)/.test(rel) || /^server\//.test(rel)) return;
+  if (/(^|\/)(\.git|node_modules)(\/|$)/.test(rel) || /^(server|thumbs)\//.test(rel)) return;
   if (rel === 'games.json') { // the hub (and the chat) refresh their list of games
     clearTimeout(gamesTimer);
-    gamesTimer = setTimeout(() => { for (const ws of live.clients) send(ws, 'games'); hostStatus(); }, 300);
+    gamesTimer = setTimeout(() => { for (const ws of live.clients) send(ws, 'games'); hostStatus(); snapMissing(); }, 300);
     return;
   }
   if (!/\.(html|js|css|png|jpg|gif|webp|svg|json|mp3|wav|ogg)$/i.test(rel)) return;
@@ -293,6 +292,7 @@ function start(job) {
 }
 function finish(job) {
   running.delete(job.key);
+  if (job.mode === 'change') snap(job.slug); else snapMissing();
   if (pendingReloads.delete(job.key)) reloadGame(job.key, 'after the change');
   if (job.mode === 'new') for (const ws of live.clients) send(ws, 'games');
   runNext();
@@ -313,12 +313,56 @@ host.on('connection', ws => {
 });
 setInterval(hostStatus, 5000);
 
+/* ---------- Screenshots of each game for the games page ---------- */
+// Taken with headless Chrome (or Edge) on this computer: when the server starts, when a game is made,
+// and after a game is changed. Saved as thumbs/<slug>.png.
+const THUMBS = path.join(ROOT, 'thumbs');
+function findBrowser() {
+  if (process.env.THUMB_BROWSER) return process.env.THUMB_BROWSER;
+  const pf = process.env.ProgramFiles || 'C:\\Program Files', pf86 = process.env['ProgramFiles(x86)'] || 'C:\\Program Files (x86)', la = process.env.LOCALAPPDATA || '';
+  const tries = [path.join(pf, 'Google', 'Chrome', 'Application', 'chrome.exe'), path.join(pf86, 'Google', 'Chrome', 'Application', 'chrome.exe'),
+    path.join(la, 'Google', 'Chrome', 'Application', 'chrome.exe'), path.join(pf86, 'Microsoft', 'Edge', 'Application', 'msedge.exe'),
+    path.join(pf, 'Microsoft', 'Edge', 'Application', 'msedge.exe'), '/usr/bin/google-chrome', '/usr/bin/chromium',
+    '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'];
+  return tries.find(p => { try { return fs.existsSync(p); } catch (e) { return false; } }) || null;
+}
+const BROWSER = findBrowser();
+const thumbFile = slug => path.join(THUMBS, slug + '.png');
+function thumbUrl(slug) { try { return `/thumbs/${slug}.png?v=${Math.round(fs.statSync(thumbFile(slug)).mtimeMs)}`; } catch (e) { return null; } }
+const snapQueue = [];
+let snapping = false;
+function snap(slug) { if (BROWSER && !snapQueue.includes(slug)) { snapQueue.push(slug); nextSnap(); } }
+function snapMissing() { for (const g of loadGames()) if (!fs.existsSync(thumbFile(g.slug))) snap(g.slug); }
+function nextSnap() {
+  if (snapping || !snapQueue.length) return;
+  const slug = snapQueue.shift(); snapping = true;
+  fs.mkdirSync(THUMBS, { recursive: true });
+  const tmp = path.join(THUMBS, slug + '.tmp.png'), started = Date.now();
+  try { fs.unlinkSync(tmp); } catch (e) {}
+  const args = ['--headless=new', '--disable-gpu', '--hide-scrollbars', '--mute-audio', '--no-first-run', '--no-default-browser-check',
+    '--user-data-dir=' + path.join(require('os').tmpdir(), 'lia-thumbs-' + slug), '--window-size=1200,750',
+    '--screenshot=' + tmp, `http://localhost:${PORT}/games/${slug}/?thumb=1`];
+  let child; try { child = spawn(BROWSER, args, { windowsHide: true, stdio: 'ignore' }); } catch (e) { snapping = false; return nextSnap(); }
+  // Chrome writes the picture before it exits; Edge can hand the work to another process, so also wait for the file
+  const done = () => {
+    if (fs.existsSync(tmp) && fs.statSync(tmp).size > 1000) {
+      try { fs.renameSync(tmp, thumbFile(slug)); console.log(`[thumb] ${slug}`); for (const ws of live.clients) send(ws, 'games'); } catch (e) {}
+    } else if (Date.now() - started < 25000) return setTimeout(done, 1000);
+    snapping = false; nextSnap();
+  };
+  child.on('error', () => { snapping = false; nextSnap(); });
+  child.on('exit', () => setTimeout(done, 300));
+  setTimeout(() => { try { child.kill(); } catch (e) {} }, 30000);
+}
+
 server.listen(PORT, () => {
+  snapMissing();
   console.log(`\nLia's games are running.`);
   console.log(`  Games: http://localhost:${PORT}/`);
   for (const g of loadGames()) console.log(`         http://localhost:${PORT}/games/${g.slug}/   ${g.title}`);
   console.log(`  Chat:  tap the sparkle button on any page, or open http://localhost:${PORT}/host`);
   if (!process.env.HOST_PASSWORD && !fs.existsSync(path.join(__dirname, 'password.txt')))
     console.log(`  Chat password (made up for this run; put one in server/password.txt to keep it): ${PASSWORD}`);
-  console.log(`  Claude Code: ${CLAUDE}\n`);
+  console.log(`  Claude Code: ${CLAUDE}`);
+  console.log(`  Screenshots: ${BROWSER || 'no Chrome or Edge found, so the games page shows plain cards'}\n`);
 });

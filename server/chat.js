@@ -3,6 +3,7 @@
 // which is then remembered in this browser. A second button goes back to the games page.
 (function () {
   'use strict';
+  if (/[?&]thumb=1/.test(location.search)) return; // the server is taking a screenshot for the games page
   var STORE = 'hhpd-host-pw', pw = null;
   try { localStorage.removeItem('hhpd-host-key'); pw = localStorage.getItem(STORE); } catch (e) {}
   var m = /^\/games\/([a-z0-9-]+)\//.exec(location.pathname), game = m ? m[1] : null, onHub = !game;

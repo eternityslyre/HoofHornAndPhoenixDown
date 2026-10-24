@@ -19,6 +19,8 @@
   .card:hover, .card:focus-visible { transform: translateY(-4px); outline: none; }
   .art { height: 140px; position: relative; display: grid; place-items: center; }
   .art svg { width: 84px; height: 84px; filter: drop-shadow(0 4px 6px rgba(0,0,0,.2)); }
+  .art.shot { height: auto; aspect-ratio: 16 / 10; background: #e9ddf5; }
+  .art img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; }
   .body { padding: 12px 16px 16px; display: flex; flex-direction: column; gap: 6px; flex: 1; }
   .card h2 { font-family: var(--display); font-size: 1.45rem; margin: 0; line-height: 1.1; }
   .card p { margin: 0; color: #5a4a6a; flex: 1; }
@@ -51,7 +53,7 @@ async function render() {
   grid.innerHTML = games.filter(g => g && g.slug).map(g => {
     const c = safeColor(g.color);
     return `<a class="card" href="/games/${encodeURIComponent(g.slug)}/">
-      <div class="art" style="background:linear-gradient(135deg, ${c}, ${c}99)">${STAR}</div>
+      ${g.thumb ? `<div class="art shot"><img src="${esc(g.thumb)}" alt="" loading="lazy"></div>` : `<div class="art" style="background:linear-gradient(135deg, ${c}, ${c}99)">${STAR}</div>`}
       <div class="body"><h2>${esc(g.title || g.slug)}</h2><p>${esc(g.blurb || '')}</p><span class="play">Play!</span></div></a>`;
   }).join('') + Array.from({ length: building }, () => `<div class="card building" aria-label="A new game is being made">
       <div class="art" style="background:linear-gradient(135deg, #c9b8e8, #f3d6ff)">${STAR}</div>
