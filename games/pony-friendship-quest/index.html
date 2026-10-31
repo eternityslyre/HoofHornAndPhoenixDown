@@ -1,0 +1,1065 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#ffd6ec">
+<title>Pony Friendship Quest</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Andika:wght@400;700&family=Grandstander:wght@600;800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --ink:#5a3478; --ink2:#8a5fae; --pink:#ff6fae; --pink2:#ffb3d6; --cream:#fffaf2;
+  --gold:#ffcf3f; --shadow:rgba(90,52,120,.18);
+  --btn:clamp(48px, 8.5vmin, 70px);
+}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;overscroll-behavior:none;touch-action:manipulation;
+  -webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent;-webkit-touch-callout:none}
+body{font-family:Andika,"Trebuchet MS",sans-serif;color:var(--ink);
+  background:linear-gradient(180deg,#bfe7ff 0%,#dff1ff 40%,#ffe6f4 75%,#fff0f7 100%)}
+button{font-family:inherit;color:inherit;cursor:pointer;-webkit-appearance:none;appearance:none}
+svg{display:block}
+#app{position:fixed;inset:0;display:flex;flex-direction:column;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
+
+/* ---------- background ---------- */
+#sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.cloud{position:absolute;background:#fff;border-radius:999px;opacity:.85;filter:drop-shadow(0 4px 0 rgba(160,190,230,.25));animation:drift linear infinite}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:55%;height:160%;left:15%;bottom:20%}
+.cloud::after{width:40%;height:130%;right:12%;bottom:15%}
+@keyframes drift{from{transform:translateX(-30vw)}to{transform:translateX(130vw)}}
+#hills{position:absolute;left:0;right:0;bottom:0;width:100%;height:30vh}
+
+/* ---------- top bar ---------- */
+#topbar{position:relative;z-index:5;display:flex;align-items:center;gap:clamp(6px,1.4vmin,12px);padding:clamp(6px,1.2vmin,12px) clamp(8px,2vmin,18px)}
+#topbar .spacer{flex:1}
+.iconbtn{width:var(--btn);height:var(--btn);border-radius:50%;border:none;background:#fff;
+  box-shadow:0 5px 0 var(--shadow);display:grid;place-items:center;position:relative;flex:none;transition:transform .12s}
+.iconbtn svg{width:58%;height:58%}
+.iconbtn:active,.hearbtn:active,.bigbtn:active{transform:translateY(3px) scale(.97)}
+.iconbtn.off{background:#eee8f2}
+.iconbtn.off::after{content:"";position:absolute;width:72%;height:6px;border-radius:3px;background:#ff5a7a;transform:rotate(-45deg);box-shadow:0 0 0 2px #fff}
+.hearbtn{height:var(--btn);border:none;border-radius:999px;background:linear-gradient(180deg,#ffe57a,#ffc93f);
+  box-shadow:0 5px 0 #e0a21a;display:flex;align-items:center;gap:8px;padding:0 clamp(12px,2.4vmin,22px) 0 clamp(8px,1.6vmin,14px);
+  font-family:Grandstander,Andika,sans-serif;font-weight:800;font-size:clamp(15px,2.6vmin,24px);color:#7a4300;transition:transform .12s}
+.hearbtn svg{width:calc(var(--btn) * .6);height:calc(var(--btn) * .6)}
+.hearbtn.talking svg .wave{animation:wave .6s ease-in-out infinite alternate}
+@keyframes wave{from{opacity:.25}to{opacity:1}}
+@media (max-width:520px){ .hearbtn span{display:none} .hearbtn{padding:0 10px} }
+
+/* ---------- screens ---------- */
+#main{position:relative;z-index:2;flex:1;min-height:0}
+.screen{position:absolute;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;
+  padding:4px clamp(10px,2.5vmin,24px) clamp(10px,2.5vmin,24px);gap:clamp(6px,1.6vmin,16px)}
+.screen.active{display:flex;animation:fadeIn .35s ease}
+@keyframes fadeIn{from{opacity:0;transform:scale(.98)}to{opacity:1;transform:none}}
+
+h1,h2,.title-font{font-family:Grandstander,Andika,sans-serif;font-weight:800;margin:0}
+.bigbtn{border:none;border-radius:999px;padding:clamp(12px,2.2vmin,20px) clamp(26px,5vmin,48px);
+  font-family:Grandstander,Andika,sans-serif;font-weight:800;font-size:clamp(22px,4.2vmin,40px);color:#fff;
+  background:linear-gradient(180deg,#ff8cc4,#ff5aa0);box-shadow:0 7px 0 #d93a80,0 10px 24px rgba(255,90,160,.35);
+  display:inline-flex;align-items:center;gap:12px;transition:transform .12s;letter-spacing:.5px}
+.bigbtn.purple{background:linear-gradient(180deg,#b896ff,#8f63f0);box-shadow:0 7px 0 #6a3fcb,0 10px 24px rgba(143,99,240,.3)}
+.bigbtn.blue{background:linear-gradient(180deg,#7fcbff,#3fa2f0);box-shadow:0 7px 0 #2178c4,0 10px 24px rgba(63,162,240,.3)}
+.bigbtn.green{background:linear-gradient(180deg,#7fe3a6,#38c172);box-shadow:0 7px 0 #22955a,0 10px 24px rgba(56,193,114,.3)}
+.bigbtn svg{width:1.2em;height:1.2em}
+.btnrow{display:flex;gap:clamp(10px,2.5vmin,24px);flex-wrap:wrap;justify-content:center}
+.pulse{animation:pulse 1.6s ease-in-out infinite}
+@keyframes pulse{0%,100%{transform:scale(1)}50%{transform:scale(1.06)}}
+
+.bubble{background:#fff;border-radius:28px;padding:clamp(10px,2vmin,18px) clamp(14px,2.6vmin,26px);
+  box-shadow:0 6px 0 var(--shadow);font-size:clamp(18px,3.3vmin,34px);font-weight:700;line-height:1.25;position:relative;text-align:center}
+.bubble.tail-left::before{content:"";position:absolute;left:-14px;top:50%;margin-top:-12px;border:12px solid transparent;border-right:16px solid #fff;border-left:0}
+
+/* pony + faded magic */
+.pony svg{width:100%;height:100%;overflow:visible}
+.pony{transition:filter 1.6s ease}
+.faded{filter:grayscale(1) brightness(1.08) contrast(.82)}
+.bob{animation:bob 2.6s ease-in-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-4%)}}
+.hop{animation:hop .7s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}40%{transform:translateY(-18%) rotate(-3deg)}60%{transform:translateY(-18%) rotate(3deg)}}
+.bounce{animation:bounce .6s cubic-bezier(.3,1.6,.5,1)}
+@keyframes bounce{0%{transform:scale(1)}40%{transform:scale(1.18)}100%{transform:scale(1)}}
+.wiggle{animation:wiggle .5s ease}
+@keyframes wiggle{0%,100%{transform:rotate(0)}20%{transform:rotate(-8deg)}40%{transform:rotate(7deg)}60%{transform:rotate(-5deg)}80%{transform:rotate(3deg)}}
+.hintglow{animation:glow 1s ease-in-out infinite!important}
+@keyframes glow{0%,100%{filter:drop-shadow(0 0 6px #ffd23f) drop-shadow(0 0 2px #fff);transform:scale(1)}50%{filter:drop-shadow(0 0 22px #ffcf3f) drop-shadow(0 0 6px #fff);transform:scale(1.1)}}
+
+/* ---------- title ---------- */
+#s-title{gap:clamp(8px,2vmin,20px)}
+.title-rainbow{width:min(80vw,620px);height:auto;max-height:28vh}
+.game-title{font-size:clamp(34px,8vmin,86px);line-height:1;text-align:center;
+  background:linear-gradient(90deg,#ff5a5f,#ff9f1c,#f5c200,#3cc46f,#3d97f0,#9a5cf5);-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 4px 0 #fff) drop-shadow(0 6px 10px rgba(90,52,120,.2))}
+.title-sub{font-size:clamp(17px,3vmin,28px);font-weight:700;text-align:center;max-width:720px}
+.title-ponies{display:flex;gap:2vmin;align-items:flex-end;height:min(24vh,30vw)}
+.title-ponies .pony{height:100%;aspect-ratio:1}
+
+/* ---------- map ---------- */
+.rainbow-wrap{width:min(92vw,560px);height:clamp(64px,19vh,180px);flex:none}
+.rainbow-wrap svg{width:100%;height:100%}
+.maphint{font-size:clamp(18px,3.2vmin,30px);font-weight:700;background:rgba(255,255,255,.85);padding:6px 20px;border-radius:999px;box-shadow:0 4px 0 var(--shadow)}
+#ponyGrid{flex:1;min-height:0;width:100%;max-width:1100px;display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:clamp(8px,2vmin,20px)}
+@media (max-aspect-ratio:4/5){ #ponyGrid{grid-template-columns:repeat(2,1fr)} }
+@media (min-aspect-ratio:21/9){ #ponyGrid{grid-template-columns:repeat(6,1fr)} }
+.ponycard{border:none;border-radius:26px;background:rgba(255,255,255,.72);box-shadow:0 6px 0 var(--shadow);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;padding:6px;min-height:0;min-width:0;position:relative;transition:transform .15s}
+.ponycard:active{transform:scale(.96)}
+.ponycard .pony{flex:1;min-height:0;width:100%}
+.ponycard .name{font-family:Grandstander,Andika,sans-serif;font-weight:800;font-size:clamp(14px,2.6vmin,24px);white-space:nowrap}
+.ponycard.done{background:rgba(255,255,255,.95)}
+.ponycard .badge{position:absolute;top:6px;right:6px;width:clamp(32px,6.5vmin,56px);height:clamp(32px,6.5vmin,56px)}
+.ponycard .needs{position:absolute;top:8px;right:10px;font-family:Grandstander;font-weight:800;color:#fff;background:#ff6fae;border-radius:999px;padding:2px 10px;font-size:clamp(12px,2vmin,18px);box-shadow:0 3px 0 #d93a80}
+
+/* ---------- intro ---------- */
+.bigpony{height:min(46vh,70vw);aspect-ratio:1}
+#introBubble{max-width:760px}
+
+/* ---------- play ---------- */
+#s-play{justify-content:flex-start}
+.playhead{display:flex;align-items:center;gap:clamp(10px,2.4vmin,24px);width:100%;max-width:1000px;height:clamp(84px,21vh,190px);flex:none}
+.playhead .pony{height:100%;aspect-ratio:1;flex:none}
+.playhead .bubble{flex:1}
+#progress{display:flex;gap:10px;flex:none}
+#progress svg{width:clamp(26px,4.6vmin,42px);height:clamp(26px,4.6vmin,42px);transition:transform .3s}
+#progress .on svg{animation:bounce .6s}
+#area{flex:1;min-height:0;width:100%;max-width:1100px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:clamp(8px,2.4vmin,24px);position:relative}
+
+/* balloons */
+.swatch{width:clamp(70px,14vmin,130px);height:clamp(70px,14vmin,130px);background:#fff;border-radius:50%;box-shadow:0 6px 0 var(--shadow);padding:12%;flex:none}
+.swatch svg,.pitem svg,.pslot svg{width:100%;height:100%}
+.balloons{display:flex;gap:clamp(8px,3vmin,40px);justify-content:center;align-items:flex-end;flex:1;min-height:0;width:100%}
+.balloon{border:none;background:none;padding:0;height:min(38vh,48vw,300px);aspect-ratio:100/150;max-height:100%}
+.balloon:nth-child(odd) svg{animation:floaty 3s ease-in-out infinite}
+.balloon:nth-child(even) svg{animation:floaty 3.4s ease-in-out infinite reverse}
+.balloon svg{width:100%;height:100%}
+@keyframes floaty{0%,100%{transform:translateY(0) rotate(-2deg)}50%{transform:translateY(-6%) rotate(2deg)}}
+.balloon.away{animation:away 1.4s ease-in forwards}
+@keyframes away{to{transform:translateY(-80vh) rotate(8deg);opacity:0}}
+
+/* pattern */
+.prow{display:flex;gap:clamp(4px,1.4vmin,14px);background:rgba(255,255,255,.8);padding:clamp(8px,2vmin,18px);border-radius:28px;box-shadow:0 6px 0 var(--shadow)}
+.pitem,.pslot{width:min(12.5vw,13vh,110px);height:min(12.5vw,13vh,110px);flex:none}
+.pitem{animation:popIn .4s cubic-bezier(.3,1.6,.5,1) backwards}
+.pslot{border:5px dashed #d9b8ef;border-radius:22px;display:grid;place-items:center;font-family:Grandstander;font-weight:800;font-size:min(8vw,8vh,64px);color:#c49ae6}
+.pslot.filled{border-color:transparent}
+@keyframes popIn{from{transform:scale(0)}to{transform:scale(1)}}
+.pchoices{display:flex;gap:clamp(12px,4vmin,40px)}
+.pchoice{border:none;background:#fff;border-radius:28px;box-shadow:0 6px 0 var(--shadow);width:min(22vw,20vh,160px);height:min(22vw,20vh,160px);padding:min(2.6vw,2.4vh,19px);display:grid}
+.pchoice svg{width:100%;height:100%}
+
+/* sharing */
+.pile{display:flex;flex-wrap:wrap;justify-content:center;gap:clamp(4px,1vmin,10px);background:rgba(255,255,255,.75);border-radius:28px;padding:clamp(8px,1.6vmin,14px) clamp(12px,2vmin,20px);box-shadow:0 6px 0 var(--shadow);min-height:calc(min(10vw,9vh,74px) + 28px);max-width:96%}
+.pileitem{width:min(10vw,9vh,74px);height:min(10vw,9vh,74px);touch-action:none;cursor:grab;flex:none}
+.pileitem svg,.ghost svg,.flyer svg,.plateitem svg{width:100%;height:100%}
+.pile .empty{font-size:clamp(16px,2.6vmin,24px);font-weight:700;align-self:center;color:var(--ink2)}
+.friends{display:flex;gap:clamp(8px,2.4vmin,28px);justify-content:center;flex:1;min-height:0;width:100%;align-items:stretch}
+.friend{border:none;background:rgba(255,255,255,.9);border-radius:28px;box-shadow:0 6px 0 var(--shadow);width:min(30vw,260px);display:flex;flex-direction:column;align-items:center;padding:8px;min-height:0;position:relative}
+.friend .fhead{height:38%;min-height:0;aspect-ratio:1}
+.friend .fhead svg{width:100%;height:100%}
+.plate{flex:1;width:100%;min-height:0;border-radius:50%/40%;background:radial-gradient(ellipse at 50% 40%,#fff 0 55%,#f4e6ff 56% 70%,#e6d0f7 71%);display:flex;flex-wrap:wrap;align-content:center;justify-content:center;gap:2px;padding:6% 10%}
+.plateitem{width:min(7vw,6.5vh,50px);height:min(7vw,6.5vh,50px);animation:popIn .35s cubic-bezier(.3,1.6,.5,1)}
+.count{position:absolute;top:-10px;right:-8px;min-width:clamp(40px,7vmin,64px);height:clamp(40px,7vmin,64px);border-radius:999px;background:#ff6fae;color:#fff;font-family:Grandstander;font-weight:800;font-size:clamp(24px,4.4vmin,40px);display:grid;place-items:center;box-shadow:0 4px 0 #d93a80;border:4px solid #fff}
+.count.full{background:#38c172;box-shadow:0 4px 0 #22955a}
+.ghost,.flyer{position:fixed;z-index:60;pointer-events:none;width:70px;height:70px;margin:-35px 0 0 -35px}
+.flyer{transition:transform .45s cubic-bezier(.4,0,.3,1)}
+
+/* memory */
+.pads{display:grid;grid-template-columns:repeat(4,1fr);gap:clamp(10px,3vmin,34px);align-items:center;justify-items:center}
+@media (max-aspect-ratio:3/4){ .pads{grid-template-columns:repeat(2,1fr)} .pad{width:min(36vw,22vh)!important;height:min(36vw,22vh)!important} }
+.pad{border:none;background:rgba(255,255,255,.85);border-radius:50%;box-shadow:0 7px 0 var(--shadow);width:min(20vw,36vh,200px);height:min(20vw,36vh,200px);padding:min(2vw,3.6vh,20px);display:grid;transition:transform .15s,background .2s,filter .2s}
+.pad svg{width:100%;height:100%;filter:saturate(.75);transition:filter .2s}
+.pad.lit{transform:scale(1.14);background:#fff8c8;box-shadow:0 0 0 8px #fff,0 0 40px 12px rgba(255,214,70,.9)}
+.pad.lit svg{filter:saturate(1.3) brightness(1.1)}
+.pad.bell.lit svg{animation:ring .5s ease}
+@keyframes ring{0%,100%{transform:rotate(0)}25%{transform:rotate(-14deg)}75%{transform:rotate(14deg)}}
+.watchtag{font-family:Grandstander;font-weight:800;font-size:clamp(18px,3.2vmin,30px);padding:6px 20px;border-radius:999px;background:#fff;box-shadow:0 4px 0 var(--shadow)}
+.watchtag.your{background:#ffe57a;color:#7a4300;animation:pulse 1.2s ease-in-out infinite}
+
+/* ---------- reward ---------- */
+#s-reward h2{font-size:clamp(24px,5vmin,52px);text-align:center;color:var(--ink)}
+.reward-row{display:flex;align-items:center;justify-content:center;gap:clamp(10px,4vmin,50px);flex:1;min-height:0;width:100%}
+.reward-row .bigpony{height:min(40vh,46vw);max-height:100%}
+.sticker{width:min(26vh,30vw);aspect-ratio:1;border-radius:50%;background:#fff;border:clamp(5px,1vmin,10px) solid #fff;box-shadow:0 8px 0 var(--shadow),0 0 0 4px rgba(255,255,255,.6);display:grid;place-items:center;position:relative}
+.sticker .inner{width:100%;height:100%;border-radius:50%;display:grid;place-items:center}
+.sticker .inner svg{width:68%;height:68%}
+.sticker.pop{animation:stickerPop .9s cubic-bezier(.3,1.6,.5,1) backwards}
+@keyframes stickerPop{0%{transform:scale(0) rotate(-180deg)}100%{transform:scale(1) rotate(-6deg)}}
+.cheer{display:flex;gap:1vmin;height:clamp(40px,10vh,100px);flex:none}
+.cheer .pony{height:100%;aspect-ratio:1}
+
+/* ---------- book ---------- */
+#s-book h2{font-size:clamp(28px,5.5vmin,56px)}
+.bookpage{flex:1;min-height:0;width:100%;max-width:980px;background:#fffaf0;border-radius:30px;box-shadow:0 8px 0 var(--shadow),inset 0 0 0 10px #ffe1ef;
+  display:grid;grid-template-columns:repeat(3,1fr);grid-auto-rows:1fr;gap:clamp(6px,2vmin,20px);padding:clamp(14px,3vmin,30px)}
+@media (max-aspect-ratio:4/5){ .bookpage{grid-template-columns:repeat(2,1fr)} }
+.slot{border:none;background:none;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:0;gap:4px;padding:0}
+.slot .sticker{width:auto;height:min(100%,24vw);max-height:calc(100% - 2em);flex:1 1 auto;min-height:0}
+.slot:nth-child(odd) .sticker{transform:rotate(-6deg)}
+.slot:nth-child(even) .sticker{transform:rotate(5deg)}
+.slot .lbl{font-family:Grandstander;font-weight:800;font-size:clamp(13px,2.4vmin,22px);white-space:nowrap}
+.slot.locked .sticker{background:transparent;border:5px dashed #e3c9f2;box-shadow:none}
+.slot.locked .inner svg{opacity:.13;filter:grayscale(1)}
+.slot.locked .lbl{color:#c7a9dd}
+.rainbows{font-size:clamp(16px,2.8vmin,26px);font-weight:700;display:flex;align-items:center;gap:8px}
+.rainbows svg{height:1.6em;width:auto}
+
+/* ---------- party ---------- */
+#s-party h1{font-size:clamp(30px,6.5vmin,70px);text-align:center;background:linear-gradient(90deg,#ff5a5f,#ff9f1c,#f5c200,#3cc46f,#3d97f0,#9a5cf5);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 4px 0 #fff)}
+.party-rainbow{width:min(94vw,760px);height:clamp(90px,28vh,330px);flex:none}
+.party-rainbow svg{width:100%;height:100%}
+.party-ponies{display:flex;justify-content:center;gap:1vmin;height:min(22vh,15vw);flex:none}
+.party-ponies .pony{height:100%;aspect-ratio:1}
+
+/* fx */
+#fx{position:fixed;inset:0;pointer-events:none;z-index:50;overflow:hidden}
+.spark{position:absolute;width:26px;height:26px;margin:-13px 0 0 -13px;animation:spark .9s ease-out forwards}
+@keyframes spark{0%{transform:translate(0,0) scale(.4) rotate(0);opacity:1}100%{transform:translate(var(--dx),var(--dy)) scale(1.1) rotate(200deg);opacity:0}}
+#confetti{position:fixed;inset:0;width:100%;height:100%;pointer-events:none;z-index:45}
+
+@media (max-height:520px){
+  .playhead{height:clamp(70px,18vh,120px)}
+  .bubble{font-size:clamp(16px,3.6vmin,26px);padding:8px 14px}
+  .bigbtn{font-size:clamp(18px,4.6vmin,30px);padding:10px 24px}
+  .cheer{display:none}
+}
+@media (prefers-reduced-motion:reduce){ .cloud{animation:none} }
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="sky">
+    <div class="cloud" style="top:9%;width:150px;height:44px;animation-duration:70s;animation-delay:-20s"></div>
+    <div class="cloud" style="top:22%;width:110px;height:34px;animation-duration:90s;animation-delay:-60s"></div>
+    <div class="cloud" style="top:4%;width:90px;height:28px;animation-duration:110s;animation-delay:-5s"></div>
+    <svg id="hills" viewBox="0 0 1000 300" preserveAspectRatio="none">
+      <path d="M0 140 C200 60 380 80 520 140 C680 200 820 90 1000 110 L1000 300 L0 300Z" fill="#c9f0c4"/>
+      <path d="M0 210 C160 150 320 160 470 200 C640 250 800 170 1000 190 L1000 300 L0 300Z" fill="#a8e3a6"/>
+      <g fill="#fff"><circle cx="120" cy="230" r="6"/><circle cx="310" cy="250" r="5"/><circle cx="640" cy="260" r="6"/><circle cx="880" cy="235" r="5"/></g>
+      <g fill="#ff9fcb"><circle cx="120" cy="230" r="2.5"/><circle cx="310" cy="250" r="2"/><circle cx="640" cy="260" r="2.5"/><circle cx="880" cy="235" r="2"/></g>
+    </svg>
+  </div>
+
+  <header id="topbar">
+    <button class="iconbtn" id="btnHome" aria-label="Pony map">
+      <svg viewBox="0 0 48 48"><path d="M8 24 L24 9 L40 24" fill="none" stroke="#ff6fae" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"/><path d="M13 22 V39 H35 V22" fill="#ffd1e6" stroke="#ff6fae" stroke-width="4" stroke-linejoin="round"/><path d="M24 36 C17 31 18 25 21 25 C23 25 24 27 24 27 C24 27 25 25 27 25 C30 25 31 31 24 36Z" fill="#ff6fae"/></svg>
+    </button>
+    <div class="spacer"></div>
+    <button class="hearbtn" id="btnHear" aria-label="Hear it again">
+      <svg viewBox="0 0 48 48"><path d="M8 18 H16 L27 9 V39 L16 30 H8Z" fill="#7a4300"/><path class="wave" d="M32 17 C36 21 36 27 32 31" fill="none" stroke="#7a4300" stroke-width="4" stroke-linecap="round"/><path class="wave" d="M37 12 C44 19 44 29 37 36" fill="none" stroke="#7a4300" stroke-width="4" stroke-linecap="round"/></svg>
+      <span>Hear it again</span>
+    </button>
+    <button class="iconbtn" id="btnBook" aria-label="Sticker book">
+      <svg viewBox="0 0 48 48"><rect x="8" y="7" width="32" height="35" rx="5" fill="#b896ff" stroke="#7d52e0" stroke-width="3"/><rect x="12" y="7" width="4" height="35" fill="#7d52e0"/><path d="M28 14 L30.6 19.6 L36.6 20.2 L32 24.2 L33.4 30 L28 27 L22.6 30 L24 24.2 L19.4 20.2 L25.4 19.6Z" fill="#ffd23f" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"/></svg>
+    </button>
+    <button class="iconbtn" id="btnVoice" aria-label="Voice on or off">
+      <svg viewBox="0 0 48 48"><circle cx="20" cy="22" r="13" fill="#ffd1e6" stroke="#ff6fae" stroke-width="3"/><circle cx="16" cy="19" r="2" fill="#5a3478"/><circle cx="24" cy="19" r="2" fill="#5a3478"/><ellipse cx="20" cy="27" rx="4" ry="3" fill="#5a3478"/><path d="M36 15 C39 18 39 26 36 29 M40 11 C45 16 45 28 40 33" fill="none" stroke="#ff6fae" stroke-width="3" stroke-linecap="round"/></svg>
+    </button>
+    <button class="iconbtn" id="btnSound" aria-label="Sounds on or off">
+      <svg viewBox="0 0 48 48"><path d="M18 34 V12 L38 8 V30" fill="none" stroke="#3fa2f0" stroke-width="4" stroke-linejoin="round"/><ellipse cx="13" cy="34" rx="6" ry="5" fill="#3fa2f0"/><ellipse cx="33" cy="30" rx="6" ry="5" fill="#3fa2f0"/></svg>
+    </button>
+  </header>
+
+  <main id="main">
+    <section class="screen" id="s-title">
+      <div id="titleRainbow" class="title-rainbow"></div>
+      <h1 class="game-title">Pony Friendship Quest</h1>
+      <div class="title-sub">The ponies' friendship magic is fading. Can you help them shine again?</div>
+      <div class="title-ponies" id="titlePonies"></div>
+      <button class="bigbtn pulse" id="btnPlay"><svg viewBox="0 0 24 24"><path d="M7 4 L20 12 L7 20Z" fill="#fff"/></svg>Play</button>
+    </section>
+
+    <section class="screen" id="s-map">
+      <div class="rainbow-wrap" id="mapRainbow"></div>
+      <div class="maphint" id="mapHint">Tap a grey pony to help her!</div>
+      <div id="ponyGrid"></div>
+    </section>
+
+    <section class="screen" id="s-intro">
+      <div class="pony faded bigpony bob" id="introPony"></div>
+      <div class="bubble" id="introBubble"></div>
+      <button class="bigbtn pulse" id="btnGo">Yes! Let's play!</button>
+    </section>
+
+    <section class="screen" id="s-play">
+      <div class="playhead">
+        <div class="pony faded bob" id="playPony"></div>
+        <div class="bubble tail-left" id="playBubble"></div>
+      </div>
+      <div id="progress"></div>
+      <div id="area"></div>
+    </section>
+
+    <section class="screen" id="s-reward">
+      <div class="rainbow-wrap" id="rewardRainbow"></div>
+      <h2 id="rewardTitle"></h2>
+      <div class="reward-row">
+        <div class="pony faded bigpony" id="rewardPony"></div>
+        <div class="sticker" id="rewardSticker"></div>
+      </div>
+      <div class="cheer" id="cheerRow"></div>
+      <div class="btnrow" id="rewardBtns"></div>
+    </section>
+
+    <section class="screen" id="s-book">
+      <h2>My Sticker Book</h2>
+      <div class="bookpage" id="bookPage"></div>
+      <div class="rainbows" id="rainbowCount"></div>
+      <button class="bigbtn purple" id="btnBookBack">Back</button>
+    </section>
+
+    <section class="screen" id="s-party">
+      <div class="party-rainbow" id="partyRainbow"></div>
+      <h1>Friendship magic is back!</h1>
+      <div class="party-ponies" id="partyPonies"></div>
+      <div class="btnrow">
+        <button class="bigbtn" id="btnAgain">Play again</button>
+        <button class="bigbtn purple" id="btnPartyBook">Sticker book</button>
+      </div>
+    </section>
+  </main>
+  <div id="fx"></div>
+  <canvas id="confetti"></canvas>
+</div>
+
+<script>
+(function(){
+'use strict';
+var SAVE_KEY = 'lia-pony-friendship-quest-v1';
+var $ = function(s){ return document.querySelector(s); };
+
+/* ================= data ================= */
+var STRIPES = ['#FF5A5F','#FF9F1C','#FFD93D','#4CD07D','#4DA6FF','#A66BFF'];
+var PONIES = [
+  {id:'sunny', name:'Sunny Petal', body:'#FFE27A', body2:'#EDBE3A', mane:['#FF9636','#FFC85C'], eye:'#C26A00', kind:'earth',   mark:'star',      markName:'star',      stripe:2, act:'color',
+   intro:'Hi! I am Sunny Petal. My colors faded away. Will you help me?'},
+  {id:'berry', name:'Berry Bloom', body:'#FFC4D6', body2:'#F096B4', mane:['#E63E6D','#FF85A9'], eye:'#B01E4C', kind:'earth',   mark:'apple',     markName:'apple',     stripe:0, act:'shareEach',
+   intro:'Hello! I am Berry Bloom. I want to share apples with my friends. Will you help me?'},
+  {id:'skye',  name:'Skye Twirl',  body:'#B8E1FF', body2:'#82C2F0', mane:['#3A78EE','#86D4FF'], eye:'#2350B5', kind:'pegasus', mark:'bolt',      markName:'lightning', stripe:4, act:'flowers',
+   intro:'Hi there! I am Skye Twirl. My magic flowers sing songs. Will you help me remember them?'},
+  {id:'clover',name:'Clover Mint', body:'#C6F2CE', body2:'#90D99F', mane:['#22A55F','#8AE4AB'], eye:'#167E48', kind:'unicorn', mark:'butterfly', markName:'butterfly', stripe:3, act:'pattern',
+   intro:'Hello! I am Clover Mint. I love patterns. Will you help me finish them?'},
+  {id:'plum',  name:'Plum Dazzle', body:'#E2CFFF', body2:'#BC9CF0', mane:['#8A4CFF','#CBA8FF'], eye:'#5A2CC0', kind:'unicorn', mark:'gem',       markName:'gem',       stripe:5, act:'shareFair',
+   intro:'Hi! I am Plum Dazzle. I baked cupcakes. Will you help me share them fairly?'},
+  {id:'coral', name:'Coral Breeze',body:'#FFD3B4', body2:'#F2A97C', mane:['#FF7436','#FFB868'], eye:'#C04A12', kind:'pegasus', mark:'balloon',   markName:'balloon',   stripe:1, act:'bells',
+   intro:'Hello! I am Coral Breeze. My bells play music. Will you help me ring them?'}
+];
+var COLORS = [
+  {n:'red',c:'#FF4D5A'},{n:'orange',c:'#FF9A1F'},{n:'yellow',c:'#FFD93D'},{n:'green',c:'#3FCB74'},
+  {n:'blue',c:'#3D9BFF'},{n:'purple',c:'#A267FF'},{n:'pink',c:'#FF7EC0'}
+];
+var PRAISE = ['Yay! Great job!','You did it!','Wonderful!','Super job!','Hooray! You are so smart!','Amazing!'];
+var GENTLE = ['Almost!','Good try!','Ooh, so close!','Nice try!'];
+
+/* ================= state ================= */
+function load(){
+  var d = {stickers:[], helped:[], rainbows:0, voice:true, sound:true};
+  try { var s = JSON.parse(localStorage.getItem(SAVE_KEY)); if (s && typeof s === 'object') { for (var k in d) if (k in s) d[k] = s[k]; } } catch(e){}
+  if (!Array.isArray(d.stickers)) d.stickers = [];
+  if (!Array.isArray(d.helped)) d.helped = [];
+  d.rainbows = +d.rainbows || 0;
+  return d;
+}
+function save(){ try { localStorage.setItem(SAVE_KEY, JSON.stringify(state)); } catch(e){} }
+var state = load();
+var screen = 'title', flow = 0, cur = null, lastPrompt = '', bookReturn = 'map';
+
+/* ================= helpers ================= */
+function rand(a){ return a[Math.floor(Math.random()*a.length)]; }
+function shuffle(a){ a = a.slice(); for (var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; } return a; }
+function wait(ms){ return new Promise(function(r){ setTimeout(r, ms); }); }
+function first(p){ return p.name.split(' ')[0]; }
+function centerOf(el){ var r = el.getBoundingClientRect(); return {x:r.left+r.width/2, y:r.top+r.height/2}; }
+function retrigger(el, cls){ el.classList.remove(cls); void el.offsetWidth; el.classList.add(cls); }
+
+/* ================= audio ================= */
+var ac = null;
+function initAudio(){
+  if (!ac) { try { ac = new (window.AudioContext || window.webkitAudioContext)(); } catch(e){ ac = null; } }
+  if (ac && ac.state === 'suspended') ac.resume();
+}
+function tone(f, t0, dur, type, vol){
+  if (!state.sound || !ac) return;
+  var o = ac.createOscillator(), g = ac.createGain(), s = ac.currentTime + (t0||0);
+  o.type = type || 'sine'; o.frequency.setValueAtTime(f, s);
+  g.gain.setValueAtTime(0.0001, s);
+  g.gain.exponentialRampToValueAtTime(vol || 0.18, s + 0.02);
+  g.gain.exponentialRampToValueAtTime(0.0001, s + dur);
+  o.connect(g); g.connect(ac.destination); o.start(s); o.stop(s + dur + 0.05);
+}
+var sfx = {
+  tap: function(){ tone(700,0,.08,'triangle',.1); },
+  pop: function(n){ var f = 440 * Math.pow(2, (n||0)*2/12); tone(f,0,.14,'triangle',.18); tone(f*2,0.02,.1,'sine',.06); },
+  good: function(){ [523,659,784,1047].forEach(function(f,i){ tone(f,i*.09,.3,'triangle',.16); tone(f*2,i*.09,.2,'sine',.04); }); },
+  soft: function(){ tone(392,0,.2,'sine',.12); tone(330,.14,.28,'sine',.1); },
+  note: function(f){ tone(f,0,.5,'triangle',.22); tone(f*2,0,.3,'sine',.05); },
+  bell: function(f){ tone(f,0,1.1,'sine',.22); tone(f*2.76,0,.5,'sine',.05); tone(f*5.4,0,.25,'sine',.02); },
+  sparkle: function(){ for (var i=0;i<6;i++) tone(1200+Math.random()*1400, i*.05, .15, 'sine', .05); },
+  fanfare: function(){
+    var m = [[523,0],[659,.15],[784,.3],[1047,.45],[784,.65],[1047,.8]];
+    m.forEach(function(x){ tone(x[0],x[1],.35,'triangle',.18); tone(x[0]/2,x[1],.35,'sine',.08); });
+    tone(1319,1.0,.8,'triangle',.16); tone(659,1.0,.8,'sine',.08);
+  },
+  neigh: function(){
+    if (!state.sound || !ac) return;
+    var o = ac.createOscillator(), g = ac.createGain(), lfo = ac.createOscillator(), lg = ac.createGain(), s = ac.currentTime;
+    o.type = 'triangle'; o.frequency.setValueAtTime(700, s); o.frequency.linearRampToValueAtTime(1100, s+.15); o.frequency.linearRampToValueAtTime(600, s+.6);
+    lfo.frequency.value = 22; lg.gain.value = 60; lfo.connect(lg); lg.connect(o.frequency);
+    g.gain.setValueAtTime(.0001, s); g.gain.exponentialRampToValueAtTime(.09, s+.05); g.gain.exponentialRampToValueAtTime(.0001, s+.65);
+    o.connect(g); g.connect(ac.destination); o.start(s); lfo.start(s); o.stop(s+.7); lfo.stop(s+.7);
+  }
+};
+
+/* ================= speech ================= */
+var voice = null, hasSpeech = ('speechSynthesis' in window);
+function pickVoice(){
+  if (!hasSpeech) return;
+  var vs = speechSynthesis.getVoices() || [];
+  var en = vs.filter(function(v){ return /^en/i.test(v.lang); });
+  var prefs = ['Samantha','Microsoft Ana','Microsoft Aria','Microsoft Jenny','Google US English','Karen','Moira','Tessa','Serena','Google UK English Female','Microsoft Zira','Female'];
+  for (var i=0;i<prefs.length;i++){ for (var j=0;j<en.length;j++){ if (en[j].name.indexOf(prefs[i]) >= 0) { voice = en[j]; return; } } }
+  voice = en.filter(function(v){ return /en-US/i.test(v.lang); })[0] || en[0] || null;
+}
+if (hasSpeech) { pickVoice(); speechSynthesis.onvoiceschanged = pickVoice; }
+var speakId = 0;
+function say(text){
+  var id = ++speakId;
+  return new Promise(function(res){
+    var done = false;
+    function fin(){ if (!done){ done = true; if (id === speakId) $('#btnHear').classList.remove('talking'); res(); } }
+    if (!state.voice || !hasSpeech || !text) { setTimeout(fin, 350); return; }
+    try { speechSynthesis.cancel(); } catch(e){}
+    var u = new SpeechSynthesisUtterance(text);
+    if (voice) { u.voice = voice; u.lang = voice.lang; } else u.lang = 'en-US';
+    u.rate = 0.92; u.pitch = 1.2; u.volume = 1;
+    u.onend = fin; u.onerror = fin;
+    setTimeout(fin, 1800 + text.length * 85);
+    setTimeout(function(){ if (id !== speakId) { fin(); return; } $('#btnHear').classList.add('talking'); try { speechSynthesis.speak(u); } catch(e){ fin(); } }, 60);
+  });
+}
+function prompt(text, spoken){ lastPrompt = spoken || text; return say(lastPrompt); }
+
+/* ================= art ================= */
+function starPts(cx, cy, R, r, n){
+  n = n || 5; var p = [];
+  for (var i=0;i<n*2;i++){ var a = Math.PI/n*i - Math.PI/2, rr = i%2 ? r : R; p.push((cx+Math.cos(a)*rr).toFixed(1)+','+(cy+Math.sin(a)*rr).toFixed(1)); }
+  return p.join(' ');
+}
+function markSVG(t){
+  switch(t){
+    case 'star': return '<polygon points="'+starPts(50,54,44,19)+'" fill="#FFD23F" stroke="#F29E0C" stroke-width="5" stroke-linejoin="round"/><circle cx="40" cy="44" r="5" fill="#fff" opacity=".75"/><polygon points="'+starPts(84,16,10,4,4)+'" fill="#FF9636"/>';
+    case 'apple': return '<path d="M50 30 C36 18 12 24 14 50 C16 76 34 94 50 87 C66 94 84 76 86 50 C88 24 64 18 50 30Z" fill="#F0435A" stroke="#C02640" stroke-width="4"/><path d="M50 30 C50 20 54 12 60 7" stroke="#7A4A2A" stroke-width="5" fill="none" stroke-linecap="round"/><path d="M55 22 C62 8 80 9 83 15 C75 26 63 26 55 22Z" fill="#4CC36B"/><ellipse cx="31" cy="47" rx="6" ry="11" fill="#fff" opacity=".45"/>';
+    case 'balloon': return '<path d="M64 70 C62 80 70 86 66 98" stroke="#9a7aaa" stroke-width="3" fill="none"/><ellipse cx="66" cy="44" rx="20" ry="25" fill="#FFD23F" stroke="#E6A800" stroke-width="3.5"/><path d="M38 72 C38 82 30 88 34 98" stroke="#9a7aaa" stroke-width="3" fill="none"/><ellipse cx="38" cy="40" rx="25" ry="31" fill="#FF7A3D" stroke="#DE5512" stroke-width="4"/><ellipse cx="29" cy="30" rx="6" ry="10" fill="#fff" opacity=".5"/><path d="M34 71 L42 71 L38 77Z" fill="#DE5512"/>';
+    case 'butterfly': return '<g stroke="#178A55" stroke-width="3.5"><path d="M48 46 C30 14 6 18 10 36 C14 52 36 54 48 50Z" fill="#3CC38A"/><path d="M52 46 C70 14 94 18 90 36 C86 52 64 54 52 50Z" fill="#3CC38A"/><path d="M48 54 C30 56 18 74 28 82 C38 88 46 72 48 60Z" fill="#9BE8B9"/><path d="M52 54 C70 56 82 74 72 82 C62 88 54 72 52 60Z" fill="#9BE8B9"/></g><ellipse cx="50" cy="55" rx="5" ry="20" fill="#5a3478"/><path d="M48 36 C44 26 40 22 36 20 M52 36 C56 26 60 22 64 20" stroke="#5a3478" stroke-width="3" fill="none" stroke-linecap="round"/><circle cx="26" cy="34" r="5" fill="#FFE27A"/><circle cx="74" cy="34" r="5" fill="#FFE27A"/>';
+    case 'bolt': return '<path d="M22 46 C10 46 8 30 20 28 C20 14 38 10 44 20 C50 8 72 10 72 26 C86 24 90 44 76 46Z" fill="#fff" stroke="#6FB2F2" stroke-width="4" stroke-linejoin="round"/><polygon points="52,38 30,70 46,70 38,96 70,58 54,58 62,38" fill="#FFD23F" stroke="#3A78EE" stroke-width="4" stroke-linejoin="round"/>';
+    case 'gem': return '<polygon points="50,92 10,38 27,14 73,14 90,38" fill="#A66BFF" stroke="#6B35D0" stroke-width="4" stroke-linejoin="round"/><polygon points="27,14 38,38 62,38 73,14" fill="#D2B4FF"/><polyline points="10,38 90,38" stroke="#6B35D0" stroke-width="3" fill="none"/><polyline points="38,38 50,92 62,38" stroke="#6B35D0" stroke-width="3" fill="none"/><polygon points="'+starPts(80,14,9,3.5,4)+'" fill="#fff"/>';
+  }
+  return '';
+}
+function ponySVG(p, opt){
+  opt = opt || {};
+  var b = p.body, b2 = p.body2, m0 = p.mane[0], m1 = p.mane[1], ink = '#3d2152';
+  var vb = opt.head ? '102 6 90 90' : '0 0 200 200';
+  var s = '<svg viewBox="'+vb+'" xmlns="http://www.w3.org/2000/svg">';
+  if (!opt.head) {
+    s += '<ellipse cx="96" cy="189" rx="60" ry="7" fill="rgba(90,52,120,.13)"/>';
+    // tail
+    s += '<path d="M46 112 C16 102 8 140 24 160 C30 168 42 168 46 160 C32 146 34 128 52 124Z" fill="'+m0+'"/>';
+    s += '<path d="M46 117 C30 117 22 136 30 152 C33 138 40 130 52 123Z" fill="'+m1+'"/>';
+    // far legs
+    s += '<rect x="68" y="126" width="15" height="58" rx="7.5" fill="'+b2+'"/><rect x="120" y="126" width="15" height="58" rx="7.5" fill="'+b2+'"/>';
+    s += '<rect x="68" y="172" width="15" height="13" rx="5" fill="'+m0+'" opacity=".75"/><rect x="120" y="172" width="15" height="13" rx="5" fill="'+m0+'" opacity=".75"/>';
+    // body
+    s += '<ellipse cx="94" cy="121" rx="52" ry="31" fill="'+b+'"/>';
+    // near legs
+    s += '<rect x="50" y="128" width="16" height="58" rx="8" fill="'+b+'"/><rect x="104" y="128" width="16" height="58" rx="8" fill="'+b+'"/>';
+    s += '<rect x="50" y="173" width="16" height="13" rx="5" fill="'+m0+'"/><rect x="104" y="173" width="16" height="13" rx="5" fill="'+m0+'"/>';
+    // cutie mark
+    s += '<g transform="translate(58,104) scale(.3)">'+markSVG(p.mark)+'</g>';
+  }
+  // neck
+  s += '<path d="M114 106 C120 92 126 82 130 74 L162 84 C156 100 152 114 148 130 C134 132 122 124 114 106Z" fill="'+b+'"/>';
+  if (p.kind === 'pegasus' && !opt.head) {
+    s += '<path d="M82 108 C72 90 64 72 68 56 C78 62 84 68 90 74 C90 64 94 56 100 51 C104 61 106 69 108 77 C112 69 118 65 128 62 C126 80 122 96 116 108Z" fill="'+b+'" stroke="'+b2+'" stroke-width="3" stroke-linejoin="round"/>';
+    s += '<path d="M88 100 C86 90 86 84 88 80 M100 100 C100 90 102 84 104 82" stroke="'+b2+'" stroke-width="2.5" fill="none" stroke-linecap="round"/>';
+  }
+  // head
+  s += '<circle cx="142" cy="66" r="29" fill="'+b+'"/>';
+  s += '<ellipse cx="166" cy="78" rx="18" ry="15" fill="'+b+'"/>';
+  s += '<circle cx="174" cy="75" r="2.2" fill="'+b2+'"/>';
+  s += '<path d="M158 88 Q166 94 174 88" stroke="'+ink+'" stroke-width="2.6" fill="none" stroke-linecap="round"/>';
+  s += '<circle cx="160" cy="80" r="5.5" fill="#FF8FB8" opacity=".55"/>';
+  // ear
+  s += '<path d="M126 46 L130 22 L144 40Z" fill="'+b+'" stroke="'+b2+'" stroke-width="2" stroke-linejoin="round"/><path d="M130 42 L131.5 31 L138 40Z" fill="#FFB3CF"/>';
+  // horn
+  if (p.kind === 'unicorn') {
+    s += '<path d="M145 41 L158 6 L157 43Z" fill="#FFF3C4" stroke="#E8C55A" stroke-width="2" stroke-linejoin="round"/>';
+    s += '<path d="M147 34 L156 31 M149 25 L157 22 M152 16 L157.5 14" stroke="#E8C55A" stroke-width="2" stroke-linecap="round"/>';
+  }
+  // mane
+  s += '<path d="M120 42 C132 26 160 26 168 40 C156 36 148 40 144 48 C138 42 130 46 128 54 C122 70 126 92 116 110 C102 94 102 62 120 42Z" fill="'+m0+'"/>';
+  s += '<path d="M127 55 C121 70 123 88 118 102 C130 92 134 72 136 59Z" fill="'+m1+'"/>';
+  s += '<path d="M138 38 C150 33 162 37 168 48 C158 44 150 46 145 53Z" fill="'+m1+'"/>';
+  // eye
+  s += '<ellipse cx="152" cy="62" rx="8.5" ry="11.5" fill="'+ink+'"/>';
+  s += '<ellipse cx="153" cy="64.5" rx="6.3" ry="8.3" fill="'+p.eye+'"/>';
+  s += '<ellipse cx="153.5" cy="66" rx="3.4" ry="4.6" fill="'+ink+'"/>';
+  s += '<circle cx="155.5" cy="58.5" r="3.2" fill="#fff"/><circle cx="150.5" cy="68.5" r="1.6" fill="#fff"/>';
+  s += '<path d="M145 54 L140 50 M147 51.5 L144 46" stroke="'+ink+'" stroke-width="2.4" stroke-linecap="round"/>';
+  s += '</svg>';
+  return s;
+}
+function shapeSVG(sh, c){
+  var stroke = 'stroke="#fff" stroke-width="5" stroke-linejoin="round"';
+  if (sh === 'heart') return '<path d="M50 88 C20 66 6 48 12 30 C18 13 42 11 50 30 C58 11 82 13 88 30 C94 48 80 66 50 88Z" fill="'+c+'" '+stroke+'/><ellipse cx="30" cy="34" rx="6" ry="9" fill="#fff" opacity=".45" transform="rotate(-30 30 34)"/>';
+  if (sh === 'star') return '<polygon points="'+starPts(50,53,46,20)+'" fill="'+c+'" '+stroke+'/><circle cx="40" cy="44" r="5" fill="#fff" opacity=".55"/>';
+  if (sh === 'flower') {
+    var s = '';
+    for (var i=0;i<5;i++){ var a = i*72*Math.PI/180 - Math.PI/2; s += '<circle cx="'+(50+Math.cos(a)*24).toFixed(1)+'" cy="'+(50+Math.sin(a)*24).toFixed(1)+'" r="19" fill="'+c+'" stroke="#fff" stroke-width="4"/>'; }
+    return s + '<circle cx="50" cy="50" r="15" fill="#FFD93D" stroke="#fff" stroke-width="4"/>';
+  }
+  return '';
+}
+function svgBox(inner, vb){ return '<svg viewBox="'+(vb||'0 0 100 100')+'">'+inner+'</svg>'; }
+function balloonSVG(c){
+  return '<svg viewBox="0 0 100 150"><path d="M50 112 C42 124 58 132 50 148" stroke="#9a86ad" stroke-width="2.5" fill="none"/>'+
+    '<path d="M50 6 C77 6 92 28 92 52 C92 80 70 100 50 104 C30 100 8 80 8 52 C8 28 23 6 50 6Z" fill="'+c+'" stroke="rgba(0,0,0,.12)" stroke-width="2"/>'+
+    '<ellipse cx="34" cy="34" rx="9" ry="16" fill="#fff" opacity=".5" transform="rotate(-20 34 34)"/>'+
+    '<path d="M43 103 L57 103 L50 112Z" fill="'+c+'"/></svg>';
+}
+function appleSVG(){ return svgBox(markSVG('apple')); }
+function cupcakeSVG(){
+  return svgBox('<path d="M22 52 L78 52 L70 92 L30 92Z" fill="#FFB3CF" stroke="#E87AA6" stroke-width="3" stroke-linejoin="round"/>'+
+    '<path d="M34 54 L38 90 M50 54 L50 90 M66 54 L62 90" stroke="#E87AA6" stroke-width="2.5"/>'+
+    '<path d="M18 54 C12 40 26 30 34 34 C34 20 54 16 60 28 C72 24 88 36 82 54Z" fill="#D9C2FF" stroke="#A47BEA" stroke-width="3" stroke-linejoin="round"/>'+
+    '<circle cx="52" cy="18" r="8" fill="#FF4D5A"/><path d="M52 10 C54 4 58 2 62 2" stroke="#3FA060" stroke-width="2.5" fill="none"/>'+
+    '<g fill="#fff"><rect x="30" y="40" width="6" height="3" rx="1.5" transform="rotate(30 33 41)"/><rect x="62" y="42" width="6" height="3" rx="1.5" transform="rotate(-30 65 43)"/><rect x="46" y="34" width="6" height="3" rx="1.5"/></g>');
+}
+function flowerPadSVG(c){ return svgBox(shapeSVG('flower', c) + '<path d="M50 70 L50 98" stroke="#3FA060" stroke-width="0"/>'); }
+function bellSVG(c){
+  return svgBox('<path d="M50 6 C46 6 44 9 44 12 L56 12 C56 9 54 6 50 6Z" fill="#E8C55A"/>'+
+    '<path d="M50 12 C30 12 24 30 24 48 L24 64 L12 78 L88 78 L76 64 L76 48 C76 30 70 12 50 12Z" fill="'+c+'" stroke="#fff" stroke-width="4" stroke-linejoin="round"/>'+
+    '<ellipse cx="38" cy="36" rx="5" ry="12" fill="#fff" opacity=".45" transform="rotate(15 38 36)"/>'+
+    '<circle cx="50" cy="86" r="9" fill="#E8C55A" stroke="#fff" stroke-width="3"/>');
+}
+function heartIcon(on, c){ return svgBox(shapeSVG('heart', on ? c : '#E9DDF2')); }
+function rainbowSVG(on, fresh, allDraw){
+  var s = '<svg viewBox="0 0 400 214" preserveAspectRatio="xMidYMax meet">';
+  for (var i=0;i<6;i++){
+    var r = 180 - i*21, d = 'M'+(200-r)+' 200 A'+r+' '+r+' 0 0 1 '+(200+r)+' 200';
+    s += '<path d="'+d+'" fill="none" stroke="#EDE6F3" stroke-width="18" stroke-linecap="round" stroke-dasharray="2 9"/>';
+    if (on.indexOf(i) >= 0) {
+      var cls = (i === fresh || allDraw) ? ' class="draw" style="animation-delay:'+(allDraw ? (0.2+i*0.25) : 0.5)+'s"' : '';
+      s += '<path'+cls+' d="'+d+'" pathLength="100" fill="none" stroke="'+STRIPES[i]+'" stroke-width="19" stroke-linecap="round"/>';
+    }
+  }
+  var cloud = function(x){ return '<g fill="#fff" stroke="#e3ecf7" stroke-width="2"><circle cx="'+(x-18)+'" cy="200" r="15"/><circle cx="'+(x+18)+'" cy="200" r="15"/><circle cx="'+x+'" cy="190" r="20"/></g>'; };
+  s += cloud(22) + cloud(378) + '</svg>';
+  return s;
+}
+// rainbow draw animation style
+(function(){ var st = document.createElement('style'); st.textContent = '.draw{stroke-dasharray:100;stroke-dashoffset:100;animation:drawArc 1.4s ease-out forwards}@keyframes drawArc{to{stroke-dashoffset:0}}'; document.head.appendChild(st); })();
+function stripesOn(){ return state.helped.map(function(id){ return PONIES.filter(function(p){ return p.id===id; })[0].stripe; }); }
+
+/* ================= fx ================= */
+function burst(x, y, n, colors){
+  var fx = $('#fx'); n = n || 14; colors = colors || ['#FFD23F','#FF7EC0','#7FCBFF','#A267FF','#3FCB74','#FF9A1F'];
+  for (var i=0;i<n;i++){
+    var el = document.createElement('div'); el.className = 'spark';
+    var a = Math.random()*Math.PI*2, d = 60 + Math.random()*110;
+    el.style.left = x+'px'; el.style.top = y+'px';
+    el.style.setProperty('--dx', (Math.cos(a)*d).toFixed(0)+'px'); el.style.setProperty('--dy', (Math.sin(a)*d).toFixed(0)+'px');
+    el.style.animationDelay = (Math.random()*0.12).toFixed(2)+'s';
+    el.innerHTML = svgBox('<polygon points="'+starPts(50,50,48,18,Math.random()<.5?4:5)+'" fill="'+rand(colors)+'"/>');
+    fx.appendChild(el);
+    setTimeout(function(e){ return function(){ e.remove(); }; }(el), 1200);
+  }
+}
+function burstEl(el, n){ var c = centerOf(el); burst(c.x, c.y, n); }
+
+var confetti = {run:false, parts:[], raf:0};
+function startConfetti(sec){
+  var cv = $('#confetti'), ctx = cv.getContext('2d');
+  var dpr = Math.min(2, window.devicePixelRatio || 1);
+  cv.width = innerWidth*dpr; cv.height = innerHeight*dpr; ctx.setTransform(dpr,0,0,dpr,0,0);
+  var cols = STRIPES.concat(['#FF7EC0','#fff']);
+  var until = sec ? performance.now() + sec*1000 : Infinity;
+  confetti.run = true;
+  function add(){ confetti.parts.push({x:Math.random()*innerWidth, y:-20, vx:(Math.random()-.5)*1.5, vy:1.5+Math.random()*2.5, r:Math.random()*6.3, vr:(Math.random()-.5)*.2, s:6+Math.random()*8, c:rand(cols), k:Math.random()<.35?1:0}); }
+  cancelAnimationFrame(confetti.raf);
+  (function loop(t){
+    ctx.clearRect(0,0,innerWidth,innerHeight);
+    if (confetti.run && performance.now() < until && confetti.parts.length < 160) { add(); add(); }
+    confetti.parts = confetti.parts.filter(function(p){ return p.y < innerHeight + 30; });
+    confetti.parts.forEach(function(p){
+      p.x += p.vx + Math.sin(p.y/40); p.y += p.vy; p.r += p.vr;
+      ctx.save(); ctx.translate(p.x,p.y); ctx.rotate(p.r); ctx.fillStyle = p.c;
+      if (p.k) { ctx.beginPath(); ctx.arc(0,0,p.s/2,0,7); ctx.fill(); } else ctx.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);
+      ctx.restore();
+    });
+    if (confetti.parts.length || (confetti.run && performance.now() < until)) confetti.raf = requestAnimationFrame(loop);
+    else { confetti.run = false; ctx.clearRect(0,0,innerWidth,innerHeight); }
+  })();
+}
+function stopConfetti(){ confetti.run = false; confetti.parts = []; cancelAnimationFrame(confetti.raf); var cv = $('#confetti'); cv.getContext('2d').clearRect(0,0,cv.width,cv.height); }
+
+/* ================= screens ================= */
+function show(id){
+  flow++;
+  if (id !== 'party') stopConfetti();
+  document.querySelectorAll('.screen').forEach(function(s){ s.classList.toggle('active', s.id === 's-'+id); });
+  screen = id;
+}
+
+function renderTitle(){
+  $('#titleRainbow').innerHTML = rainbowSVG([0,2,4], -1);
+  $('#titlePonies').innerHTML = [PONIES[0], PONIES[3], PONIES[5]].map(function(p,i){
+    return '<div class="pony bob" style="animation-delay:'+(-i*0.7)+'s">'+ponySVG(p)+'</div>'; }).join('');
+}
+
+function goMap(){
+  show('map');
+  $('#mapRainbow').innerHTML = rainbowSVG(stripesOn(), -1);
+  var all = state.helped.length >= PONIES.length;
+  $('#mapHint').textContent = all ? 'All the ponies are happy!' : 'Tap a grey pony to help her!';
+  var g = $('#ponyGrid'); g.innerHTML = '';
+  PONIES.forEach(function(p, i){
+    var done = state.helped.indexOf(p.id) >= 0;
+    var b = document.createElement('button');
+    b.className = 'ponycard' + (done ? ' done' : '');
+    b.setAttribute('aria-label', p.name);
+    b.innerHTML = '<div class="pony bob '+(done?'':'faded')+'" style="animation-delay:'+(-i*0.45)+'s">'+ponySVG(p)+'</div><div class="name">'+p.name+'</div>' +
+      (done ? '<div class="badge">'+stickerHTML(p, true)+'</div>' : '<div class="needs">Help me!</div>');
+    b.addEventListener('click', function(){ sfx.neigh(); retrigger(b, 'bounce'); setTimeout(function(){ goIntro(p); }, 350); });
+    g.appendChild(b);
+  });
+  if (all) prompt('All the ponies are happy! Tap a pony to play again.');
+  else if (state.helped.length === 0) prompt('The ponies need your help! Tap a grey pony to help her.');
+  else prompt('Tap a grey pony to help her get her colors back.');
+}
+
+function stickerHTML(p, mini){
+  return '<div class="sticker'+(mini?'':'')+'" style="'+(mini?'width:100%;height:100%;border-width:3px;box-shadow:0 3px 0 rgba(90,52,120,.2)':'')+'"><div class="inner" style="background:'+p.body+'">'+svgBox(markSVG(p.mark))+'</div></div>';
+}
+
+function goIntro(p){
+  show('intro');
+  cur = {pony:p};
+  var ip = $('#introPony');
+  ip.innerHTML = ponySVG(p);
+  ip.className = 'pony bigpony bob' + (state.helped.indexOf(p.id) >= 0 ? '' : ' faded');
+  var txt = state.helped.indexOf(p.id) >= 0 ? 'Hi again! I am ' + p.name + '. Do you want to play with me again?' : p.intro;
+  $('#introBubble').textContent = txt;
+  prompt(txt);
+}
+$('#introPony').addEventListener('click', function(){ sfx.neigh(); retrigger($('#introPony'), 'bounce'); });
+
+/* ================= activity framework ================= */
+function startActivity(p){
+  show('play');
+  cur = {pony:p, round:0, rounds:3, misses:0, busy:false};
+  var pp = $('#playPony');
+  pp.innerHTML = ponySVG(p, {head:false});
+  pp.className = 'pony bob' + (state.helped.indexOf(p.id) >= 0 ? '' : ' faded');
+  nextRound();
+}
+function updateProgress(){
+  var c = STRIPES[cur.pony.stripe], h = '';
+  for (var i=0;i<cur.rounds;i++) h += '<span class="'+(i<cur.round?'on':'')+'">'+heartIcon(i<cur.round, c)+'</span>';
+  $('#progress').innerHTML = h;
+}
+function nextRound(){
+  cur.misses = 0; cur.busy = false;
+  updateProgress();
+  $('#area').innerHTML = '';
+  ACTS[cur.pony.act](cur.round);
+}
+function setBubble(t){ var b = $('#playBubble'); b.textContent = t; retrigger(b, 'bounce'); }
+async function roundWon(el, text){
+  cur.busy = true;
+  var f = flow;
+  sfx.good();
+  if (el) { burstEl(el, 18); retrigger(el, 'bounce'); }
+  retrigger($('#playPony'), 'bounce');
+  cur.round++; updateProgress();
+  var t = text || rand(PRAISE);
+  setBubble(t);
+  await say(t);
+  await wait(500);
+  if (f !== flow) return;
+  if (cur.round >= cur.rounds) ponyHelped(); else nextRound();
+}
+function miss(el, hint, glowFn, plain){
+  cur.misses++;
+  sfx.soft();
+  if (el) retrigger(el, 'wiggle');
+  var t = plain ? hint : rand(GENTLE) + ' ' + hint;
+  setBubble(t);
+  say(t);
+  if (cur.misses >= 2 && glowFn) glowFn();
+}
+function ask(text, spoken){ setBubble(text); return prompt(text, spoken); }
+
+var ACTS = {
+  color: actColor,
+  pattern: actPattern,
+  shareEach: function(r){ actShare(r, 'each'); },
+  shareFair: function(r){ actShare(r, 'fair'); },
+  flowers: function(r){ actMemory(r, 'flower'); },
+  bells: function(r){ actMemory(r, 'bell'); }
+};
+
+/* ---- 1. color matching ---- */
+function actColor(r){
+  var p = cur.pony, area = $('#area');
+  var yellow = COLORS[2], target, n, text, swatch = false;
+  if (r === 0) { target = yellow; n = 3; text = first(p) + ' loves yellow. Tap the yellow balloon!'; }
+  else if (r === 1) { target = rand(COLORS.filter(function(c){ return c !== yellow; })); n = 4; swatch = true; text = 'Find the balloon that matches the heart!'; }
+  else { target = rand(COLORS.filter(function(c){ return c !== yellow; })); n = 4; text = 'Tap the ' + target.n + ' balloon!'; }
+  var others = shuffle(COLORS.filter(function(c){ return c !== target; })).slice(0, n-1);
+  var opts = shuffle(others.concat([target]));
+  if (swatch) { var sw = document.createElement('div'); sw.className = 'swatch bob'; sw.innerHTML = svgBox(shapeSVG('heart', target.c)); area.appendChild(sw); }
+  var row = document.createElement('div'); row.className = 'balloons'; area.appendChild(row);
+  var correctEl = null;
+  opts.forEach(function(c){
+    var b = document.createElement('button'); b.className = 'balloon'; b.setAttribute('aria-label', c.n + ' balloon');
+    b.innerHTML = balloonSVG(c.c);
+    if (c === target) correctEl = b;
+    b.addEventListener('click', function(){
+      if (cur.busy) return;
+      if (c === target) { b.classList.remove('hintglow'); roundWon(b); setTimeout(function(){ b.classList.add('away'); }, 250); }
+      else {
+        var h = swatch ? 'That one is ' + c.n + '. The heart is ' + target.n + '. Try again!' : 'That one is ' + c.n + '. Find ' + target.n + '!';
+        miss(b, h, function(){ correctEl.classList.add('hintglow'); });
+      }
+    });
+    row.appendChild(b);
+  });
+  ask(text);
+}
+
+/* ---- 2. patterns ---- */
+var PATTERNS = [
+  {unit:[{sh:'heart',c:'#FF7EC0',n:'heart'},{sh:'star',c:'#FFC93D',n:'star'}], extra:{sh:'flower',c:'#A267FF',n:'flower'}},
+  {unit:[{sh:'heart',c:'#FF4D5A',n:'red heart'},{sh:'heart',c:'#3D9BFF',n:'blue heart'}], extra:{sh:'heart',c:'#3FCB74',n:'green heart'}},
+  {unit:[{sh:'star',c:'#FFC93D',n:'star'},{sh:'heart',c:'#FF7EC0',n:'heart'},{sh:'flower',c:'#A267FF',n:'flower'}], extra:{sh:'star',c:'#3D9BFF',n:'blue star'}}
+];
+function actPattern(r){
+  var P = PATTERNS[r], area = $('#area'), shown = 5;
+  var seq = []; for (var i=0;i<shown;i++) seq.push(P.unit[i % P.unit.length]);
+  var answer = P.unit[shown % P.unit.length];
+  var row = document.createElement('div'); row.className = 'prow';
+  seq.forEach(function(it, i){ var d = document.createElement('div'); d.className = 'pitem'; d.style.animationDelay = (i*0.12)+'s'; d.innerHTML = svgBox(shapeSVG(it.sh, it.c)); row.appendChild(d); });
+  var slot = document.createElement('div'); slot.className = 'pslot'; slot.textContent = '?'; row.appendChild(slot);
+  area.appendChild(row);
+  var ch = document.createElement('div'); ch.className = 'pchoices'; area.appendChild(ch);
+  var choices = shuffle(P.unit.slice(0, Math.min(P.unit.length, 3)).concat(P.unit.length < 3 ? [P.extra] : []));
+  var correctEl = null;
+  var spokenSeq = seq.map(function(s){ return s.n; }).join(', ');
+  choices.forEach(function(it){
+    var b = document.createElement('button'); b.className = 'pchoice'; b.setAttribute('aria-label', it.n);
+    b.innerHTML = svgBox(shapeSVG(it.sh, it.c));
+    if (it === answer) correctEl = b;
+    b.addEventListener('click', function(){
+      if (cur.busy) return;
+      if (it === answer) {
+        b.classList.remove('hintglow');
+        slot.classList.add('filled'); slot.textContent = ''; slot.innerHTML = svgBox(shapeSVG(it.sh, it.c));
+        row.querySelectorAll('.pitem,.pslot').forEach(function(e, i){ setTimeout(function(){ retrigger(e, 'bounce'); }, i*90); });
+        roundWon(slot, 'Yes! ' + spokenSeq + ', ' + answer.n + '! You finished the pattern!');
+      } else {
+        miss(b, 'Say it with me. ' + seq.slice(0, P.unit.length*2).map(function(s){ return s.n; }).join(', ') + '. Try again!', function(){ correctEl.classList.add('hintglow'); });
+      }
+    });
+    ch.appendChild(b);
+  });
+  ask('What comes next? Tap the one that finishes the pattern.', spokenSeq + '. What comes next?');
+}
+
+/* ---- 3 & 5. sharing by counting ---- */
+var SHARE = {
+  each: [{friends:2, per:2}, {friends:3, per:2}, {friends:2, per:3}],
+  fair: [{friends:2, total:4}, {friends:2, total:6}, {friends:3, total:6}]
+};
+function actShare(r, mode){
+  var cfg = SHARE[mode][r], p = cur.pony, area = $('#area');
+  var nf = cfg.friends, per = mode === 'each' ? cfg.per : cfg.total / nf, total = nf * per;
+  var itemName = mode === 'each' ? 'apple' : 'cupcake', itemsName = itemName + 's';
+  var itemSVG = mode === 'each' ? appleSVG : cupcakeSVG;
+  var counts = []; for (var i=0;i<nf;i++) counts.push(0);
+  var friendsList = PONIES.filter(function(q){ return q !== p; });
+  var pile = document.createElement('div'); pile.className = 'pile'; area.appendChild(pile);
+  var fr = document.createElement('div'); fr.className = 'friends'; area.appendChild(fr);
+  var friendEls = [];
+  for (var k=0;k<total;k++) addPileItem();
+  function addPileItem(){
+    var it = document.createElement('div'); it.className = 'pileitem'; it.innerHTML = itemSVG();
+    it.addEventListener('pointerdown', startDrag);
+    pile.appendChild(it);
+    var e = pile.querySelector('.empty'); if (e) e.remove();
+  }
+  for (var f=0; f<nf; f++){
+    (function(fi){
+      var q = friendsList[(fi + r) % friendsList.length];
+      var b = document.createElement('button'); b.className = 'friend'; b.dataset.i = fi; b.setAttribute('aria-label', 'Give to ' + q.name);
+      b.innerHTML = '<div class="fhead pony bob" style="animation-delay:'+(-fi*0.5)+'s">'+ponySVG(q, {head:true})+'</div><div class="plate"></div><div class="count">0</div>';
+      b.addEventListener('click', function(e){
+        if (e.target.closest('.plateitem')) return;
+        give(fi, null);
+      });
+      fr.appendChild(b); friendEls.push(b);
+    })(f);
+  }
+  function needy(){ for (var i=0;i<nf;i++) if (counts[i] < per) return friendEls[i]; return null; }
+  function updateCount(fi){
+    var c = friendEls[fi].querySelector('.count');
+    c.textContent = counts[fi];
+    c.classList.toggle('full', counts[fi] >= per);
+    retrigger(c, 'bounce');
+  }
+  function give(fi, fromEl){
+    if (cur.busy) return;
+    var fe = friendEls[fi];
+    if (counts[fi] >= per) {
+      var msg = mode === 'each' ? 'Oh! This friend has ' + per + ' already. Give one to another friend.' : 'Oh! This friend has enough. Share with another friend.';
+      miss(fe, msg, function(){ var n = needy(); if (n) n.classList.add('hintglow'); }, true);
+      return;
+    }
+    var item = fromEl || pile.querySelector('.pileitem:last-child');
+    if (!item) return;
+    friendEls.forEach(function(x){ x.classList.remove('hintglow'); });
+    counts[fi]++;
+    var start = centerOf(item);
+    item.remove();
+    if (!pile.querySelector('.pileitem')) pile.innerHTML = '<div class="empty">All shared!</div>';
+    var plate = fe.querySelector('.plate');
+    var pi = document.createElement('div'); pi.className = 'plateitem'; pi.innerHTML = itemSVG(); pi.style.visibility = 'hidden';
+    pi.addEventListener('click', function(ev){ ev.stopPropagation(); takeBack(fi, pi); });
+    plate.appendChild(pi);
+    if (!fromEl) {
+      var fl = document.createElement('div'); fl.className = 'flyer'; fl.innerHTML = itemSVG();
+      fl.style.left = start.x + 'px'; fl.style.top = start.y + 'px';
+      document.body.appendChild(fl);
+      var end = centerOf(pi);
+      requestAnimationFrame(function(){ requestAnimationFrame(function(){ fl.style.transform = 'translate('+(end.x-start.x)+'px,'+(end.y-start.y)+'px) scale(.7)'; }); });
+      setTimeout(function(){ fl.remove(); pi.style.visibility = ''; }, 460);
+    } else pi.style.visibility = '';
+    sfx.pop(counts[fi]);
+    updateCount(fi);
+    retrigger(fe.querySelector('.fhead'), 'bounce');
+    say(String(counts[fi]));
+    if (counts.every(function(c){ return c === per; })) {
+      cur.busy = true;
+      setTimeout(function(){
+        var t = mode === 'each' ? 'Each friend has ' + per + ' ' + itemsName + '. You did it!' : 'Each friend has ' + per + '. That is fair! Great sharing!';
+        roundWon(fr, t);
+      }, 700);
+    }
+  }
+  function takeBack(fi, pi){
+    if (cur.busy) return;
+    counts[fi]--; pi.remove(); addPileItem(); sfx.tap(); updateCount(fi);
+    say('Back to the basket. ' + (counts[fi]) + '.');
+  }
+  // drag support
+  function startDrag(e){
+    if (cur.busy) return;
+    e.preventDefault();
+    var it = e.currentTarget, sx = e.clientX, sy = e.clientY, moved = false;
+    var g = document.createElement('div'); g.className = 'ghost'; g.innerHTML = itemSVG();
+    g.style.left = sx + 'px'; g.style.top = sy + 'px';
+    document.body.appendChild(g); it.style.opacity = '.3';
+    sfx.tap();
+    function mv(ev){ if (Math.abs(ev.clientX-sx)+Math.abs(ev.clientY-sy) > 8) moved = true; g.style.left = ev.clientX + 'px'; g.style.top = ev.clientY + 'px'; }
+    function up(ev){
+      window.removeEventListener('pointermove', mv); window.removeEventListener('pointerup', up); window.removeEventListener('pointercancel', up);
+      g.remove(); it.style.opacity = '';
+      var t = document.elementFromPoint(ev.clientX, ev.clientY);
+      var fe = t && t.closest ? t.closest('.friend') : null;
+      if (fe && fr.contains(fe)) give(+fe.dataset.i, it);
+      else if (!moved) { var tip = 'Tap a friend to give ' + (mode === 'each' ? 'an apple' : 'a cupcake') + '!'; setBubble(tip); say(tip); friendEls.forEach(function(x){ retrigger(x, 'bounce'); }); }
+    }
+    window.addEventListener('pointermove', mv); window.addEventListener('pointerup', up); window.addEventListener('pointercancel', up);
+  }
+  var text = mode === 'each'
+    ? 'Give each friend ' + per + ' apples. Tap a friend to give one.'
+    : 'Share ' + total + ' cupcakes fairly. Every friend gets the same.';
+  ask(text, mode === 'each' ? text : text + ' Tap a friend to give one.');
+}
+
+/* ---- 4 & 6. remember the song ---- */
+var MEM = {
+  flower: {lens:[2,3,3], notes:[523.25,659.25,783.99,1046.5], colors:['#FF7EC0','#FFC93D','#3D9BFF','#A267FF'], names:['pink','yellow','blue','purple'], word:'flowers'},
+  bell:   {lens:[2,3,4], notes:[587.33,698.46,880,1174.66], colors:['#FF4D5A','#FF9A1F','#3FCB74','#3D9BFF'], names:['red','orange','green','blue'], word:'bells'}
+};
+function actMemory(r, kind){
+  var M = MEM[kind], area = $('#area'), n = M.lens[r];
+  var seq = [];
+  while (seq.length < n) { var x = Math.floor(Math.random()*4); if (x !== seq[seq.length-1]) seq.push(x); }
+  var tag = document.createElement('div'); tag.className = 'watchtag'; tag.textContent = 'Watch and listen'; area.appendChild(tag);
+  var grid = document.createElement('div'); grid.className = 'pads'; area.appendChild(grid);
+  var pads = [];
+  M.colors.forEach(function(c, i){
+    var b = document.createElement('button'); b.className = 'pad ' + kind; b.setAttribute('aria-label', M.names[i] + ' ' + kind);
+    b.innerHTML = kind === 'flower' ? flowerPadSVG(c) : bellSVG(c);
+    b.addEventListener('pointerdown', function(e){ e.preventDefault(); tapPad(i); });
+    grid.appendChild(b); pads.push(b);
+  });
+  var listening = false, step = 0;
+  function light(i, ms){
+    var p = pads[i]; p.classList.add('lit');
+    if (kind === 'flower') sfx.note(M.notes[i]); else sfx.bell(M.notes[i]);
+    setTimeout(function(){ p.classList.remove('lit'); }, ms || 450);
+  }
+  function clearGlow(){ pads.forEach(function(p){ p.classList.remove('hintglow'); }); }
+  function glowNext(){ clearGlow(); if (cur.misses >= 2 && listening) pads[seq[step]].classList.add('hintglow'); }
+  async function play(intro){
+    var f = flow; listening = false; step = 0; clearGlow();
+    tag.className = 'watchtag'; tag.textContent = 'Watch and listen';
+    if (intro) { await ask(intro); if (f !== flow) return; }
+    await wait(350);
+    for (var i=0;i<seq.length;i++){ if (f !== flow) return; light(seq[i], 480); await wait(800); }
+    if (f !== flow) return;
+    tag.className = 'watchtag your'; tag.textContent = 'Your turn!';
+    listening = true;
+    glowNext();
+    ask('Your turn! Tap the ' + M.word + ' in the same order.');
+  }
+  async function tapPad(i){
+    if (cur.busy || !listening) return;
+    light(i, 300);
+    if (i === seq[step]) {
+      step++;
+      retrigger(pads[i], 'bounce');
+      if (step >= seq.length) { listening = false; clearGlow(); tag.textContent = 'Yay!'; roundWon(pads[i], 'You remembered the song! Great job!'); }
+      else glowNext();
+    } else {
+      listening = false; clearGlow();
+      cur.misses++;
+      retrigger(pads[i], 'wiggle');
+      sfx.soft();
+      var f = flow;
+      await wait(400);
+      if (f !== flow) return;
+      play(rand(GENTLE) + ' Let’s watch and listen again.');
+    }
+  }
+  var intro = n === 2 ? 'Watch and listen! The ' + M.word + ' will sing. Then you copy them.' : 'Now ' + n + ' notes! Watch and listen.';
+  play(intro);
+}
+
+/* ================= reward ================= */
+function ponyHelped(){
+  var p = cur.pony, isNew = state.helped.indexOf(p.id) < 0, newSticker = state.stickers.indexOf(p.id) < 0;
+  if (isNew) state.helped.push(p.id);
+  if (newSticker) state.stickers.push(p.id);
+  save();
+  show('reward');
+  var f = flow;
+  $('#rewardRainbow').innerHTML = rainbowSVG(stripesOn(), isNew ? p.stripe : -1);
+  var rp = $('#rewardPony'); rp.innerHTML = ponySVG(p); rp.className = 'pony bigpony' + (isNew ? ' faded' : '');
+  var st = $('#rewardSticker'); st.className = 'sticker'; st.style.visibility = 'hidden';
+  st.innerHTML = '<div class="inner" style="background:'+p.body+'">'+svgBox(markSVG(p.mark))+'</div>';
+  $('#rewardTitle').textContent = 'Hooray! ' + p.name + ' shines again!';
+  var others = PONIES.filter(function(q){ return q !== p && state.helped.indexOf(q.id) >= 0; });
+  $('#cheerRow').innerHTML = others.map(function(q, i){ return '<div class="pony hop" style="animation-delay:'+(i*0.12)+'s">'+ponySVG(q)+'</div>'; }).join('');
+  var all = state.helped.length >= PONIES.length;
+  var btns = $('#rewardBtns'); btns.innerHTML = '';
+  if (all) btns.appendChild(mkBtn('Big celebration!', 'green pulse', goParty));
+  else btns.appendChild(mkBtn('Next pony', 'pulse', function(){ var nx = PONIES.filter(function(q){ return state.helped.indexOf(q.id) < 0; })[0]; goIntro(nx); }));
+  btns.appendChild(mkBtn('Sticker book', 'purple', function(){ openBook('map'); }));
+  setTimeout(function(){
+    if (f !== flow) return;
+    rp.classList.remove('faded'); rp.classList.add('hop');
+    burstEl(rp, 26); sfx.fanfare(); startConfetti(1.6);
+  }, 600);
+  setTimeout(function(){
+    if (f !== flow) return;
+    st.style.visibility = ''; st.classList.add('pop'); sfx.sparkle(); burstEl(st, 16);
+  }, 1500);
+  setTimeout(function(){ if (f === flow) rp.classList.remove('hop'); rp.classList.add('bob'); }, 3800);
+  var t = 'Hooray! ' + p.name + '’s colors are back! A rainbow stripe came back too. You earned the ' + p.markName + ' sticker!';
+  if (all) t += ' All the ponies are happy! Tap Big celebration!';
+  else t += ' Tap Next pony to help a new friend.';
+  prompt(t);
+}
+function mkBtn(label, cls, fn){
+  var b = document.createElement('button'); b.className = 'bigbtn ' + cls; b.textContent = label;
+  b.addEventListener('click', function(){ sfx.tap(); fn(); });
+  return b;
+}
+
+/* ================= book ================= */
+function openBook(ret){
+  bookReturn = ret || (screen === 'play' || screen === 'intro' ? 'intro' : screen);
+  if (bookReturn === 'book') bookReturn = 'map';
+  show('book');
+  var pg = $('#bookPage'); pg.innerHTML = '';
+  PONIES.forEach(function(p){
+    var have = state.stickers.indexOf(p.id) >= 0;
+    var b = document.createElement('button'); b.className = 'slot' + (have ? '' : ' locked');
+    b.innerHTML = '<div class="sticker"><div class="inner" style="background:'+(have ? p.body : 'transparent')+'">'+svgBox(markSVG(p.mark))+'</div></div><div class="lbl">'+(have ? p.name : '?')+'</div>';
+    b.addEventListener('click', function(){
+      var s = b.querySelector('.sticker'); retrigger(s, 'wiggle');
+      if (have) { sfx.sparkle(); burstEl(s, 10); say(p.name + '’s ' + p.markName + ' sticker!'); }
+      else { sfx.tap(); say('Help a pony to fill this spot!'); }
+    });
+    pg.appendChild(b);
+  });
+  var rc = $('#rainbowCount');
+  rc.innerHTML = state.rainbows > 0 ? '<span>Rainbows made: ' + state.rainbows + '</span>' + rainbowSVG([0,1,2,3,4,5], -1) : '';
+  var n = state.stickers.length;
+  prompt(n === 0 ? 'Your sticker book is empty. Help a pony to get a sticker!' : n === PONIES.length ? 'You have all six stickers! Wow!' : 'You have ' + n + ' sticker' + (n === 1 ? '' : 's') + '! Help more ponies to fill your book.');
+}
+$('#btnBookBack').addEventListener('click', function(){
+  sfx.tap();
+  if (bookReturn === 'intro' && cur && cur.pony) goIntro(cur.pony);
+  else if (bookReturn === 'party') goParty(true);
+  else if (bookReturn === 'title') { show('title'); }
+  else goMap();
+});
+
+/* ================= party ================= */
+function goParty(noCount){
+  if (!noCount) { state.rainbows++; save(); }
+  show('party');
+  $('#partyRainbow').innerHTML = rainbowSVG([0,1,2,3,4,5], -1, true);
+  $('#partyPonies').innerHTML = PONIES.map(function(p, i){ return '<div class="pony hop" style="animation-delay:'+(i*0.11)+'s">'+ponySVG(p)+'</div>'; }).join('');
+  sfx.fanfare(); setTimeout(sfx.fanfare, 1500);
+  startConfetti(0);
+  prompt('You did it, Lia! You helped every pony. The rainbow is back! Friendship magic is shining bright!');
+}
+$('#btnAgain').addEventListener('click', function(){ sfx.tap(); state.helped = []; save(); goMap(); });
+$('#btnPartyBook').addEventListener('click', function(){ sfx.tap(); openBook('party'); });
+
+/* ================= top bar ================= */
+function syncToggles(){
+  $('#btnVoice').classList.toggle('off', !state.voice);
+  $('#btnSound').classList.toggle('off', !state.sound);
+}
+$('#btnHome').addEventListener('click', function(){ sfx.tap(); goMap(); });
+$('#btnBook').addEventListener('click', function(){ sfx.tap(); if (screen !== 'book') openBook(); });
+$('#btnHear').addEventListener('click', function(){ retrigger($('#btnHear'), 'bounce'); if (!state.voice) { state.voice = true; syncToggles(); save(); } say(lastPrompt || 'Tap a pony to play!'); });
+$('#btnVoice').addEventListener('click', function(){
+  state.voice = !state.voice; save(); syncToggles(); sfx.tap();
+  if (!state.voice) { try { speechSynthesis.cancel(); } catch(e){} } else say('Voice is on!');
+});
+$('#btnSound').addEventListener('click', function(){ state.sound = !state.sound; save(); syncToggles(); sfx.tap(); });
+$('#btnPlay').addEventListener('click', function(){ initAudio(); sfx.good(); goMap(); });
+$('#btnGo').addEventListener('click', function(){ sfx.tap(); if (cur && cur.pony) startActivity(cur.pony); });
+document.addEventListener('pointerdown', initAudio, true);
+document.addEventListener('contextmenu', function(e){ e.preventDefault(); });
+document.addEventListener('dblclick', function(e){ e.preventDefault(); });
+
+/* ================= boot ================= */
+syncToggles();
+renderTitle();
+show('title');
+lastPrompt = 'Welcome to Pony Friendship Quest! Tap Play to start.';
+})();
+</script>
+</body>
+</html>

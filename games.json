@@ -22,5 +22,37 @@
     "dir": "games/bunny-bakery",
     "file": "index.html",
     "color": "#ff7eb6"
+  },
+  {
+    "slug": "pony-friendship-quest",
+    "title": "Pony Friendship Quest",
+    "blurb": "Help the ponies match colors, share fairly and remember tunes to bring their rainbow back!",
+    "dir": "games/pony-friendship-quest",
+    "file": "index.html",
+    "color": "#c77dff"
+  },
+  {
+    "slug": "creature-power-rescue",
+    "title": "Creature Power Rescue",
+    "blurb": "Pick the right animal power to bring lost baby animals home, and learn a fun animal fact each time.",
+    "dir": "games/creature-power-rescue",
+    "file": "index.html",
+    "color": "#3fa9f5"
+  },
+  {
+    "slug": "ladybug-day-saver",
+    "title": "Ladybug and Cat Noir Day Saver",
+    "blurb": "Transform, call a Lucky Charm and fix silly mix-ups all over Paris!",
+    "dir": "games/ladybug-day-saver",
+    "file": "index.html",
+    "color": "#ef3e4a"
+  },
+  {
+    "slug": "math-magic-potions",
+    "title": "Math Magic Potions",
+    "blurb": "Count the magic drops to brew silly potions and fill your potion book!",
+    "dir": "games/math-magic-potions",
+    "file": "index.html",
+    "color": "#8e5bd8"
   }
 ]
